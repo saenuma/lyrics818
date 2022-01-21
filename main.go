@@ -267,8 +267,7 @@ func writeToImage(conf zazabul.Config, text string) image.Image {
     color2.Red.Println("Shorten the following text for it to fit this video:")
     color2.Red.Println()
     for _, t := range strings.Split(text, "\n") {
-
-      color2.Red.Println("    ", text)
+      color2.Red.Println("    ", t)
     }
 
     os.Exit(1)
