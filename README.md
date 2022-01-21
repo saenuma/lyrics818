@@ -1,2 +1,3 @@
 # lyrics818
-a terminal program to create a lyrics video (incomplete)
+
+a terminal program to create a lyrics video
