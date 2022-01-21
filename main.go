@@ -60,6 +60,9 @@ Method 1: This uses a constant picture for the background.
   r1      Renders a project with the config created above. It expects a blender file and a
           launch file (created from 'init' above)
           All files must be placed in the working directory.
+
+  pc      Print commands needed to convert the generated frames to video.
+
   			`)
 
   	case "pwd":
@@ -176,6 +179,13 @@ total_length:
         }
 
       }
+
+      color2.Green.Println("Completed successfully. Output path: ", renderPath)
+
+    case "pc":
+      color2.Println("Switch to the folder created by the r1 command above.")
+      color2.Green.Println("    ffmpeg -framerate 24 -i %d.png tmp_output.mp4")
+      color2.Green.Println("    ffmpeg -i tmp_output.mp4 -i song.mp3 output.mp4")
 
 
   	default:
