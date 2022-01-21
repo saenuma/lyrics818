@@ -2,11 +2,27 @@ package main
 
 import (
   "os"
-	"github.com/gookit/color"
+	color2 "github.com/gookit/color"
 	"github.com/bankole7782/zazabul"
 	"fmt"
   "time"
   "path/filepath"
+  "image"
+  "image/png"
+  "image/color"
+  "image/draw"
+  "github.com/golang/freetype"
+  "golang.org/x/image/font"
+  "github.com/go-playground/colors"
+  "bufio"
+  "strconv"
+  "strings"
+)
+
+const (
+  DPI = 72.0
+  SIZE = 45.0
+  SPACING = 1.1
 )
 
 
@@ -18,7 +34,7 @@ func main() {
   }
 
   if len(os.Args) < 2 {
-		color.Red.Println("Expecting a command. Run with help subcommand to view help.")
+		color2.Red.Println("Expecting a command. Run with help subcommand to view help.")
 		os.Exit(1)
 	}
 
@@ -27,6 +43,7 @@ func main() {
 	case "--help", "help", "h":
   		fmt.Println(`hananan is a terminal program that creates lyrics videos.
 It outputs frames which you would need to convert to video using ffmpeg.
+The number of frames per seconds is 24. This is what this program uses.
 
 Directory Commands:
   pwd     Print working directory. This is the directory where the files needed by any command
@@ -59,6 +76,9 @@ lyrics_file:
 // you could find a font on https://fonts.google.com
 font_file:
 
+// lyrics_color is the color of the rendered lyric. Example is #af1382
+lyrics_color: #666666
+
 
 // background_file is the background that would be used for this lyric video.
 background_file:
@@ -67,7 +87,7 @@ background_file:
 total_length:
 
   	`
-  		configFileName := "s" + time.Now().Format("20060102") + ".zconf"
+  		configFileName := "s" + time.Now().Format("20060102T150405") + ".zconf"
   		writePath := filepath.Join(rootPath, configFileName)
 
   		conf, err := zazabul.ParseConfig(tmplOfMethod1)
@@ -83,9 +103,9 @@ total_length:
       fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
 
 
-    case "r":
+    case "r1":
     	if len(os.Args) != 3 {
-    		color.Red.Println("The r1 command expects a file created by the init1 command")
+    		color2.Red.Println("The r1 command expects a file created by the init1 command")
     		os.Exit(1)
     	}
 
@@ -99,16 +119,142 @@ total_length:
 
     	for _, item := range conf.Items {
     		if item.Value == "" {
-    			color.Red.Println("Every field in the launch file is compulsory.")
+    			color2.Red.Println("Every field in the launch file is compulsory.")
     			os.Exit(1)
     		}
     	}
 
 
+      totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
+      lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")))
+      renderPath := getRenderPath( conf.Get("output_name") )
+
+      var lastSeconds int
+      startedPrinting := false
+      firstFrame := false
+
+      for seconds := 0; seconds <= totalSeconds; seconds++ {
+        toWritePath := filepath.Join(renderPath, strconv.Itoa(seconds) + ".png")
+
+        if startedPrinting == false {
+          _, ok := lyricsObject[seconds]
+          if ! ok {
+            fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
+            if err != nil {
+              panic(err)
+            }
+            img, _, err := image.Decode(fileHandle)
+            if err != nil {
+              panic(err)
+            }
+            writeImageToDisk(img, toWritePath)
+          } else {
+            startedPrinting = true
+            firstFrame = true
+            lastSeconds = seconds
+          }
+
+        } else {
+
+          img := writeToImage(conf, lyricsObject[lastSeconds])
+
+          if firstFrame == true {
+            outPath := filepath.Join(renderPath, strconv.Itoa(lastSeconds) + ".png")
+            writeImageToDisk(img, outPath )
+            firstFrame = false
+          }
+
+          writeImageToDisk(img, toWritePath)
+          _, ok := lyricsObject[seconds]
+          if ok {
+            firstFrame = true
+            lastSeconds = seconds
+          }
+        }
+
+      }
+
 
   	default:
-  		color.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
+  		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
   		os.Exit(1)
   	}
 
+}
+
+
+// Save that RGBA image to disk.
+func writeImageToDisk(img image.Image, outPath string) {
+  outFile, err := os.Create(outPath)
+  if err != nil {
+    panic(err)
+  }
+  defer outFile.Close()
+  b := bufio.NewWriter(outFile)
+  err = png.Encode(b, img)
+  if err != nil {
+    panic(err)
+  }
+  err = b.Flush()
+  if err != nil {
+    panic(err)
+  }
+}
+
+
+func writeToImage(conf zazabul.Config, text string) image.Image {
+  rootPath, _ := GetRootPath()
+
+  fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
+  if err != nil {
+    panic(err)
+  }
+  pngData, _, err := image.Decode(fileHandle)
+  if err != nil {
+    panic(err)
+  }
+  b := pngData.Bounds()
+  img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+  draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
+
+  hex, err := colors.ParseHEX(conf.Get("lyrics_color"))
+  if err != nil {
+    panic(err)
+  }
+  nCR := hex.ToRGBA()
+  newColor := color.RGBA{uint8(nCR.R), uint8(nCR.G), uint8(nCR.B), 255}
+  fg := image.NewUniform(newColor)
+
+
+  fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
+  if err != nil {
+    panic(err)
+  }
+  fontParsed, err := freetype.ParseFont(fontBytes)
+  if err != nil {
+    panic(err)
+  }
+
+  c := freetype.NewContext()
+  c.SetDPI(DPI)
+  c.SetFont(fontParsed)
+  c.SetFontSize(SIZE)
+  c.SetClip(img.Bounds())
+  c.SetDst(img)
+  c.SetSrc(fg)
+  c.SetHinting(font.HintingNone)
+
+  texts := strings.Split(text, "\n")
+
+  // Draw the text.
+  pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
+  for _, s := range texts {
+    _, err = c.DrawString(s, pt)
+    if err != nil {
+      panic(err)
+    }
+    pt.Y += c.PointToFixed(SIZE * SPACING)
+  }
+
+  return img
 }
