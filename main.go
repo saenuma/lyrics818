@@ -132,9 +132,9 @@ total_length:
       var lastSeconds int
       startedPrinting := false
       firstFrame := false
+      lastFrameCount := 1
 
       for seconds := 0; seconds <= totalSeconds; seconds++ {
-        toWritePath := filepath.Join(renderPath, strconv.Itoa(seconds) + ".png")
 
         if startedPrinting == false {
           _, ok := lyricsObject[seconds]
@@ -147,7 +147,7 @@ total_length:
             if err != nil {
               panic(err)
             }
-            writeImageToDisk(img, toWritePath)
+            writeImageToDisk(img, renderPath, seconds)
           } else {
             startedPrinting = true
             firstFrame = true
@@ -159,12 +159,11 @@ total_length:
           img := writeToImage(conf, lyricsObject[lastSeconds])
 
           if firstFrame == true {
-            outPath := filepath.Join(renderPath, strconv.Itoa(lastSeconds) + ".png")
-            writeImageToDisk(img, outPath )
+            writeImageToDisk(img, renderPath, lastSeconds )
             firstFrame = false
           }
 
-          writeImageToDisk(img, toWritePath)
+          writeImageToDisk(img, renderPath, seconds)
           _, ok := lyricsObject[seconds]
           if ok {
             firstFrame = true
@@ -183,8 +182,16 @@ total_length:
 }
 
 
+func writeImageToDisk(img image.Image, renderPath string, seconds int) {
+  for i := 1; i <= 24; i++ {
+    out := (24 * seconds) + i
+    outPath := filepath.Join(renderPath, strconv.Itoa(out) + ".png")
+    innerWriteImageToDisk(img, outPath)
+  }
+}
+
 // Save that RGBA image to disk.
-func writeImageToDisk(img image.Image, outPath string) {
+func innerWriteImageToDisk(img image.Image, outPath string) {
   outFile, err := os.Create(outPath)
   if err != nil {
     panic(err)
