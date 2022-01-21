@@ -13,6 +13,8 @@ import (
   "image/draw"
   "github.com/golang/freetype"
   "golang.org/x/image/font"
+  "github.com/golang/freetype/truetype"
+  "golang.org/x/image/math/fixed"
   "github.com/go-playground/colors"
   "bufio"
   "strconv"
@@ -21,10 +23,11 @@ import (
 
 const (
   DPI = 72.0
-  SIZE = 45.0
+  SIZE = 80.0
   SPACING = 1.1
 )
 
+// 1366 - 130
 
 func main() {
   rootPath, err := GetRootPath()
@@ -81,6 +84,8 @@ lyrics_color: #666666
 
 
 // background_file is the background that would be used for this lyric video.
+// the background_file must be a png
+// the background_file must be of dimensions (1366 x 768)
 background_file:
 
 // total_length: The duration of the songs in this format (mm:ss)
@@ -132,7 +137,6 @@ total_length:
       var lastSeconds int
       startedPrinting := false
       firstFrame := false
-      lastFrameCount := 1
 
       for seconds := 0; seconds <= totalSeconds; seconds++ {
 
@@ -253,9 +257,26 @@ func writeToImage(conf zazabul.Config, text string) image.Image {
 
   texts := strings.Split(text, "\n")
 
+  finalTexts := make([]string, 0)
+  for _, txt := range texts {
+    wrappedTxts := wordWrap(conf, txt, 1366 - 130)
+    finalTexts = append(finalTexts, wrappedTxts...)
+  }
+
+  if len(finalTexts) > 7 {
+    color2.Red.Println("Shorten the following text for it to fit this video:")
+    color2.Red.Println()
+    for _, t := range strings.Split(text, "\n") {
+
+      color2.Red.Println("    ", text)
+    }
+
+    os.Exit(1)
+  }
+
   // Draw the text.
   pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
-  for _, s := range texts {
+  for _, s := range finalTexts {
     _, err = c.DrawString(s, pt)
     if err != nil {
       panic(err)
@@ -264,4 +285,55 @@ func writeToImage(conf zazabul.Config, text string) image.Image {
   }
 
   return img
+}
+
+
+func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
+  rootPath, _ := GetRootPath()
+
+  rgba := image.NewRGBA(image.Rect(0, 0, 1366, 768))
+
+  fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
+  if err != nil {
+    panic(err)
+  }
+  fontParsed, err := freetype.ParseFont(fontBytes)
+  if err != nil {
+    panic(err)
+  }
+
+
+  fontDrawer := &font.Drawer{
+    Dst: rgba,
+    Src: image.Black,
+    Face: truetype.NewFace(fontParsed, &truetype.Options{
+      Size: SIZE,
+      DPI: DPI,
+      Hinting: font.HintingNone,
+    }),
+  }
+
+  widthFixed := fixed.I(writeWidth)
+
+  strs := strings.Fields(text)
+  outStrs := make([]string, 0)
+  var tmpStr string
+  for i, oneStr := range strs {
+    var aStr string
+    if i == 0 {
+      aStr = oneStr
+    } else {
+      aStr += " " + oneStr
+    }
+
+    tmpStr += aStr
+    if fontDrawer.MeasureString(tmpStr) >= widthFixed {
+      outStr := tmpStr[ : len(tmpStr) - len(aStr) ]
+      tmpStr = oneStr
+      outStrs = append(outStrs, outStr)
+    }
+  }
+  outStrs = append(outStrs, tmpStr)
+
+  return outStrs
 }
