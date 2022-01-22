@@ -45,6 +45,8 @@ func main() {
 	switch os.Args[1] {
 	case "--help", "help", "h":
   		fmt.Println(`hananan is a terminal program that creates lyrics videos.
+It uses a constant picture for the background.
+
 It outputs frames which you would need to convert to video using ffmpeg.
 The number of frames per seconds is 24. This is what this program uses.
 
@@ -52,12 +54,11 @@ Directory Commands:
   pwd     Print working directory. This is the directory where the files needed by any command
           in this cli program must reside.
 
-Method 1: This uses a constant picture for the background.
-
-  init1   Creates a config file describing your video. Edit to your own requirements.
+Main Commands:
+  init    Creates a config file describing your video. Edit to your own requirements.
           The file from init1 is expected for r1.
 
-  r1      Renders a project with the config created above. It expects a blender file and a
+  run     Renders a project with the config created above. It expects a blender file and a
           launch file (created from 'init' above)
           All files must be placed in the working directory.
 
