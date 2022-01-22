@@ -69,7 +69,7 @@ Main Commands:
   	case "pwd":
   		fmt.Println(rootPath)
 
-    case "init1":
+    case "init":
       var	tmplOfMethod1 = `// output_name is the name of the project.
 output_name:
 
@@ -112,7 +112,7 @@ total_length:
       fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
 
 
-    case "r1":
+    case "run":
     	if len(os.Args) != 3 {
     		color2.Red.Println("The r1 command expects a file created by the init1 command")
     		os.Exit(1)
