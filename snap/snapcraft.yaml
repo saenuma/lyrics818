@@ -26,5 +26,3 @@ parts:
 apps:
   lyrics818:
     command: bin/lyrics818
-    environment:
-      PATH: $PATH:$SNAP/bin
