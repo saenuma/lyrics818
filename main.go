@@ -196,6 +196,13 @@ total_length:
       }
       fmt.Println(string(out))
 
+    case "ff2":
+      out, err := exec.Command("./bin/ffmpeg", "-h").CombinedOutput()
+      if err != nil {
+        panic(err)
+      }
+      fmt.Println(string(out))
+
   	default:
   		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
   		os.Exit(1)
