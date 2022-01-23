@@ -71,12 +71,8 @@ Main Commands:
   		fmt.Println(rootPath)
 
     case "init":
-      var	tmplOfMethod1 = `// output_name is the name of the project.
-output_name:
-
-// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
+      var	tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
 // a sample can be found at https://sae.ng/static/bmtf.txt
-//
 lyrics_file:
 
 
@@ -138,9 +134,10 @@ music_file:
     	}
 
 
+      outName := strings.Split(os.Args[2], ".")[0]
       totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
       lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")))
-      renderPath := getRenderPath( "tmp_" + conf.Get("output_name") )
+      renderPath := filepath.Join(rootPath, outName)
 
       var lastSeconds int
       startedPrinting := false
@@ -200,19 +197,18 @@ music_file:
         panic(err)
       }
 
-      outVideoName := strings.Split(os.Args[2], ".")[0] + ".mp4"
       out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_output.mp4"),
         "-i", filepath.Join(rootPath, conf.Get("music_file")),
-        filepath.Join(rootPath, outVideoName) ).CombinedOutput()
+        filepath.Join(rootPath, outName) ).CombinedOutput()
       if err != nil {
         fmt.Println(string(out))
         panic(err)
       }
 
-      color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outVideoName) )
+      color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName) )
 
       os.RemoveAll(renderPath)
-      
+
     case "pc":
       color2.Println("Switch to the folder created by the r1 command above.")
       color2.Green.Println("    ffmpeg -framerate 24 -i %d.png tmp_output.mp4")
