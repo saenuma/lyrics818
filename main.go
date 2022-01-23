@@ -132,7 +132,7 @@ music_file:
     	}
 
 
-      outName := strings.Split(os.Args[2], ".")[0]
+      outName := "s" + time.Now().Format("20060102T150405")
       totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
       lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")))
       renderPath := filepath.Join(rootPath, outName)
@@ -198,7 +198,7 @@ music_file:
 
       out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_output.mp4"),
         "-i", filepath.Join(rootPath, conf.Get("music_file")),
-        filepath.Join(rootPath, outName) ).CombinedOutput()
+        filepath.Join(rootPath, outName + ".mp4") ).CombinedOutput()
       if err != nil {
         fmt.Println(string(out))
         panic(err)
