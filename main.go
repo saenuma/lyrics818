@@ -45,10 +45,9 @@ func main() {
 
 	switch os.Args[1] {
 	case "--help", "help", "h":
-  		fmt.Println(`hananan is a terminal program that creates lyrics videos.
+  		fmt.Println(`lyrics818 is a terminal program that creates lyrics videos.
 It uses a constant picture for the background.
 
-It outputs frames which you would need to convert to video using ffmpeg.
 The number of frames per seconds is 24. This is what this program uses.
 
 Directory Commands:
@@ -84,7 +83,7 @@ lyrics_color: #666666
 
 // background_file is the background that would be used for this lyric video.
 // the background_file must be a png
-// the background_file must be of dimensions (1366 x 768)
+// the background_file must be of dimensions (1366px x 768px)
 background_file:
 
 // total_length: The duration of the songs in this format (mm:ss)
