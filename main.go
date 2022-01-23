@@ -96,6 +96,9 @@ background_file:
 // total_length: The duration of the songs in this format (mm:ss)
 total_length:
 
+// music_file is the song to add its audio to the video.
+music_file:
+
   	`
   		configFileName := "s" + time.Now().Format("20060102T150405") + ".zconf"
   		writePath := filepath.Join(rootPath, configFileName)
@@ -182,7 +185,27 @@ total_length:
 
       }
 
-      color2.Green.Println("Completed successfully. Output path: ", renderPath)
+      color2.Green.Println("Completed building frame. Output path: ", renderPath)
+
+      begin := os.Getenv("SNAP")
+      command := "ffmpeg"
+      if begin != "" && ! strings.HasPrefix(begin, "/snap/go/") {
+        command = filepath.Join(begin, "bin", "ffmpeg")
+      }
+
+      out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
+        filepath.Join(renderPath, "tmp_output.mp4")).CombinedOutput()
+      if err != nil {
+        fmt.Println(string(out))
+        panic(err)
+      }
+
+      out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_output.mp4"),
+        "-i", filepath.Join(rootPath, conf.Get("music_file")), os.Args[2][ :len(os.Args)-4 ] + ".mp4").CombinedOutput()
+      if err != nil {
+        fmt.Println(string(out))
+        panic(err)
+      }
 
     case "pc":
       color2.Println("Switch to the folder created by the r1 command above.")
