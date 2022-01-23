@@ -26,3 +26,6 @@ parts:
 apps:
   lyrics818:
     command: bin/lyrics818
+
+  ffmpeg:
+    command: bin/ffmpeg
