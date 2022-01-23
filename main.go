@@ -190,14 +190,7 @@ total_length:
       color2.Green.Println("    ffmpeg -i tmp_output.mp4 -i song.mp3 output.mp4")
 
     case "ff":
-      out, err := exec.Command("ffmpeg", "-h").CombinedOutput()
-      if err != nil {
-        panic(err)
-      }
-      fmt.Println(string(out))
-
-    case "ff2":
-      out, err := exec.Command("./bin/ffmpeg", "-h").CombinedOutput()
+      out, err := exec.Command("$SNAP/bin/ffmpeg", "-h").CombinedOutput()
       if err != nil {
         panic(err)
       }
