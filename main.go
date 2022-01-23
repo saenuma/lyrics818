@@ -140,7 +140,7 @@ music_file:
 
       totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
       lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")))
-      renderPath := getRenderPath( conf.Get("output_name") )
+      renderPath := getRenderPath( "tmp_" + conf.Get("output_name") )
 
       var lastSeconds int
       startedPrinting := false
@@ -185,7 +185,7 @@ music_file:
 
       }
 
-      color2.Green.Println("Completed building frame. Output path: ", renderPath)
+      color2.Green.Println("Completed building frames. Output path: ", renderPath)
 
       begin := os.Getenv("SNAP")
       command := "ffmpeg"
@@ -200,13 +200,19 @@ music_file:
         panic(err)
       }
 
+      outVideoName := strings.Split(os.Args[2], ".")[0] + ".mp4"
       out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_output.mp4"),
-        "-i", filepath.Join(rootPath, conf.Get("music_file")), os.Args[2][ :len(os.Args)-4 ] + ".mp4").CombinedOutput()
+        "-i", filepath.Join(rootPath, conf.Get("music_file")),
+        filepath.Join(rootPath, outVideoName) ).CombinedOutput()
       if err != nil {
         fmt.Println(string(out))
         panic(err)
       }
 
+      color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outVideoName) )
+
+      os.RemoveAll(renderPath)
+      
     case "pc":
       color2.Println("Switch to the folder created by the r1 command above.")
       color2.Green.Println("    ffmpeg -framerate 24 -i %d.png tmp_output.mp4")
