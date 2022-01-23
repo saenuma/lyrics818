@@ -181,7 +181,7 @@ music_file:
 
       }
 
-      color2.Green.Println("Completed building frames. Output path: ", renderPath)
+      color2.Green.Println("Completed generating frames of your lyrics video")
 
       begin := os.Getenv("SNAP")
       command := "ffmpeg"
@@ -204,19 +204,11 @@ music_file:
         panic(err)
       }
 
-      color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName) )
-
+      // clearing temporary files
       os.RemoveAll(renderPath)
+      os.Remove(filepath.Join(renderPath, "tmp_output.mp4"))
 
-      exec.Command("xdg-open", rootPath).Run()
-
-    case "ff":
-      begin := os.Getenv("SNAP")
-      out, err := exec.Command(filepath.Join(begin, "bin", "ffmpeg"), "-h").CombinedOutput()
-      if err != nil {
-        panic(err)
-      }
-      fmt.Println(string(out))
+      color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName + ".mp4") )
 
   	default:
   		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
