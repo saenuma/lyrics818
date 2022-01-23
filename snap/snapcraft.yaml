@@ -19,6 +19,8 @@ parts:
     # See 'snapcraft plugins'
     plugin: go
     source: .
+    stage-packages:
+      - ffmpeg
 
 
 apps:

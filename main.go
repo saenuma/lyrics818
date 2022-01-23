@@ -19,6 +19,7 @@ import (
   "bufio"
   "strconv"
   "strings"
+  "os/exec"
 )
 
 const (
@@ -188,6 +189,12 @@ total_length:
       color2.Green.Println("    ffmpeg -framerate 24 -i %d.png tmp_output.mp4")
       color2.Green.Println("    ffmpeg -i tmp_output.mp4 -i song.mp3 output.mp4")
 
+    case "ff":
+      out, err := exec.Command("ffmpeg -h").CombinedOutput()
+      if err != nil {
+        panic(err)
+      }
+      fmt.Println(string(out))
 
   	default:
   		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
