@@ -111,7 +111,7 @@ music_file:
 
     case "run":
     	if len(os.Args) != 3 {
-    		color2.Red.Println("The r1 command expects a file created by the init1 command")
+    		color2.Red.Println("The run command expects a file created by the init command")
     		os.Exit(1)
     	}
 
