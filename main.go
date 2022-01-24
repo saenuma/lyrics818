@@ -141,7 +141,7 @@ music_file:
       startedPrinting := false
       firstFrame := false
 
-      for seconds := 0; seconds <= totalSeconds; seconds++ {
+      for seconds := 0; seconds < totalSeconds; seconds++ {
 
         if startedPrinting == false {
           _, ok := lyricsObject[seconds]
