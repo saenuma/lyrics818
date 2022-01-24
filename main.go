@@ -56,10 +56,10 @@ Directory Commands:
 
 Main Commands:
   init    Creates a config file describing your video. Edit to your own requirements.
-          The file from init1 is expected for r1.
+          The file from 'init' is expected for 'run'.
 
-  run     Renders a project with the config created above. It expects a blender file and a
-          launch file (created from 'init' above)
+  run     Renders a project with the config created above. It expects a a config file generated from
+          'init' command above.
           All files must be placed in the working directory.
 
   			`)
