@@ -8,13 +8,12 @@ import (
   "time"
   "path/filepath"
   "image"
-  "image/color"
   "image/draw"
   "github.com/golang/freetype"
   "golang.org/x/image/font"
   "github.com/golang/freetype/truetype"
   "golang.org/x/image/math/fixed"
-  "github.com/go-playground/colors"
+  "github.com/lucasb-eyer/go-colorful"
   "strconv"
   "strings"
   "os/exec"
@@ -317,14 +316,8 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
   img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
   draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
 
-  hex, err := colors.ParseHEX(conf.Get("lyrics_color"))
-  if err != nil {
-    panic(err)
-  }
-  nCR := hex.ToRGBA()
-  newColor := color.RGBA{uint8(nCR.R), uint8(nCR.G), uint8(nCR.B), 255}
-  fg := image.NewUniform(newColor)
-
+  lyricsColor, _ := colorful.Hex(conf.Get("lyrics_color"))
+  fg := image.NewUniform(lyricsColor)
 
   fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
   if err != nil {
@@ -449,14 +442,8 @@ func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) i
   img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
   draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
 
-  hex, err := colors.ParseHEX(conf.Get("lyrics_color"))
-  if err != nil {
-    panic(err)
-  }
-  nCR := hex.ToRGBA()
-  newColor := color.RGBA{uint8(nCR.R), uint8(nCR.G), uint8(nCR.B), 255}
-  fg := image.NewUniform(newColor)
-
+  lyricsColor, _ := colorful.Hex(conf.Get("lyrics_color"))
+  fg := image.NewUniform(lyricsColor)
 
   fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
   if err != nil {
