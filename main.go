@@ -8,7 +8,6 @@ import (
   "time"
   "path/filepath"
   "image"
-  "image/png"
   "image/color"
   "image/draw"
   "github.com/golang/freetype"
@@ -16,10 +15,12 @@ import (
   "github.com/golang/freetype/truetype"
   "golang.org/x/image/math/fixed"
   "github.com/go-playground/colors"
-  "bufio"
   "strconv"
   "strings"
   "os/exec"
+  "github.com/otiai10/copy"
+  "github.com/disintegration/imaging"
+
 )
 
 const (
@@ -47,8 +48,6 @@ func main() {
 	case "--help", "help", "h":
   		fmt.Println(`lyrics818 is a terminal program that creates lyrics videos.
 It uses a constant picture for the background.
-
-The number of frames per seconds is 24. This is what this program uses.
 
 Directory Commands:
   pwd     Print working directory. This is the directory where the files needed by any command
@@ -82,8 +81,10 @@ lyrics_color: #666666
 
 
 // background_file is the background that would be used for this lyric video.
-// the background_file must be a png
+// the background_file must be a png or an mp4
 // the background_file must be of dimensions (1366px x 768px)
+// the framerate must be 60fps
+// you can generate an mp4 from videos229
 background_file:
 
 // total_length: The duration of the songs in this format (mm:ss)
@@ -137,65 +138,141 @@ music_file:
       renderPath := filepath.Join(rootPath, outName)
       os.MkdirAll(renderPath, 0777)
 
-      var lastSeconds int
-      startedPrinting := false
-      firstFrame := false
-
-      for seconds := 0; seconds < totalSeconds; seconds++ {
-
-        if startedPrinting == false {
-          _, ok := lyricsObject[seconds]
-          if ! ok {
-            fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
-            if err != nil {
-              panic(err)
-            }
-            img, _, err := image.Decode(fileHandle)
-            if err != nil {
-              panic(err)
-            }
-            writeImageToDisk(img, renderPath, seconds)
-          } else {
-            startedPrinting = true
-            firstFrame = true
-            lastSeconds = seconds
-          }
-
-        } else {
-
-          img := writeToImage(conf, lyricsObject[lastSeconds])
-
-          if firstFrame == true {
-            writeImageToDisk(img, renderPath, lastSeconds )
-            firstFrame = false
-          }
-
-          writeImageToDisk(img, renderPath, seconds)
-          _, ok := lyricsObject[seconds]
-          if ok {
-            firstFrame = true
-            lastSeconds = seconds
-          }
-        }
-
-      }
-
-      color2.Green.Println("Completed generating frames of your lyrics video")
-
+      // get the right ffmpeg command
       begin := os.Getenv("SNAP")
       command := "ffmpeg"
       if begin != "" && ! strings.HasPrefix(begin, "/snap/go/") {
         command = filepath.Join(begin, "bin", "ffmpeg")
       }
 
-      out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
-        filepath.Join(renderPath, "tmp_output.mp4")).CombinedOutput()
-      if err != nil {
-        fmt.Println(string(out))
-        panic(err)
+
+
+      if filepath.Ext(conf.Get("background_file")) == ".png" {
+
+        var lastSeconds int
+        startedPrinting := false
+        firstFrame := false
+
+        for seconds := 0; seconds < totalSeconds; seconds++ {
+
+          if startedPrinting == false {
+            _, ok := lyricsObject[seconds]
+            if ! ok {
+              fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
+              if err != nil {
+                panic(err)
+              }
+              img, _, err := image.Decode(fileHandle)
+              if err != nil {
+                panic(err)
+              }
+              writeManyImagesToDisk(img, renderPath, seconds)
+            } else {
+              startedPrinting = true
+              firstFrame = true
+              lastSeconds = seconds
+            }
+
+          } else {
+
+            img := writeLyricsToImage(conf, lyricsObject[lastSeconds])
+
+            if firstFrame == true {
+              writeManyImagesToDisk(img, renderPath, lastSeconds )
+              firstFrame = false
+            }
+
+            writeManyImagesToDisk(img, renderPath, seconds)
+            _, ok := lyricsObject[seconds]
+            if ok {
+              firstFrame = true
+              lastSeconds = seconds
+            }
+          }
+
+        }
+
+        color2.Green.Println("Completed generating frames of your lyrics video")
+
+        out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
+          filepath.Join(renderPath, "tmp_" + outName + ".mp4")).CombinedOutput()
+        if err != nil {
+          fmt.Println(string(out))
+          panic(err)
+        }
+
+
+      } else if filepath.Ext(conf.Get("background_file")) == ".mp4" {
+
+        framesPath := filepath.Join(rootPath, "frames_" + outName)
+        os.MkdirAll(framesPath, 0777)
+        out, err := exec.Command(command, "-i", filepath.Join(rootPath, conf.Get("background_file")),
+          "-r", "60/1", filepath.Join(framesPath, "%d.png")).CombinedOutput()
+        if err != nil {
+          fmt.Println(string(out))
+          panic(err)
+        }
+
+        color2.Green.Println("Finished getting frames from your video")
+
+        var lastSeconds int
+        startedPrinting := false
+        firstFrame := false
+
+        for frameCount := 0; frameCount < (totalSeconds * 60); frameCount++ {
+
+          seconds := frameCount / 60
+          videoFramePath := getNextVideoFrame(framesPath)
+
+          if startedPrinting == false {
+            _, ok := lyricsObject[seconds]
+            if ! ok {
+              newPath := filepath.Join(renderPath, filepath.Base(videoFramePath) )
+              copy.Copy(videoFramePath, newPath)
+            } else {
+              startedPrinting = true
+              firstFrame = true
+              lastSeconds = seconds
+            }
+
+          } else {
+            img := writeLyricsToVideoFrame(conf, lyricsObject[lastSeconds], videoFramePath)
+
+            if firstFrame == true {
+              imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount - 1) + ".png"))
+              firstFrame = false
+            }
+
+            imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount) + ".png"))
+            _, ok := lyricsObject[seconds]
+            if ok {
+              firstFrame = true
+              lastSeconds = seconds
+            }
+          }
+
+
+        }
+
+
+        color2.Green.Println("Completed generating frames of your lyrics video")
+
+        out, err = exec.Command(command, "-framerate", "60", "-i", filepath.Join(renderPath, "%d.png"),
+          filepath.Join(renderPath, "tmp_" + outName + ".mp4")).CombinedOutput()
+        if err != nil {
+          fmt.Println(string(out))
+          panic(err)
+        }
+
+        os.RemoveAll(framesPath)
+
+      } else {
+        color2.Red.Println("Unsupported backround_file format: must be .png or .mp4")
+        os.Exit(1)
       }
 
-      out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_output.mp4"),
+
+      out, err := exec.Command(command, "-i", filepath.Join(renderPath, "tmp_" + outName + ".mp4"),
         "-i", filepath.Join(rootPath, conf.Get("music_file")),
         filepath.Join(rootPath, outName + ".mp4") ).CombinedOutput()
       if err != nil {
@@ -205,7 +282,6 @@ music_file:
 
       // clearing temporary files
       os.RemoveAll(renderPath)
-      os.Remove(filepath.Join(renderPath, "tmp_output.mp4"))
 
       color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName + ".mp4") )
 
@@ -217,34 +293,16 @@ music_file:
 }
 
 
-func writeImageToDisk(img image.Image, renderPath string, seconds int) {
+func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {
   for i := 1; i <= 24; i++ {
     out := (24 * seconds) + i
     outPath := filepath.Join(renderPath, strconv.Itoa(out) + ".png")
-    innerWriteImageToDisk(img, outPath)
-  }
-}
-
-// Save that RGBA image to disk.
-func innerWriteImageToDisk(img image.Image, outPath string) {
-  outFile, err := os.Create(outPath)
-  if err != nil {
-    panic(err)
-  }
-  defer outFile.Close()
-  b := bufio.NewWriter(outFile)
-  err = png.Encode(b, img)
-  if err != nil {
-    panic(err)
-  }
-  err = b.Flush()
-  if err != nil {
-    panic(err)
+    imaging.Save(img, outPath)
   }
 }
 
 
-func writeToImage(conf zazabul.Config, text string) image.Image {
+func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
   rootPath, _ := GetRootPath()
 
   fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
@@ -366,4 +424,85 @@ func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
   outStrs = append(outStrs, tmpStr)
 
   return outStrs
+}
+
+
+var currentFrame int
+func getNextVideoFrame(framesPath string) string {
+  currentFrame += 1
+  currentFramePath := filepath.Join(framesPath, strconv.Itoa(currentFrame) + ".png")
+  if DoesPathExists(currentFramePath) {
+    return currentFramePath
+  } else {
+    currentFrame = 1
+    return filepath.Join(framesPath, strconv.Itoa(currentFrame) + ".png")
+  }
+}
+
+
+func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) image.Image {
+  rootPath, _ := GetRootPath()
+
+  pngData, err := imaging.Open(videoFramePath)
+
+  b := pngData.Bounds()
+  img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+  draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
+
+  hex, err := colors.ParseHEX(conf.Get("lyrics_color"))
+  if err != nil {
+    panic(err)
+  }
+  nCR := hex.ToRGBA()
+  newColor := color.RGBA{uint8(nCR.R), uint8(nCR.G), uint8(nCR.B), 255}
+  fg := image.NewUniform(newColor)
+
+
+  fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
+  if err != nil {
+    panic(err)
+  }
+  fontParsed, err := freetype.ParseFont(fontBytes)
+  if err != nil {
+    panic(err)
+  }
+
+  c := freetype.NewContext()
+  c.SetDPI(DPI)
+  c.SetFont(fontParsed)
+  c.SetFontSize(SIZE)
+  c.SetClip(img.Bounds())
+  c.SetDst(img)
+  c.SetSrc(fg)
+  c.SetHinting(font.HintingNone)
+
+  texts := strings.Split(text, "\n")
+
+  finalTexts := make([]string, 0)
+  for _, txt := range texts {
+    wrappedTxts := wordWrap(conf, txt, 1366 - 130)
+    finalTexts = append(finalTexts, wrappedTxts...)
+  }
+
+  if len(finalTexts) > 7 {
+    color2.Red.Println("Shorten the following text for it to fit this video:")
+    color2.Red.Println()
+    for _, t := range strings.Split(text, "\n") {
+      color2.Red.Println("    ", t)
+    }
+
+    os.Exit(1)
+  }
+
+  // Draw the text.
+  pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
+  for _, s := range finalTexts {
+    _, err = c.DrawString(s, pt)
+    if err != nil {
+      panic(err)
+    }
+    pt.Y += c.PointToFixed(SIZE * SPACING)
+  }
+
+  return img
 }
