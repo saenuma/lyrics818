@@ -54,7 +54,7 @@ Directory Commands:
 
 Main Commands:
   init    Creates a config file describing your video. Edit to your own requirements.
-          The file from 'init' is expected for 'run'.
+          The file from 'init' is expected for the 'run' command.
 
   run     Renders a project with the config created above. It expects a a config file generated from
           'init' command above.
