@@ -6,7 +6,12 @@ import (
   "github.com/pkg/errors"
   "path/filepath"
   "strconv"
-  "fmt"
+  "github.com/golang/freetype"
+  "golang.org/x/image/font"
+  "github.com/golang/freetype/truetype"
+  "golang.org/x/image/math/fixed"
+  "github.com/bankole7782/zazabul"
+  "image"
 )
 
 
@@ -68,16 +73,52 @@ func parseLyricsFile(inPath string) map[int]string {
 }
 
 
-func getRenderPath(filename string) string {
-	rootPath, _ := GetRootPath()
-	added := 1
-	for {
-		f := filepath.Join(rootPath, fmt.Sprintf("%s_%d", filename, added))
-		if DoesPathExists(f) {
-			added += 1
-		} else {
-			os.MkdirAll(f, 0777)
-			return f
-		}
-	}
+func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
+  rootPath, _ := GetRootPath()
+
+  rgba := image.NewRGBA(image.Rect(0, 0, 1366, 768))
+
+  fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
+  if err != nil {
+    panic(err)
+  }
+  fontParsed, err := freetype.ParseFont(fontBytes)
+  if err != nil {
+    panic(err)
+  }
+
+
+  fontDrawer := &font.Drawer{
+    Dst: rgba,
+    Src: image.Black,
+    Face: truetype.NewFace(fontParsed, &truetype.Options{
+      Size: SIZE,
+      DPI: DPI,
+      Hinting: font.HintingNone,
+    }),
+  }
+
+  widthFixed := fixed.I(writeWidth)
+
+  strs := strings.Fields(text)
+  outStrs := make([]string, 0)
+  var tmpStr string
+  for i, oneStr := range strs {
+    var aStr string
+    if i == 0 {
+      aStr = oneStr
+    } else {
+      aStr += " " + oneStr
+    }
+
+    tmpStr += aStr
+    if fontDrawer.MeasureString(tmpStr) >= widthFixed {
+      outStr := tmpStr[ : len(tmpStr) - len(aStr) ]
+      tmpStr = oneStr
+      outStrs = append(outStrs, outStr)
+    }
+  }
+  outStrs = append(outStrs, tmpStr)
+
+  return outStrs
 }
