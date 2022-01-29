@@ -15,49 +15,61 @@ import (
   "golang.org/x/image/font"
   "github.com/lucasb-eyer/go-colorful"
   "strconv"
+  "runtime"
+  "sync"
+  "math"
 )
 
 
-func imageMethod(outName string, totalSeconds int, lyricsObject map[int]string, renderPath string, conf zazabul.Config) {
+func imageMethod(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
+  numberOfCPUS := runtime.NumCPU()
   rootPath, _ := GetRootPath()
+  lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
-  var lastSeconds int
-  startedPrinting := false
-  firstFrame := false
+  jobsPerThread := int(math.Floor(float64(totalSeconds) / float64(numberOfCPUS)))
+  // remainder := int(math.Mod(float64(totalSeconds), float64(numberOfCPUS)))
+  var wg sync.WaitGroup
 
-  for seconds := 0; seconds < totalSeconds; seconds++ {
+  for threadIndex := 0; threadIndex < numberOfCPUS; threadIndex++ {
+    wg.Add(1)
 
-    if startedPrinting == false {
-      _, ok := lyricsObject[seconds]
-      if ! ok {
-        img, err := imaging.Open(filepath.Join(rootPath, conf.Get("background_file")))
-        if err != nil {
-          panic(err)
+    startSeconds :=   threadIndex * jobsPerThread
+    endSeconds := (threadIndex + 1) * jobsPerThread
+
+    go func(startSeconds, endSeconds int, wg *sync.WaitGroup) {
+      defer wg.Done()
+
+      for seconds := startSeconds; seconds < endSeconds; seconds++ {
+        txt, _ := lyricsObject[seconds]
+        if txt == "" {
+          img, err := imaging.Open(filepath.Join(rootPath, conf.Get("background_file")))
+          if err != nil {
+            panic(err)
+          }
+          writeManyImagesToDisk(img, renderPath, seconds)
+        } else {
+          img := writeLyricsToImage(conf, lyricsObject[seconds])
+          writeManyImagesToDisk(img, renderPath, seconds)
         }
-        writeManyImagesToDisk(img, renderPath, seconds)
-      } else {
-        startedPrinting = true
-        firstFrame = true
-        lastSeconds = seconds
+
       }
 
-    } else {
+    }(startSeconds, endSeconds, &wg)
+  }
+  wg.Wait()
 
-      img := writeLyricsToImage(conf, lyricsObject[lastSeconds])
-
-      if firstFrame == true {
-        writeManyImagesToDisk(img, renderPath, lastSeconds )
-        firstFrame = false
+  for seconds := (jobsPerThread * numberOfCPUS) ; seconds < totalSeconds; seconds++ {
+    txt, _ := lyricsObject[seconds]
+    if txt == "" {
+      img, err := imaging.Open(filepath.Join(rootPath, conf.Get("background_file")))
+      if err != nil {
+        panic(err)
       }
-
       writeManyImagesToDisk(img, renderPath, seconds)
-      _, ok := lyricsObject[seconds]
-      if ok {
-        firstFrame = true
-        lastSeconds = seconds
-      }
+    } else {
+      img := writeLyricsToImage(conf, lyricsObject[seconds])
+      writeManyImagesToDisk(img, renderPath, seconds)
     }
-
   }
 
   // get the right ffmpeg command
@@ -77,7 +89,6 @@ func imageMethod(outName string, totalSeconds int, lyricsObject map[int]string, 
   }
 
 }
-
 
 
 func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {

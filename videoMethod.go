@@ -16,10 +16,13 @@ import (
   "github.com/otiai10/copy"
   "github.com/disintegration/imaging"
   "golang.org/x/image/font"
+  "math"
+  "sync"
+  "runtime"
 )
 
 
-func videoMethod(outName string, totalSeconds int, lyricsObject map[int]string, renderPath string, conf zazabul.Config) {
+func videoMethod(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
   rootPath, _ := GetRootPath()
 
   // get the right ffmpeg command
@@ -40,45 +43,55 @@ func videoMethod(outName string, totalSeconds int, lyricsObject map[int]string, 
 
   color2.Green.Println("Finished getting frames from your video")
 
-  var lastSeconds int
-  startedPrinting := false
-  firstFrame := false
+  lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
-  for frameCount := 0; frameCount < (totalSeconds * 60); frameCount++ {
+  numberOfCPUS := runtime.NumCPU()
 
-    seconds := frameCount / 60
-    videoFramePath := getNextVideoFrame(framesPath)
+  jobsPerThread := int(math.Floor(float64(totalSeconds) * float64(60.0) / float64(numberOfCPUS)))
 
-    if startedPrinting == false {
-      _, ok := lyricsObject[seconds]
-      if ! ok {
-        newPath := filepath.Join(renderPath, filepath.Base(videoFramePath) )
-        copy.Copy(videoFramePath, newPath)
-      } else {
-        startedPrinting = true
-        firstFrame = true
-        lastSeconds = seconds
+  // remainder := int(math.Mod(float64(totalSeconds), float64(numberOfCPUS)))
+  var wg sync.WaitGroup
+
+  for threadIndex := 0; threadIndex < numberOfCPUS; threadIndex++ {
+    wg.Add(1)
+
+    startFrame := threadIndex * jobsPerThread
+    endFrame := (threadIndex + 1) * jobsPerThread
+
+    go func(startFrame, endFrame int, wg *sync.WaitGroup) {
+      defer wg.Done()
+      for frameCount := startFrame; frameCount < endFrame; frameCount++ {
+        seconds := frameCount / 60
+        videoFramePath := filepath.Join(framesPath, strconv.Itoa(frameCount) + ".png")
+
+        txt, _ := lyricsObject[seconds]
+        if txt == "" {
+          newPath := filepath.Join(renderPath, filepath.Base(videoFramePath) )
+          copy.Copy(videoFramePath, newPath)
+        } else {
+          img := writeLyricsToVideoFrame(conf, lyricsObject[seconds], videoFramePath)
+          imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount) + ".png"))
+        }
+
       }
 
-    } else {
-      img := writeLyricsToVideoFrame(conf, lyricsObject[lastSeconds], videoFramePath)
-
-      if firstFrame == true {
-        imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount - 1) + ".png"))
-        firstFrame = false
-      }
-
-      imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount) + ".png"))
-      _, ok := lyricsObject[seconds]
-      if ok {
-        firstFrame = true
-        lastSeconds = seconds
-      }
-    }
-
-
+    }(startFrame, endFrame, &wg)
   }
+  wg.Wait()
 
+  for frameCount := (jobsPerThread * numberOfCPUS); frameCount < totalSeconds * 60; frameCount++ {
+    seconds := frameCount / 60
+    videoFramePath := filepath.Join(framesPath, strconv.Itoa(frameCount) + ".png")
+
+    txt, _ := lyricsObject[seconds]
+    if txt == "" {
+      newPath := filepath.Join(renderPath, filepath.Base(videoFramePath) )
+      copy.Copy(videoFramePath, newPath)
+    } else {
+      img := writeLyricsToVideoFrame(conf, lyricsObject[seconds], videoFramePath)
+      imaging.Save(img, filepath.Join(renderPath, strconv.Itoa(frameCount) + ".png"))
+    }
+  }
 
   color2.Green.Println("Completed generating frames of your lyrics video")
 
@@ -91,20 +104,6 @@ func videoMethod(outName string, totalSeconds int, lyricsObject map[int]string, 
 
   os.RemoveAll(framesPath)
 
-}
-
-
-
-var currentFrame int
-func getNextVideoFrame(framesPath string) string {
-  currentFrame += 1
-  currentFramePath := filepath.Join(framesPath, strconv.Itoa(currentFrame) + ".png")
-  if DoesPathExists(currentFramePath) {
-    return currentFramePath
-  } else {
-    currentFrame = 1
-    return filepath.Join(framesPath, strconv.Itoa(currentFrame) + ".png")
-  }
 }
 
 

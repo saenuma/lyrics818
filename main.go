@@ -71,7 +71,7 @@ lyrics_color: #666666
 // background_file is the background that would be used for this lyric video.
 // the background_file must be a png or an mp4
 // the background_file must be of dimensions (1366px x 768px)
-// the framerate must be 60fps
+// the framerate must be 60fps and of the length of the song
 // you can generate an mp4 from videos229
 background_file:
 
@@ -122,7 +122,6 @@ music_file:
 
       outName := "s" + time.Now().Format("20060102T150405")
       totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
-      lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")))
       renderPath := filepath.Join(rootPath, outName)
       os.MkdirAll(renderPath, 0777)
 
@@ -134,9 +133,9 @@ music_file:
       }
 
       if filepath.Ext(conf.Get("background_file")) == ".png" {
-        imageMethod(outName, totalSeconds, lyricsObject, renderPath, conf)
+        imageMethod(outName, totalSeconds, renderPath, conf)
       } else if filepath.Ext(conf.Get("background_file")) == ".mp4" {
-        videoMethod(outName, totalSeconds, lyricsObject, renderPath, conf)
+        videoMethod(outName, totalSeconds, renderPath, conf)
       } else {
         color2.Red.Println("Unsupported backround_file format: must be .png or .mp4")
         os.Exit(1)

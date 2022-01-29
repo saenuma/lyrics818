@@ -55,20 +55,44 @@ func DoesPathExists(p string) bool {
 }
 
 
-func parseLyricsFile(inPath string) map[int]string {
+func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
   raw, err := os.ReadFile(inPath)
   if err != nil {
     panic(err)
   }
 
-  retObj := make(map[int]string)
+  tmpObj := make(map[int]string)
   parts := strings.Split(string(raw), "\n\n")
   for _, part := range parts {
     innerParts := strings.Split(strings.TrimSpace(part), "\n")
     secs := timeFormatToSeconds(strings.TrimSpace(innerParts[0]))
-    retObj[secs] = strings.Join(innerParts[1:], "\n")
+    tmpObj[secs] = strings.Join(innerParts[1:], "\n")
   }
 
+  retObj := make(map[int]string)
+  started := false
+  var lastSecondsWithLyrics int
+  for seconds := 0; seconds < totalSeconds; seconds++ {
+    if started == false {
+      txt, ok := tmpObj[seconds]
+      if ! ok {
+        retObj[seconds] = ""
+      } else {
+        started = true
+        retObj[seconds] = txt
+        lastSecondsWithLyrics = seconds
+      }
+
+    } else {
+      txt, ok := tmpObj[seconds]
+      if !ok {
+        retObj[seconds] = tmpObj[lastSecondsWithLyrics]
+      } else {
+        retObj[seconds] = txt
+        lastSecondsWithLyrics = seconds
+      }
+    }
+  }
   return retObj
 }
 
@@ -121,4 +145,14 @@ func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
   outStrs = append(outStrs, tmpStr)
 
   return outStrs
+}
+
+
+func FindIn(container []int, elem int) int {
+	for i, o := range container {
+		if o > elem {
+			return i
+		}
+	}
+	return -1
 }
