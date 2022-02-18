@@ -6,7 +6,7 @@ import (
   "os/exec"
   "fmt"
   "path/filepath"
-  "github.com/bankole7782/zazabul"
+  "github.com/saenuma/zazabul"
   "os"
   "strings"
   "image"

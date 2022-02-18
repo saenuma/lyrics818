@@ -3,7 +3,7 @@ package main
 import (
   "os"
 	color2 "github.com/gookit/color"
-	"github.com/bankole7782/zazabul"
+	"github.com/saenuma/zazabul"
 	"fmt"
   "time"
   "path/filepath"

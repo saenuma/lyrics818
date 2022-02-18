@@ -10,7 +10,7 @@ import (
   "golang.org/x/image/font"
   "github.com/golang/freetype/truetype"
   "golang.org/x/image/math/fixed"
-  "github.com/bankole7782/zazabul"
+  "github.com/saenuma/zazabul"
   "image"
 )
 

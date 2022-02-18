@@ -6,7 +6,7 @@ import (
   "github.com/golang/freetype"
   "github.com/lucasb-eyer/go-colorful"
   "strconv"
-  "github.com/bankole7782/zazabul"
+  "github.com/saenuma/zazabul"
   "os"
   "os/exec"
   "path/filepath"
