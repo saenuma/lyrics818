@@ -7,7 +7,6 @@ import (
 	"fmt"
   "time"
   "path/filepath"
-  "strings"
   "os/exec"
 )
 
@@ -125,12 +124,6 @@ music_file:
       renderPath := filepath.Join(rootPath, outName)
       os.MkdirAll(renderPath, 0777)
 
-      // get the right ffmpeg command
-      begin := os.Getenv("SNAP")
-      command := "ffmpeg"
-      if begin != "" && ! strings.HasPrefix(begin, "/snap/go/") {
-        command = filepath.Join(begin, "bin", "ffmpeg")
-      }
 
       if filepath.Ext(conf.Get("background_file")) == ".png" {
         imageMethod(outName, totalSeconds, renderPath, conf)
@@ -141,9 +134,10 @@ music_file:
         os.Exit(1)
       }
 
+      command := GetFFMPEGCommand()
 
       out, err := exec.Command(command, "-i", filepath.Join(renderPath, "tmp_" + outName + ".mp4"),
-        "-i", filepath.Join(rootPath, conf.Get("music_file")),
+        "-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt",  "yuv420p",
         filepath.Join(rootPath, outName + ".mp4") ).CombinedOutput()
       if err != nil {
         fmt.Println(string(out))

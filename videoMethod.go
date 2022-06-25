@@ -25,12 +25,7 @@ import (
 func videoMethod(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
   rootPath, _ := GetRootPath()
 
-  // get the right ffmpeg command
-  begin := os.Getenv("SNAP")
-  command := "ffmpeg"
-  if begin != "" && ! strings.HasPrefix(begin, "/snap/go/") {
-    command = filepath.Join(begin, "bin", "ffmpeg")
-  }
+  command := GetFFMPEGCommand()
 
   framesPath := filepath.Join(rootPath, "frames_" + outName)
   os.MkdirAll(framesPath, 0777)
@@ -96,6 +91,7 @@ func videoMethod(outName string, totalSeconds int, renderPath string, conf zazab
   color2.Green.Println("Completed generating frames of your lyrics video")
 
   out, err = exec.Command(command, "-framerate", "60", "-i", filepath.Join(renderPath, "%d.png"),
+    "-pix_fmt",  "yuv420p",
     filepath.Join(renderPath, "tmp_" + outName + ".mp4")).CombinedOutput()
   if err != nil {
     fmt.Println(string(out))

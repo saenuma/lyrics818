@@ -72,16 +72,12 @@ func imageMethod(outName string, totalSeconds int, renderPath string, conf zazab
     }
   }
 
-  // get the right ffmpeg command
-  begin := os.Getenv("SNAP")
-  command := "ffmpeg"
-  if begin != "" && ! strings.HasPrefix(begin, "/snap/go/") {
-    command = filepath.Join(begin, "bin", "ffmpeg")
-  }
-
   color2.Green.Println("Completed generating frames of your lyrics video")
 
+  command := GetFFMPEGCommand()
+
   out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
+    "-pix_fmt",  "yuv420p",
     filepath.Join(renderPath, "tmp_" + outName + ".mp4")).CombinedOutput()
   if err != nil {
     fmt.Println(string(out))

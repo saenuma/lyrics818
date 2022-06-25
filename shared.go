@@ -2,6 +2,7 @@ package main
 
 import (
   "os"
+  // "fmt"
   "strings"
   "github.com/pkg/errors"
   "path/filepath"
@@ -21,11 +22,9 @@ func GetRootPath() (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "os error")
 	}
-	dd := os.Getenv("SNAP_USER_COMMON")
-	if strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) || dd == "" {
-		dd = filepath.Join(hd, "lyrics818_data")
-    os.MkdirAll(dd, 0777)
-	}
+
+	dd := filepath.Join(hd, "Lyrics818")
+  os.MkdirAll(dd, 0777)
 
 	return dd, nil
 }
@@ -62,11 +61,11 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
   }
 
   tmpObj := make(map[int]string)
-  parts := strings.Split(string(raw), "\n\n")
+  parts := strings.Split(string(raw), "\r\n\r\n")
   for _, part := range parts {
-    innerParts := strings.Split(strings.TrimSpace(part), "\n")
+    innerParts := strings.Split(strings.TrimSpace(part), "\r\n")
     secs := timeFormatToSeconds(strings.TrimSpace(innerParts[0]))
-    tmpObj[secs] = strings.Join(innerParts[1:], "\n")
+    tmpObj[secs] = strings.Join(innerParts[1:], "\r\n")
   }
 
   retObj := make(map[int]string)
@@ -155,4 +154,21 @@ func FindIn(container []int, elem int) int {
 		}
 	}
 	return -1
+}
+
+
+func GetFFMPEGCommand() string {
+  // get the right ffmpeg command
+  homeDir, err := os.UserHomeDir()
+  if err != nil {
+    panic(err)
+  }
+
+  devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
+  bundledPath := filepath.Join("C:\\Program Files (x86)\\Lyrics818", "ffmpeg.exe")
+  if DoesPathExists(devPath) {
+    return devPath
+  }
+
+  return bundledPath
 }
