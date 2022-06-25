@@ -31,6 +31,41 @@ func main() {
 	}
 
 
+  if runtime.GOOS == "windows" {
+    newVersionStr := ""
+    resp, err := http.Get("https://sae.ng/static/wapps/lyrics818.txt")
+    if err != nil {
+      fmt.Println(err)
+    }
+    if err == nil {
+      defer resp.Body.Close()
+      body, err := io.ReadAll(resp.Body)
+      if err == nil && resp.StatusCode == 200 {
+        newVersionStr = string(body)
+      }
+    }
+
+    newVersionStr = strings.TrimSpace(newVersionStr)
+    currentVersionStr = strings.TrimSpace(currentVersionStr)
+
+    hnv := false
+    if newVersionStr != "" && newVersionStr != currentVersionStr {
+      time1, err1 := time.Parse(VersionFormat, newVersionStr)
+      time2, err2 := time.Parse(VersionFormat, currentVersionStr)
+
+      if err1 == nil && err2 == nil && time2.Before(time1) {
+        hnv = true
+      }
+    }
+
+    if hnv == true {
+      fmt.Println("lyrics818 has an update.")
+      fmt.Println("please visit 'https://sae.ng/lyrics818' for update instructions." )
+      return
+    }
+
+  }
+
 	switch os.Args[1] {
 	case "--help", "help", "h":
   		fmt.Println(`lyrics818 is a terminal program that creates lyrics videos.
