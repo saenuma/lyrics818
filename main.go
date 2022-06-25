@@ -65,7 +65,7 @@ func main() {
     if hnv == true {
       fmt.Println("lyrics818 has an update.")
       fmt.Println("please visit 'https://sae.ng/lyrics818' for update instructions." )
-      return
+      fmt.Println()
     }
 
   }
@@ -109,7 +109,8 @@ lyrics_color: #666666
 // background_file is the background that would be used for this lyric video.
 // the background_file must be a png or an mp4
 // the background_file must be of dimensions (1366px x 768px)
-// the framerate must be 60fps and of the length of the song
+// the framerate must be 60fps
+// the length of the video must match the length of the song
 // you can generate an mp4 from videos229
 background_file:
 

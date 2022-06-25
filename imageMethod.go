@@ -132,7 +132,7 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
   c.SetSrc(fg)
   c.SetHinting(font.HintingNone)
 
-  texts := strings.Split(text, "\n")
+  texts := strings.Split(text, "\r\n")
 
   finalTexts := make([]string, 0)
   for _, txt := range texts {
@@ -143,7 +143,7 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
   if len(finalTexts) > 7 {
     color2.Red.Println("Shorten the following text for it to fit this video:")
     color2.Red.Println()
-    for _, t := range strings.Split(text, "\n") {
+    for _, t := range strings.Split(text, "\r\n") {
       color2.Red.Println("    ", t)
     }
 

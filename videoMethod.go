@@ -104,9 +104,15 @@ func videoMethod(outName string, totalSeconds int, renderPath string, conf zazab
 
 
 func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) image.Image {
-  rootPath, _ := GetRootPath()
+  rootPath, err := GetRootPath()
+  if err != nil {
+    panic(err)
+  }
 
   pngData, err := imaging.Open(videoFramePath)
+  if err != nil {
+    panic(err)
+  }
 
   b := pngData.Bounds()
   img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
@@ -133,7 +139,7 @@ func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) i
   c.SetSrc(fg)
   c.SetHinting(font.HintingNone)
 
-  texts := strings.Split(text, "\n")
+  texts := strings.Split(text, "\r\n")
 
   finalTexts := make([]string, 0)
   for _, txt := range texts {
@@ -144,7 +150,7 @@ func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) i
   if len(finalTexts) > 7 {
     color2.Red.Println("Shorten the following text for it to fit this video:")
     color2.Red.Println()
-    for _, t := range strings.Split(text, "\n") {
+    for _, t := range strings.Split(text, "\r\n") {
       color2.Red.Println("    ", t)
     }
 
