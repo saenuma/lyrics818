@@ -8,6 +8,10 @@ import (
   "time"
   "path/filepath"
   "os/exec"
+  "runtime"
+  "net/http"
+  "strings"
+  "io"
 )
 
 const (
@@ -16,7 +20,7 @@ const (
   SPACING = 1.1
 )
 
-// 1366 - 130
+const VersionFormat = "20060102T150405MST"
 
 func main() {
   rootPath, err := GetRootPath()
