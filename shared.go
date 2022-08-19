@@ -72,7 +72,7 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	started := false
 	var lastSecondsWithLyrics int
 	for seconds := 0; seconds < totalSeconds; seconds++ {
-		if started == false {
+		if !started {
 			txt, ok := tmpObj[seconds]
 			if !ok {
 				retObj[seconds] = ""
