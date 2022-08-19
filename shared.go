@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	// "fmt"
+	"runtime"
+
 	"image"
 	"path/filepath"
 	"strconv"
@@ -61,11 +63,12 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	}
 
 	tmpObj := make(map[int]string)
-	parts := strings.Split(string(raw), "\r\n\r\n")
+	cleanedLyricsStr := strings.ReplaceAll(string(raw), "\r\n", "\n")
+	parts := strings.Split(cleanedLyricsStr, "\n\n")
 	for _, part := range parts {
-		innerParts := strings.Split(strings.TrimSpace(part), "\r\n")
+		innerParts := strings.Split(strings.TrimSpace(part), "\n")
 		secs := timeFormatToSeconds(strings.TrimSpace(innerParts[0]))
-		tmpObj[secs] = strings.Join(innerParts[1:], "\r\n")
+		tmpObj[secs] = strings.Join(innerParts[1:], "\n")
 	}
 
 	retObj := make(map[int]string)
@@ -92,7 +95,31 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
 			}
 		}
 	}
+
 	return retObj
+}
+
+func validateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
+	totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
+
+	// validate the length of a page of lyrics
+	for i := 1; i < totalSeconds; i++ {
+		text := lyricsObject[i]
+		texts := strings.Split(text, "\n")
+
+		finalTexts := make([]string, 0)
+		for _, txt := range texts {
+			wrappedTxts := wordWrap(conf, txt, 1366-130)
+			finalTexts = append(finalTexts, wrappedTxts...)
+		}
+
+		if len(finalTexts) > 7 {
+			return errors.New(fmt.Sprintf("Shorten the following text for it to fit this video:\n%s",
+				text))
+		}
+	}
+
+	return nil
 }
 
 func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
@@ -160,11 +187,25 @@ func GetFFMPEGCommand() string {
 		panic(err)
 	}
 
-	devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
-	bundledPath := filepath.Join("C:\\Program Files (x86)\\Lyrics818", "ffmpeg.exe")
-	if DoesPathExists(devPath) {
-		return devPath
+	var cmdPath string
+	if runtime.GOOS == "windows" {
+		devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
+		bundledPath := filepath.Join("C:\\Program Files (x86)\\Lyrics818", "ffmpeg.exe")
+		if DoesPathExists(devPath) {
+			cmdPath = devPath
+		} else {
+			cmdPath = bundledPath
+		}
+
+	} else if runtime.GOOS == "linux" {
+		begin := os.Getenv("SNAP")
+		cmdPath = "ffmpeg"
+		if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+			cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+		}
+	} else {
+		panic("unsupported runtime: " + runtime.GOOS)
 	}
 
-	return bundledPath
+	return cmdPath
 }

@@ -26,6 +26,12 @@ func imageMethod(outName string, totalSeconds int, renderPath string, conf zazab
 	rootPath, _ := GetRootPath()
 	lyricsObject := parseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
+	err := validateLyrics(conf, lyricsObject)
+	if err != nil {
+		color2.Red.Println(err)
+		os.Exit(1)
+	}
+
 	jobsPerThread := int(math.Floor(float64(totalSeconds) / float64(numberOfCPUS)))
 	// remainder := int(math.Mod(float64(totalSeconds), float64(numberOfCPUS)))
 	var wg sync.WaitGroup
@@ -130,22 +136,12 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
 	c.SetSrc(fg)
 	c.SetHinting(font.HintingNone)
 
-	texts := strings.Split(text, "\r\n")
+	texts := strings.Split(text, "\n")
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
 		wrappedTxts := wordWrap(conf, txt, 1366-130)
 		finalTexts = append(finalTexts, wrappedTxts...)
-	}
-
-	if len(finalTexts) > 7 {
-		color2.Red.Println("Shorten the following text for it to fit this video:")
-		color2.Red.Println()
-		for _, t := range strings.Split(text, "\r\n") {
-			color2.Red.Println("    ", t)
-		}
-
-		os.Exit(1)
 	}
 
 	// Draw the text.
