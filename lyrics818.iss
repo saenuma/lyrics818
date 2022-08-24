@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Lyrics818"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "20220824T231636WAT"
 #define MyAppPublisher "Saenuma Digital Ltd"
 #define MyAppURL "https://sae.ng"
 #define MyAppExeName "lyrics818.exe"
@@ -21,10 +21,10 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableDirPage=yes
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Bankole Ojo\p\lyrics818\LICENSE
+LicenseFile=C:\Users\banko\p\lyrics818\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\Bankole Ojo\p\lyrics818\bin
+OutputDir=C:\Users\banko\p\lyrics818\bin
 OutputBaseFilename=lyrics818_setup
 Compression=lzma
 SolidCompression=yes
@@ -34,8 +34,8 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\Users\Bankole Ojo\p\lyrics818\bin\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Bankole Ojo\bin\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\banko\p\lyrics818\bin\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\banko\bin\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 
 	color2 "github.com/gookit/color"
@@ -20,6 +24,41 @@ const (
 const VersionFormat = "20060102T150405MST"
 
 func main() {
+	if runtime.GOOS == "windows" {
+		newVersionStr := ""
+		resp, err := http.Get("https://sae.ng/static/wapps/lyrics818.txt")
+		if err != nil {
+			fmt.Println("error checking for updates")
+		}
+		if err == nil {
+			defer resp.Body.Close()
+			body, err := io.ReadAll(resp.Body)
+			if err == nil && resp.StatusCode == 200 {
+				newVersionStr = string(body)
+			}
+		}
+
+		newVersionStr = strings.TrimSpace(newVersionStr)
+		currentVersionStr = strings.TrimSpace(currentVersionStr)
+
+		hnv := false
+		if newVersionStr != "" && newVersionStr != currentVersionStr {
+			time1, err1 := time.Parse(VersionFormat, newVersionStr)
+			time2, err2 := time.Parse(VersionFormat, currentVersionStr)
+
+			if err1 == nil && err2 == nil && time2.Before(time1) {
+				hnv = true
+			}
+		}
+
+		if hnv {
+			fmt.Println("lyrics818 has an update.")
+			fmt.Println("please visit 'https://sae.ng/lyrics818' for update instructions.")
+			fmt.Println()
+		}
+
+	}
+
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
