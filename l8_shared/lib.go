@@ -1,9 +1,8 @@
-package main
+package l8_shared
 
 import (
 	"fmt"
 	"os"
-	"runtime"
 
 	"image"
 	"path/filepath"
@@ -16,6 +15,12 @@ import (
 	"github.com/saenuma/zazabul"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
+)
+
+const (
+	DPI     = 72.0
+	SIZE    = 80.0
+	SPACING = 1.1
 )
 
 func GetRootPath() (string, error) {
@@ -34,7 +39,7 @@ func GetRootPath() (string, error) {
 	return dd, nil
 }
 
-func timeFormatToSeconds(s string) int {
+func TimeFormatToSeconds(s string) int {
 	// calculate total duration of the song
 	parts := strings.Split(s, ":")
 	minutesPartConverted, err := strconv.Atoi(parts[0])
@@ -56,7 +61,7 @@ func DoesPathExists(p string) bool {
 	return true
 }
 
-func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
+func ParseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	raw, err := os.ReadFile(inPath)
 	if err != nil {
 		panic(err)
@@ -67,7 +72,7 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	parts := strings.Split(cleanedLyricsStr, "\n\n")
 	for _, part := range parts {
 		innerParts := strings.Split(strings.TrimSpace(part), "\n")
-		secs := timeFormatToSeconds(strings.TrimSpace(innerParts[0]))
+		secs := TimeFormatToSeconds(strings.TrimSpace(innerParts[0]))
 		tmpObj[secs] = strings.Join(innerParts[1:], "\n")
 	}
 
@@ -99,8 +104,8 @@ func parseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	return retObj
 }
 
-func validateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
-	totalSeconds := timeFormatToSeconds(conf.Get("total_length"))
+func ValidateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
+	totalSeconds := TimeFormatToSeconds(conf.Get("total_length"))
 
 	// validate the length of a page of lyrics
 	for i := 1; i < totalSeconds; i++ {
@@ -109,7 +114,7 @@ func validateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
 
 		finalTexts := make([]string, 0)
 		for _, txt := range texts {
-			wrappedTxts := wordWrap(conf, txt, 1366-130)
+			wrappedTxts := WordWrap(conf, txt, 1366-130)
 			finalTexts = append(finalTexts, wrappedTxts...)
 		}
 
@@ -122,7 +127,7 @@ func validateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
 	return nil
 }
 
-func wordWrap(conf zazabul.Config, text string, writeWidth int) []string {
+func WordWrap(conf zazabul.Config, text string, writeWidth int) []string {
 	rootPath, _ := GetRootPath()
 
 	rgba := image.NewRGBA(image.Rect(0, 0, 1366, 768))
@@ -181,30 +186,11 @@ func FindIn(container []int, elem int) int {
 }
 
 func GetFFMPEGCommand() string {
-	// get the right ffmpeg command
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
 	var cmdPath string
-	if runtime.GOOS == "windows" {
-		devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
-		bundledPath := filepath.Join("C:\\Program Files (x86)\\Lyrics818", "ffmpeg.exe")
-		if DoesPathExists(devPath) {
-			cmdPath = devPath
-		} else {
-			cmdPath = bundledPath
-		}
-
-	} else if runtime.GOOS == "linux" {
-		begin := os.Getenv("SNAP")
-		cmdPath = "ffmpeg"
-		if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-			cmdPath = filepath.Join(begin, "bin", "ffmpeg")
-		}
-	} else {
-		panic("unsupported runtime: " + runtime.GOOS)
+	begin := os.Getenv("SNAP")
+	cmdPath = "ffmpeg"
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
 	}
 
 	return cmdPath
