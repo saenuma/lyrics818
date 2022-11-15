@@ -1,4 +1,4 @@
-package main
+package l8_shared
 
 import (
 	"fmt"
