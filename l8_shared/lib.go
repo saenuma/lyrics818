@@ -2,6 +2,7 @@ package l8_shared
 
 import (
 	"fmt"
+	"math"
 	"os"
 
 	"image"
@@ -9,12 +10,16 @@ import (
 	"strconv"
 	"strings"
 
+	"io"
+
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/pkg/errors"
 	"github.com/saenuma/zazabul"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
+
+	"github.com/tcolgate/mp3"
 )
 
 const (
@@ -194,4 +199,31 @@ func GetFFMPEGCommand() string {
 	}
 
 	return cmdPath
+}
+
+func ReadSecondsFromMusicFile(musicPath string) (int, error) {
+	t := 0.0
+
+	r, err := os.Open(musicPath)
+	if err != nil {
+		return 0, err
+	}
+
+	d := mp3.NewDecoder(r)
+	var f mp3.Frame
+	skipped := 0
+
+	for {
+		if err := d.Decode(&f, &skipped); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return 0, err
+		}
+
+		t = t + f.Duration().Seconds()
+	}
+
+	correctedT := math.Ceil(t)
+	return int(correctedT), nil
 }

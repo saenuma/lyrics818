@@ -10,6 +10,7 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/saenuma/zazabul v1.1.4
+	github.com/tcolgate/mp3 v0.0.0-20170426193717-e79c5a46d300
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 )
 

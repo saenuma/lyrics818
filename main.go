@@ -5,12 +5,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	color2 "github.com/gookit/color"
 	"github.com/saenuma/lyrics818/l8_shared"
-	"github.com/saenuma/lyrics818/lyrics"
-	"github.com/saenuma/lyrics818/slideshow"
 	"github.com/saenuma/zazabul"
 )
 
@@ -184,55 +183,57 @@ music_file:
 		}
 
 		outName := "s" + time.Now().Format("20060102T150405")
-		totalSeconds := l8_shared.TimeFormatToSeconds(conf.Get("total_length"))
+
+		fullMp3Path := filepath.Join(rootPath, conf.Get("music_file"))
+		if !strings.HasSuffix(fullMp3Path, ".mp3") {
+			color2.Red.Println("Expecting an mp3 file in 'music_file'")
+			os.Exit(1)
+		}
+
+		totalSeconds, err := l8_shared.ReadSecondsFromMusicFile(fullMp3Path)
+		if err != nil {
+			panic(err)
+		}
+
 		renderPath := filepath.Join(rootPath, outName)
 		os.MkdirAll(renderPath, 0777)
 
 		command := l8_shared.GetFFMPEGCommand()
 
-		if conf.Get("pictures_dir") != "" {
-			if conf.Get("method") == "1" {
-				outName = slideshow.Method1(conf)
-			} else if conf.Get("method") == "2" {
-				outName = slideshow.Method2(conf)
-			}
+		if strings.HasPrefix(confPath, "m1_") {
+			// run method 1
+			Method1(outName, totalSeconds, renderPath, conf)
+		} else if strings.HasPrefix(confPath, "m2_") {
+			// run method 2
+			// outName = Method3(conf)
 
-			fmt.Println("Finished generating frames.")
-
-			out, err := exec.Command(command, "-framerate", "60", "-i", filepath.Join(rootPath, outName, "%d.png"),
+		} else if strings.HasPrefix(confPath, "m3_") {
+			// run method 3
+			MakeSlideshowFrames(outName, totalSeconds, renderPath, conf)
+			out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(rootPath, outName, "%d.png"),
 				"-pix_fmt", "yuv420p",
-				filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
+				filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
 			if err != nil {
 				fmt.Println(string(out))
 				panic(err)
 			}
-
-			os.RemoveAll(filepath.Join(rootPath, outName))
-			color2.Green.Println("View the generated video at: ", filepath.Join(rootPath, outName+".mp4"))
-
 		} else {
-			if filepath.Ext(conf.Get("background_file")) == ".png" {
-				lyrics.ImageMethod(outName, totalSeconds, renderPath, conf)
-			} else if filepath.Ext(conf.Get("background_file")) == ".mp4" {
-				lyrics.VideoMethod(outName, totalSeconds, renderPath, conf)
-			} else {
-				color2.Red.Println("Unsupported backround_file format: must be .png or .mp4")
-				os.Exit(1)
-			}
-
-			out, err := exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
-				"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
-				filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
-			if err != nil {
-				fmt.Println(string(out))
-				panic(err)
-			}
-
-			// clearing temporary files
-			os.RemoveAll(renderPath)
-
-			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
+			color2.Red.Println("Invalid lyrics818 config file")
+			os.Exit(1)
 		}
+
+		out, err := exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
+			"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
+			filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
+		if err != nil {
+			fmt.Println(string(out))
+			panic(err)
+		}
+
+		// clearing temporary files
+		os.RemoveAll(renderPath)
+
+		color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
 
 	default:
 		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
