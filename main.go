@@ -38,10 +38,13 @@ Directory Commands:
           in this cli program must reside.
 
 Main Commands:
-  initly  Creates a config file describing your lyrics video. Edit to your own requirements.
-          The file from 'init' is expected for the 'run' command.
+  init1   Method 1 creates a lyric video config file for a single image background.
+          Edit to your own requirements.
 
-  initsl  Initialize Slideshow Video. Creates a config file describing your video.
+  init2   Method 2 creates a lyric video config file for multiple image backgrounds.
+          Edit to your own requirements.
+
+  init3   Method 3 creates a song video for multiple image backrounds without lyrics.
           Edit to your own requirements.
 
   run     Renders a project with the config created above. It expects a a config file generated from
@@ -53,7 +56,7 @@ Main Commands:
 	case "pwd":
 		fmt.Println(rootPath)
 
-	case "initly":
+	case "init1":
 		var tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
 // a sample can be found at https://sae.ng/static/bmtf.txt
 lyrics_file:
@@ -68,21 +71,17 @@ lyrics_color: #666666
 
 
 // background_file is the background that would be used for this lyric video.
-// the background_file must be a png or an mp4
+// the background_file must be a png
 // the background_file must be of dimensions (1366px x 768px)
-// the framerate must be 60fps
-// the length of the video must match the length of the song
-// you can generate an mp4 from videos229
 background_file:
 
-// total_length: The duration of the songs in this format (mm:ss)
-total_length:
-
 // music_file is the song to add its audio to the video.
+// lyrics818 expects a mp3 music file
+// the music_file determines the duration of the video.
 music_file:
 
   	`
-		configFileName := "s" + time.Now().Format("20060102T150405") + ".zconf"
+		configFileName := "m1_" + time.Now().Format("20060102T150405") + ".zconf"
 		writePath := filepath.Join(rootPath, configFileName)
 
 		conf, err := zazabul.ParseConfig(tmplOfMethod1)
@@ -97,25 +96,59 @@ music_file:
 
 		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
 
-	case "initsl":
-		var tmplOfMethod1 = `// background_color is the color of the background image. Example is #af1382
-background_color: #ffffff
+	case "init2":
+		var tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
+// a sample can be found at https://sae.ng/static/bmtf.txt
+lyrics_file:
+
+
+// the font_file is the file of a ttf font that the text would be printed with.
+// you could find a font on https://fonts.google.com
+font_file:
+
+// lyrics_color is the color of the rendered lyric. Example is #af1382
+lyrics_color: #666666
 
 // The directory containing the pictures for a slideshow. It must be stored in the working directory
-// of videos229.
+// of lyrics818.
+// All pictures here must be of width 1366px and height 768px
+// the background_files must be png
+pictures_dir:
+
+// music_file is the song to add its audio to the video.
+// lyrics818 expects a mp3 music file
+// the music_file determines the duration of the video.
+music_file:
+
+  	`
+		configFileName := "m2_" + time.Now().Format("20060102T150405") + ".zconf"
+		writePath := filepath.Join(rootPath, configFileName)
+
+		conf, err := zazabul.ParseConfig(tmplOfMethod1)
+		if err != nil {
+			panic(err)
+		}
+
+		err = conf.Write(writePath)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
+
+	case "init3":
+		var tmplOfMethod1 = `// The directory containing the pictures for a slideshow. It must be stored in the working directory
+// of lyrics818.
 // All pictures here must be of width 1366px and height 768px
 pictures_dir:
 
-// video_length is the length of the output video in this format (mm:ss)
-video_length:
-
-// method. The method are in numbers. Allowed values are 1
-// 1: for immediate appearance slideshow
-// 2: for fade in slideshow
-method: 1
+// music_file is the song to add its audio to the video.
+// lyrics818 expects a mp3 music file
+// the music_file determines the duration of the video.
+music_file:
 
   	`
-		configFileName := "s" + time.Now().Format("20060102T150405") + ".zconf"
+		configFileName := "m3_" + time.Now().Format("20060102T150405") + ".zconf"
 		writePath := filepath.Join(rootPath, configFileName)
 
 		conf, err := zazabul.ParseConfig(tmplOfMethod1)
