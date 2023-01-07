@@ -15,7 +15,7 @@ import (
 )
 
 // immediate appearance slideshow method
-func MakeSlideshowFrames(outName string, totalSeconds int, renderPath string, conf zazabul.Config) string {
+func MakeSlideshowFrames(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
 	rootPath, _ := l8_shared.GetRootPath()
 
 	fullPicsPath := filepath.Join(rootPath, conf.Get("pictures_dir"))
@@ -89,7 +89,5 @@ func MakeSlideshowFrames(outName string, totalSeconds int, renderPath string, co
 		}
 
 	}
-
-	return outName
 
 }

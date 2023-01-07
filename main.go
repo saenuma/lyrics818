@@ -205,7 +205,7 @@ music_file:
 			Method1(outName, totalSeconds, renderPath, conf)
 		} else if strings.HasPrefix(confPath, "m2_") {
 			// run method 2
-			// outName = Method3(conf)
+			Method2(outName, totalSeconds, renderPath, conf)
 
 		} else if strings.HasPrefix(confPath, "m3_") {
 			// run method 3
