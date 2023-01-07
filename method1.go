@@ -17,17 +17,16 @@ import (
 	"github.com/golang/freetype"
 	color2 "github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
-	"github.com/saenuma/lyrics818/l8_shared"
 	"github.com/saenuma/zazabul"
 	"golang.org/x/image/font"
 )
 
 func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
 	numberOfCPUS := runtime.NumCPU()
-	rootPath, _ := l8_shared.GetRootPath()
-	lyricsObject := l8_shared.ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
+	rootPath, _ := GetRootPath()
+	lyricsObject := ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
-	err := l8_shared.ValidateLyrics(conf, lyricsObject)
+	err := ValidateLyrics(conf, lyricsObject)
 	if err != nil {
 		color2.Red.Println(err)
 		os.Exit(1)
@@ -81,7 +80,7 @@ func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.C
 
 	color2.Green.Println("Completed generating frames of your lyrics video")
 
-	command := l8_shared.GetFFMPEGCommand()
+	command := GetFFMPEGCommand()
 
 	out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
 		"-pix_fmt", "yuv420p",
@@ -102,7 +101,7 @@ func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {
 }
 
 func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
-	rootPath, _ := l8_shared.GetRootPath()
+	rootPath, _ := GetRootPath()
 
 	fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
 	if err != nil {
@@ -129,9 +128,9 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
 	}
 
 	c := freetype.NewContext()
-	c.SetDPI(l8_shared.DPI)
+	c.SetDPI(DPI)
 	c.SetFont(fontParsed)
-	c.SetFontSize(l8_shared.SIZE)
+	c.SetFontSize(SIZE)
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
 	c.SetSrc(fg)
@@ -141,18 +140,18 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := l8_shared.WordWrap(conf, txt, 1366-130)
+		wrappedTxts := WordWrap(conf, txt, 1366-130)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 
 	// Draw the text.
-	pt := freetype.Pt(80, 50+int(c.PointToFixed(l8_shared.SIZE)>>6))
+	pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
 	for _, s := range finalTexts {
 		_, err = c.DrawString(s, pt)
 		if err != nil {
 			panic(err)
 		}
-		pt.Y += c.PointToFixed(l8_shared.SIZE * l8_shared.SPACING)
+		pt.Y += c.PointToFixed(SIZE * SPACING)
 	}
 
 	return img

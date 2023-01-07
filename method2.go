@@ -18,24 +18,23 @@ import (
 	color2 "github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/otiai10/copy"
-	"github.com/saenuma/lyrics818/l8_shared"
 	"github.com/saenuma/zazabul"
 	"golang.org/x/image/font"
 )
 
 // Lyrics  Video Upon Slideshow
 func Method2(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
-	rootPath, _ := l8_shared.GetRootPath()
+	rootPath, _ := GetRootPath()
 
-	lyricsObject := l8_shared.ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
+	lyricsObject := ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
-	err := l8_shared.ValidateLyrics(conf, lyricsObject)
+	err := ValidateLyrics(conf, lyricsObject)
 	if err != nil {
 		color2.Red.Println(err)
 		os.Exit(1)
 	}
 
-	command := l8_shared.GetFFMPEGCommand()
+	command := GetFFMPEGCommand()
 
 	framesPath := filepath.Join(rootPath, "frames_"+outName)
 	os.MkdirAll(framesPath, 0777)
@@ -112,7 +111,7 @@ func Method2(outName string, totalSeconds int, renderPath string, conf zazabul.C
 }
 
 func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) image.Image {
-	rootPath, err := l8_shared.GetRootPath()
+	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
@@ -139,9 +138,9 @@ func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) i
 	}
 
 	c := freetype.NewContext()
-	c.SetDPI(l8_shared.DPI)
+	c.SetDPI(DPI)
 	c.SetFont(fontParsed)
-	c.SetFontSize(l8_shared.SIZE)
+	c.SetFontSize(SIZE)
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
 	c.SetSrc(fg)
@@ -151,18 +150,18 @@ func writeLyricsToVideoFrame(conf zazabul.Config, text, videoFramePath string) i
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := l8_shared.WordWrap(conf, txt, 1366-130)
+		wrappedTxts := WordWrap(conf, txt, 1366-130)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 
 	// Draw the text.
-	pt := freetype.Pt(80, 50+int(c.PointToFixed(l8_shared.SIZE)>>6))
+	pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
 	for _, s := range finalTexts {
 		_, err = c.DrawString(s, pt)
 		if err != nil {
 			panic(err)
 		}
-		pt.Y += c.PointToFixed(l8_shared.SIZE * l8_shared.SPACING)
+		pt.Y += c.PointToFixed(SIZE * SPACING)
 	}
 
 	return img

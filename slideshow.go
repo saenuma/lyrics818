@@ -10,16 +10,15 @@ import (
 
 	"github.com/disintegration/imaging"
 	color2 "github.com/gookit/color"
-	"github.com/saenuma/lyrics818/l8_shared"
 	"github.com/saenuma/zazabul"
 )
 
 // immediate appearance slideshow method
 func MakeSlideshowFrames(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
-	rootPath, _ := l8_shared.GetRootPath()
+	rootPath, _ := GetRootPath()
 
 	fullPicsPath := filepath.Join(rootPath, conf.Get("pictures_dir"))
-	if !l8_shared.DoesPathExists(fullPicsPath) {
+	if !DoesPathExists(fullPicsPath) {
 		color2.Red.Printf("The pictures folder '%s' does not exist.\n Exiting.\n", fullPicsPath)
 		os.Exit(1)
 	}

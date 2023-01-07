@@ -9,7 +9,6 @@ import (
 	"time"
 
 	color2 "github.com/gookit/color"
-	"github.com/saenuma/lyrics818/l8_shared"
 	"github.com/saenuma/zazabul"
 )
 
@@ -17,7 +16,7 @@ const VersionFormat = "20060102T150405MST"
 
 func main() {
 
-	rootPath, err := l8_shared.GetRootPath()
+	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
@@ -190,7 +189,7 @@ music_file:
 			os.Exit(1)
 		}
 
-		totalSeconds, err := l8_shared.ReadSecondsFromMusicFile(fullMp3Path)
+		totalSeconds, err := ReadSecondsFromMusicFile(fullMp3Path)
 		if err != nil {
 			panic(err)
 		}
@@ -198,7 +197,7 @@ music_file:
 		renderPath := filepath.Join(rootPath, outName)
 		os.MkdirAll(renderPath, 0777)
 
-		command := l8_shared.GetFFMPEGCommand()
+		command := GetFFMPEGCommand()
 
 		if strings.HasPrefix(confPath, "m1_") {
 			// run method 1
