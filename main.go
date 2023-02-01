@@ -42,9 +42,6 @@ Main Commands:
   init2   Method 2 creates a lyric video config file for multiple image backgrounds.
           Edit to your own requirements.
 
-  init3   Method 3 creates a song video for multiple image backrounds without lyrics.
-          Edit to your own requirements.
-
   run     Renders a project with the config created above. It expects a a config file generated from
           'init' command above.
           All files must be placed in the working directory.
@@ -134,33 +131,6 @@ music_file:
 
 		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
 
-	case "init3":
-		var tmplOfMethod1 = `// The directory containing the pictures for a slideshow. It must be stored in the working directory
-// of lyrics818.
-// All pictures here must be of width 1366px and height 768px
-pictures_dir:
-
-// music_file is the song to add its audio to the video.
-// lyrics818 expects a mp3 music file
-// the music_file determines the duration of the video.
-music_file:
-
-  	`
-		configFileName := "m3_" + time.Now().Format("20060102T150405") + ".zconf"
-		writePath := filepath.Join(rootPath, configFileName)
-
-		conf, err := zazabul.ParseConfig(tmplOfMethod1)
-		if err != nil {
-			panic(err)
-		}
-
-		err = conf.Write(writePath)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
-
 	case "run":
 		if len(os.Args) != 3 {
 			color2.Red.Println("The run command expects a file created by the init command")
@@ -205,17 +175,6 @@ music_file:
 		} else if strings.HasPrefix(confPath, "m2_") {
 			// run method 2
 			Method2(outName, totalSeconds, renderPath, conf)
-
-		} else if strings.HasPrefix(confPath, "m3_") {
-			// run method 3
-			MakeSlideshowFrames(outName, totalSeconds, renderPath, conf)
-			out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(rootPath, outName, "%d.png"),
-				"-pix_fmt", "yuv420p",
-				filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
-			if err != nil {
-				fmt.Println(string(out))
-				panic(err)
-			}
 		} else {
 			color2.Red.Println("Invalid lyrics818 config file")
 			os.Exit(1)
