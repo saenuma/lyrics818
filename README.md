@@ -2,9 +2,10 @@
 
 a terminal program to create a lyrics video
 
-## Sample Video created with Lyrics818
+## Installation Instructions on Linux
+1.  Install with `sudo snap install lyrics818`
 
-(lyrics818_demo)[https://storage.googleapis.com/pandolee/lyrics818_demo.mp4]
+1.  Start using with `lyrics818 --help`
 
 ## License
 
