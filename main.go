@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bankole7782/videos117/v117f"
 	color2 "github.com/gookit/color"
 	"github.com/saenuma/zazabul"
 )
@@ -36,13 +37,12 @@ Directory Commands:
           in this cli program must reside.
 
 Main Commands:
-  init1   Method 1 creates a lyric video config file for a single image background.
+  init1   init1 creates a lyric video config file for a single image background and would produce
+          an mp4 file.
           Edit to your own requirements.
 
-  init2   Method 2 creates a lyric video config file for multiple image backgrounds.
-          Edit to your own requirements.
-
-  init3   Method 3 creates a song video for multiple image backrounds without lyrics.
+  init2   init1 creates a lyric video config file for a single image background and would produce
+          an v117 file.
           Edit to your own requirements.
 
   run     Renders a project with the config created above. It expects a a config file generated from
@@ -95,7 +95,7 @@ music_file:
 		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
 
 	case "init2":
-		var tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
+		var tmplOfMethod2 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
 // a sample can be found at https://sae.ng/static/bmtf.txt
 lyrics_file:
 
@@ -107,11 +107,15 @@ font_file:
 // lyrics_color is the color of the rendered lyric. Example is #af1382
 lyrics_color: #666666
 
-// The directory containing the pictures for a slideshow. It must be stored in the working directory
-// of lyrics818.
-// All pictures here must be of width 1366px and height 768px
-// the background_files must be png
-pictures_dir:
+// background_file is the background that would be used for this lyric video.
+// the background_file must be a png
+// the background_file must be of dimensions (1366px x 768px)
+laptop_background_file:
+
+// background_file is the background that would be used for this lyric video.
+// the background_file must be a png
+// the background_file must be of dimensions (400px x 600px)
+mobile_background_file:
 
 // music_file is the song to add its audio to the video.
 // lyrics818 expects a mp3 music file
@@ -122,34 +126,7 @@ music_file:
 		configFileName := "m2_" + time.Now().Format("20060102T150405") + ".zconf"
 		writePath := filepath.Join(rootPath, configFileName)
 
-		conf, err := zazabul.ParseConfig(tmplOfMethod1)
-		if err != nil {
-			panic(err)
-		}
-
-		err = conf.Write(writePath)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
-
-	case "init3":
-		var tmplOfMethod1 = `// The directory containing the pictures for a slideshow. It must be stored in the working directory
-// of lyrics818.
-// All pictures here must be of width 1366px and height 768px
-pictures_dir:
-
-// music_file is the song to add its audio to the video.
-// lyrics818 expects a mp3 music file
-// the music_file determines the duration of the video.
-music_file:
-
-  	`
-		configFileName := "m3_" + time.Now().Format("20060102T150405") + ".zconf"
-		writePath := filepath.Join(rootPath, configFileName)
-
-		conf, err := zazabul.ParseConfig(tmplOfMethod1)
+		conf, err := zazabul.ParseConfig(tmplOfMethod2)
 		if err != nil {
 			panic(err)
 		}
@@ -167,7 +144,8 @@ music_file:
 			os.Exit(1)
 		}
 
-		confPath := filepath.Join(rootPath, os.Args[2])
+		confFileName := os.Args[2]
+		confPath := filepath.Join(rootPath, confFileName)
 
 		conf, err := zazabul.LoadConfigFile(confPath)
 		if err != nil {
@@ -181,7 +159,7 @@ music_file:
 			}
 		}
 
-		outName := "s" + time.Now().Format("20060102T150405")
+		outName := "frames_" + time.Now().Format("20060102T150405")
 
 		fullMp3Path := filepath.Join(rootPath, conf.Get("music_file"))
 		if !strings.HasSuffix(fullMp3Path, ".mp3") {
@@ -194,45 +172,62 @@ music_file:
 			panic(err)
 		}
 
-		renderPath := filepath.Join(rootPath, outName)
-		os.MkdirAll(renderPath, 0777)
+		if strings.HasPrefix(confFileName, "m1_") {
+			renderPath := filepath.Join(rootPath, outName)
+			os.MkdirAll(renderPath, 0777)
 
-		command := GetFFMPEGCommand()
+			command := GetFFMPEGCommand()
 
-		if strings.HasPrefix(confPath, "m1_") {
-			// run method 1
-			Method1(outName, totalSeconds, renderPath, conf)
-		} else if strings.HasPrefix(confPath, "m2_") {
-			// run method 2
-			Method2(outName, totalSeconds, renderPath, conf)
+			makeLaptopFrames(outName, totalSeconds, renderPath, conf)
 
-		} else if strings.HasPrefix(confPath, "m3_") {
-			// run method 3
-			MakeSlideshowFrames(outName, totalSeconds, renderPath, conf)
-			out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(rootPath, outName, "%d.png"),
+			// make video from laptop frames
+			out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
 				"-pix_fmt", "yuv420p",
 				filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
 			if err != nil {
 				fmt.Println(string(out))
 				panic(err)
 			}
+
+			// join audio to video
+			out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
+				"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
+				filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
+			if err != nil {
+				fmt.Println(string(out))
+				panic(err)
+			}
+
+			// clearing temporary files
+			os.RemoveAll(renderPath)
+
+			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
+
 		} else {
-			color2.Red.Println("Invalid lyrics818 config file")
-			os.Exit(1)
+
+			laptopOutName := "frames_" + time.Now().Format("20060102T150405")
+			mobileOutName := "frames_" + time.Now().Format("20060102T150405")
+			lrenderPath := filepath.Join(rootPath, laptopOutName)
+			os.MkdirAll(lrenderPath, 0777)
+			mrenderPath := filepath.Join(rootPath, mobileOutName)
+			os.MkdirAll(mrenderPath, 0777)
+
+			makeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, conf)
+			makeMobileFrames(mobileOutName, totalSeconds, mrenderPath, conf)
+
+			outName := "video_" + time.Now().Format("20060102T150405") + ".v117"
+			fullOutPath := filepath.Join(rootPath, outName)
+			err = v117f.MakeV117(lrenderPath, mrenderPath, fullMp3Path, map[string]string{"framerate": "24"},
+				rootPath, fullOutPath)
+			if err != nil {
+				panic(err)
+			}
+			os.RemoveAll(lrenderPath)
+			os.RemoveAll(mrenderPath)
+
+			color2.Green.Println("The video has been generated into: ", fullOutPath)
+
 		}
-
-		out, err := exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
-			"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
-			filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
-		if err != nil {
-			fmt.Println(string(out))
-			panic(err)
-		}
-
-		// clearing temporary files
-		os.RemoveAll(renderPath)
-
-		color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
 
 	default:
 		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")

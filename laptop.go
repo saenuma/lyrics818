@@ -6,7 +6,6 @@ import (
 	"image/draw"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -15,18 +14,60 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
 	color2 "github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/pkg/errors"
 	"github.com/saenuma/zazabul"
 	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
-func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
+const (
+	LAPTOP_WIDTH  = 1366
+	LAPTOP_HEIGHT = 768
+)
+
+func validateLyricsLaptop(conf zazabul.Config, lyricsObject map[int]string) error {
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return err
+	}
+	fullMp3Path := filepath.Join(rootPath, conf.Get("music_file"))
+	if !strings.HasSuffix(fullMp3Path, ".mp3") {
+		return errors.New("expecting an mp3 file in 'music_file'")
+	}
+	totalSeconds, err := ReadSecondsFromMusicFile(fullMp3Path)
+	if err != nil {
+		return err
+	}
+
+	// validate the length of a page of lyrics
+	for i := 1; i < totalSeconds; i++ {
+		text := lyricsObject[i]
+		texts := strings.Split(text, "\n")
+
+		finalTexts := make([]string, 0)
+		for _, txt := range texts {
+			wrappedTxts := wordWrapLaptop(conf, txt, 1366-130)
+			finalTexts = append(finalTexts, wrappedTxts...)
+		}
+
+		if len(finalTexts) > 7 {
+			return errors.New(fmt.Sprintf("Shorten the following text for it to fit this video:\n%s",
+				text))
+		}
+	}
+
+	return nil
+}
+
+func makeLaptopFrames(outName string, totalSeconds int, renderPath string, conf zazabul.Config) {
 	numberOfCPUS := runtime.NumCPU()
 	rootPath, _ := GetRootPath()
 	lyricsObject := ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 
-	err := ValidateLyrics(conf, lyricsObject)
+	err := validateLyricsLaptop(conf, lyricsObject)
 	if err != nil {
 		color2.Red.Println(err)
 		os.Exit(1)
@@ -48,7 +89,7 @@ func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.C
 			for seconds := startSeconds; seconds < endSeconds; seconds++ {
 				txt := lyricsObject[seconds]
 				if txt == "" {
-					img, err := imaging.Open(filepath.Join(rootPath, conf.Get("background_file")))
+					img, err := imaging.Open(filepath.Join(rootPath, conf.Get("laptop_background_file")))
 					if err != nil {
 						panic(err)
 					}
@@ -67,7 +108,7 @@ func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.C
 	for seconds := (jobsPerThread * numberOfCPUS); seconds < totalSeconds; seconds++ {
 		txt := lyricsObject[seconds]
 		if txt == "" {
-			img, err := imaging.Open(filepath.Join(rootPath, conf.Get("background_file")))
+			img, err := imaging.Open(filepath.Join(rootPath, conf.Get("laptop_background_file")))
 			if err != nil {
 				panic(err)
 			}
@@ -79,17 +120,55 @@ func Method1(outName string, totalSeconds int, renderPath string, conf zazabul.C
 	}
 
 	color2.Green.Println("Completed generating frames of your lyrics video")
+}
 
-	command := GetFFMPEGCommand()
+func wordWrapLaptop(conf zazabul.Config, text string, writeWidth int) []string {
+	rootPath, _ := GetRootPath()
 
-	out, err := exec.Command(command, "-framerate", "24", "-i", filepath.Join(renderPath, "%d.png"),
-		"-pix_fmt", "yuv420p",
-		filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
+	rgba := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
+
+	fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
 	if err != nil {
-		fmt.Println(string(out))
+		panic(err)
+	}
+	fontParsed, err := freetype.ParseFont(fontBytes)
+	if err != nil {
 		panic(err)
 	}
 
+	fontDrawer := &font.Drawer{
+		Dst: rgba,
+		Src: image.Black,
+		Face: truetype.NewFace(fontParsed, &truetype.Options{
+			Size:    SIZE,
+			DPI:     DPI,
+			Hinting: font.HintingNone,
+		}),
+	}
+
+	widthFixed := fixed.I(writeWidth)
+
+	strs := strings.Fields(text)
+	outStrs := make([]string, 0)
+	var tmpStr string
+	for i, oneStr := range strs {
+		var aStr string
+		if i == 0 {
+			aStr = oneStr
+		} else {
+			aStr += " " + oneStr
+		}
+
+		tmpStr += aStr
+		if fontDrawer.MeasureString(tmpStr) >= widthFixed {
+			outStr := tmpStr[:len(tmpStr)-len(aStr)]
+			tmpStr = oneStr
+			outStrs = append(outStrs, outStr)
+		}
+	}
+	outStrs = append(outStrs, tmpStr)
+
+	return outStrs
 }
 
 func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {
@@ -103,7 +182,7 @@ func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {
 func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
 	rootPath, _ := GetRootPath()
 
-	fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("background_file")))
+	fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("laptop_background_file")))
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +219,7 @@ func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := WordWrap(conf, txt, 1366-130)
+		wrappedTxts := wordWrapLaptop(conf, txt, LAPTOP_WIDTH-130)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 

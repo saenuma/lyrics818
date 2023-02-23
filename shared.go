@@ -1,23 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"os"
 
-	"image"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"io"
 
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
 	"github.com/pkg/errors"
-	"github.com/saenuma/zazabul"
-	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
 
 	"github.com/tcolgate/mp3"
 )
@@ -107,78 +100,6 @@ func ParseLyricsFile(inPath string, totalSeconds int) map[int]string {
 	}
 
 	return retObj
-}
-
-func ValidateLyrics(conf zazabul.Config, lyricsObject map[int]string) error {
-	totalSeconds := TimeFormatToSeconds(conf.Get("total_length"))
-
-	// validate the length of a page of lyrics
-	for i := 1; i < totalSeconds; i++ {
-		text := lyricsObject[i]
-		texts := strings.Split(text, "\n")
-
-		finalTexts := make([]string, 0)
-		for _, txt := range texts {
-			wrappedTxts := WordWrap(conf, txt, 1366-130)
-			finalTexts = append(finalTexts, wrappedTxts...)
-		}
-
-		if len(finalTexts) > 7 {
-			return errors.New(fmt.Sprintf("Shorten the following text for it to fit this video:\n%s",
-				text))
-		}
-	}
-
-	return nil
-}
-
-func WordWrap(conf zazabul.Config, text string, writeWidth int) []string {
-	rootPath, _ := GetRootPath()
-
-	rgba := image.NewRGBA(image.Rect(0, 0, 1366, 768))
-
-	fontBytes, err := os.ReadFile(filepath.Join(rootPath, conf.Get("font_file")))
-	if err != nil {
-		panic(err)
-	}
-	fontParsed, err := freetype.ParseFont(fontBytes)
-	if err != nil {
-		panic(err)
-	}
-
-	fontDrawer := &font.Drawer{
-		Dst: rgba,
-		Src: image.Black,
-		Face: truetype.NewFace(fontParsed, &truetype.Options{
-			Size:    SIZE,
-			DPI:     DPI,
-			Hinting: font.HintingNone,
-		}),
-	}
-
-	widthFixed := fixed.I(writeWidth)
-
-	strs := strings.Fields(text)
-	outStrs := make([]string, 0)
-	var tmpStr string
-	for i, oneStr := range strs {
-		var aStr string
-		if i == 0 {
-			aStr = oneStr
-		} else {
-			aStr += " " + oneStr
-		}
-
-		tmpStr += aStr
-		if fontDrawer.MeasureString(tmpStr) >= widthFixed {
-			outStr := tmpStr[:len(tmpStr)-len(aStr)]
-			tmpStr = oneStr
-			outStrs = append(outStrs, outStr)
-		}
-	}
-	outStrs = append(outStrs, tmpStr)
-
-	return outStrs
 }
 
 func FindIn(container []int, elem int) int {
