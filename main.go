@@ -205,8 +205,8 @@ music_file:
 
 		} else {
 
-			laptopOutName := "frames_" + time.Now().Format("20060102T150405")
-			mobileOutName := "frames_" + time.Now().Format("20060102T150405")
+			laptopOutName := "lframes_" + time.Now().Format("20060102T150405")
+			mobileOutName := "mframes_" + time.Now().Format("20060102T150405")
 			lrenderPath := filepath.Join(rootPath, laptopOutName)
 			os.MkdirAll(lrenderPath, 0777)
 			mrenderPath := filepath.Join(rootPath, mobileOutName)
@@ -222,8 +222,8 @@ music_file:
 			if err != nil {
 				panic(err)
 			}
-			os.RemoveAll(lrenderPath)
-			os.RemoveAll(mrenderPath)
+			// os.RemoveAll(lrenderPath)
+			// os.RemoveAll(mrenderPath)
 
 			color2.Green.Println("The video has been generated into: ", fullOutPath)
 
