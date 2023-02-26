@@ -3,7 +3,6 @@ module github.com/saenuma/lyrics818
 go 1.17
 
 require (
-	github.com/bankole7782/videos117/v117f v0.0.0-20230223001056-09896126db66
 	github.com/disintegration/imaging v1.6.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gookit/color v1.5.2
