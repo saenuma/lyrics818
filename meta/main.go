@@ -28,7 +28,7 @@ func main() {
 	case "--help", "help", "h":
 		fmt.Println(`lyrics818.meta is a terminal program that updates the metadata of a album folder
 that contains songs encoded in l8f format.
-The album art should be called 'art.png' and stored in the folder of an album.
+The album art should be called 'art.png' and stored in the folder of an album after running this program.
 
 Directory Commands:
   pwd     Print working directory. This is the directory where the files needed by any command
