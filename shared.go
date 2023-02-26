@@ -111,17 +111,6 @@ func FindIn(container []int, elem int) int {
 	return -1
 }
 
-func GetFFMPEGCommand() string {
-	var cmdPath string
-	begin := os.Getenv("SNAP")
-	cmdPath = "ffmpeg"
-	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
-	}
-
-	return cmdPath
-}
-
 func ReadSecondsFromMusicFile(musicPath string) (int, error) {
 	t := 0.0
 
