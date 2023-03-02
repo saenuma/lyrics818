@@ -109,7 +109,6 @@ class:
 		for _, item := range conf.Items {
 			tagsMap[item.Name] = item.Value
 		}
-		tagsMap["framerate"] = "24"
 
 		fullFolderPath := filepath.Join(rootPath, os.Args[3])
 		dirFIs, err := os.ReadDir(fullFolderPath)

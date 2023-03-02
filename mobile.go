@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -92,10 +93,12 @@ func makeMobileFrames(outName string, totalSeconds int, renderPath string, conf 
 					if err != nil {
 						panic(err)
 					}
-					writeManyImagesToDisk(img, renderPath, seconds)
+					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+					imaging.Save(img, outPath)
 				} else {
 					img := writeLyricsToImageMobile(conf, lyricsObject[seconds])
-					writeManyImagesToDisk(img, renderPath, seconds)
+					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+					imaging.Save(img, outPath)
 				}
 
 			}
@@ -111,10 +114,12 @@ func makeMobileFrames(outName string, totalSeconds int, renderPath string, conf 
 			if err != nil {
 				panic(err)
 			}
-			writeManyImagesToDisk(img, renderPath, seconds)
+			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+			imaging.Save(img, outPath)
 		} else {
 			img := writeLyricsToImageMobile(conf, lyricsObject[seconds])
-			writeManyImagesToDisk(img, renderPath, seconds)
+			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+			imaging.Save(img, outPath)
 		}
 	}
 

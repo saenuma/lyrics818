@@ -93,10 +93,13 @@ func makeLaptopFrames(outName string, totalSeconds int, renderPath string, conf 
 					if err != nil {
 						panic(err)
 					}
-					writeManyImagesToDisk(img, renderPath, seconds)
+					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+					imaging.Save(img, outPath)
 				} else {
 					img := writeLyricsToImage(conf, lyricsObject[seconds])
-					writeManyImagesToDisk(img, renderPath, seconds)
+					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+					imaging.Save(img, outPath)
+
 				}
 
 			}
@@ -112,10 +115,12 @@ func makeLaptopFrames(outName string, totalSeconds int, renderPath string, conf 
 			if err != nil {
 				panic(err)
 			}
-			writeManyImagesToDisk(img, renderPath, seconds)
+			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+			imaging.Save(img, outPath)
 		} else {
 			img := writeLyricsToImage(conf, lyricsObject[seconds])
-			writeManyImagesToDisk(img, renderPath, seconds)
+			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+			imaging.Save(img, outPath)
 		}
 	}
 
@@ -169,14 +174,6 @@ func wordWrapLaptop(conf zazabul.Config, text string, writeWidth int) []string {
 	outStrs = append(outStrs, tmpStr)
 
 	return outStrs
-}
-
-func writeManyImagesToDisk(img image.Image, renderPath string, seconds int) {
-	for i := 1; i <= 24; i++ {
-		out := (24 * seconds) + i
-		outPath := filepath.Join(renderPath, strconv.Itoa(out)+".png")
-		imaging.Save(img, outPath)
-	}
 }
 
 func writeLyricsToImage(conf zazabul.Config, text string) image.Image {
