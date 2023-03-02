@@ -133,10 +133,6 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 		}
 	}
 
-	if _, ok := meta["framerate"]; !ok {
-		return errors.New("the 'meta' map doesn't contain 'framerate'")
-	}
-
 	laptopLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
 	mobileLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
 
