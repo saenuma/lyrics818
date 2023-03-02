@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image"
 	_ "image/png"
-	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -262,9 +261,9 @@ func ReadAudio(inVideoPath string) ([]byte, error) {
 	return audioBytes, nil
 }
 
-// Read frames for 1 seconds, starting from the 'seconds' parameter
-// 'seconds' parameter starts from 0
-func ReadLaptopFrames(inVideoPath string, seconds int) ([]*image.Image, error) {
+// Read frame for 1 seconds, starting from the 'seconds' parameter
+// 'seconds' parameter starts from 1
+func ReadLaptopFrame(inVideoPath string, seconds int) (*image.Image, error) {
 	vhSize, err := getHeaderLengthFromVideo(inVideoPath)
 	if err != nil {
 		return nil, err
@@ -296,45 +295,33 @@ func ReadLaptopFrames(inVideoPath string, seconds int) ([]*image.Image, error) {
 
 	sort.Ints(allFrames)
 
-	frameRate := vh.Meta["framerate"]
-	frameRateInt, err := strconv.Atoi(frameRate)
+	pointedToFrameNumber := vh.LaptopFrames[seconds]
+
+	// unpack the right frame
+	readFrameOffset := 0
+	toReadSize := 0
+
+	for _, uniqueFrameDetails := range vh.LaptopUniqueFrames {
+		if uniqueFrameDetails[0] == pointedToFrameNumber {
+			toReadSize = int(uniqueFrameDetails[1])
+			break
+		} else {
+			readFrameOffset += int(uniqueFrameDetails[1])
+		}
+	}
+
+	currentFrameBytes := videoBytes[readFrameOffset : readFrameOffset+toReadSize]
+	img, _, err := image.Decode(bytes.NewReader(currentFrameBytes))
 	if err != nil {
-		return nil, errors.Wrap(err, "strconv error")
-	}
-	toRetFrames := allFrames[seconds*frameRateInt : (seconds+1)*frameRateInt]
-
-	images := make([]*image.Image, 0)
-	for _, frameNumber := range toRetFrames {
-		pointedToFrameNumber := vh.LaptopFrames[frameNumber]
-
-		// unpack the right frame
-		readFrameOffset := 0
-		toReadSize := 0
-
-		for _, uniqueFrameDetails := range vh.LaptopUniqueFrames {
-			if uniqueFrameDetails[0] == pointedToFrameNumber {
-				toReadSize = int(uniqueFrameDetails[1])
-				break
-			} else {
-				readFrameOffset += int(uniqueFrameDetails[1])
-			}
-		}
-
-		currentFrameBytes := videoBytes[readFrameOffset : readFrameOffset+toReadSize]
-		img, _, err := image.Decode(bytes.NewReader(currentFrameBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "image error")
-		}
-
-		images = append(images, &img)
+		return nil, errors.Wrap(err, "image error")
 	}
 
-	return images, nil
+	return &img, nil
 }
 
 // Read frames for 1 seconds, starting from the 'seconds' parameter
-// 'seconds' parameter starts from 0
-func ReadMobileFrames(inVideoPath string, seconds int) ([]*image.Image, error) {
+// 'seconds' parameter starts from 1
+func ReadMobileFrames(inVideoPath string, seconds int) (*image.Image, error) {
 	vhSize, err := getHeaderLengthFromVideo(inVideoPath)
 	if err != nil {
 		return nil, err
@@ -366,40 +353,28 @@ func ReadMobileFrames(inVideoPath string, seconds int) ([]*image.Image, error) {
 
 	sort.Ints(allFrames)
 
-	frameRate := vh.Meta["framerate"]
-	frameRateInt, err := strconv.Atoi(frameRate)
+	pointedToFrameNumber := vh.MobileFrames[seconds]
+
+	// unpack the right frame
+	readFrameOffset := 0
+	toReadSize := 0
+
+	for _, uniqueFrameDetails := range vh.MobileUniqueFrames {
+		if uniqueFrameDetails[0] == pointedToFrameNumber {
+			toReadSize = int(uniqueFrameDetails[1])
+			break
+		} else {
+			readFrameOffset += int(uniqueFrameDetails[1])
+		}
+	}
+
+	currentFrameBytes := videoBytes[readFrameOffset : readFrameOffset+toReadSize]
+	img, _, err := image.Decode(bytes.NewReader(currentFrameBytes))
 	if err != nil {
-		return nil, errors.Wrap(err, "strconv error")
-	}
-	toRetFrames := allFrames[seconds*frameRateInt : (seconds+1)*frameRateInt]
-
-	images := make([]*image.Image, 0)
-	for _, frameNumber := range toRetFrames {
-		pointedToFrameNumber := vh.MobileFrames[frameNumber]
-
-		// unpack the right frame
-		readFrameOffset := 0
-		toReadSize := 0
-
-		for _, uniqueFrameDetails := range vh.MobileUniqueFrames {
-			if uniqueFrameDetails[0] == pointedToFrameNumber {
-				toReadSize = int(uniqueFrameDetails[1])
-				break
-			} else {
-				readFrameOffset += int(uniqueFrameDetails[1])
-			}
-		}
-
-		currentFrameBytes := videoBytes[readFrameOffset : readFrameOffset+toReadSize]
-		img, _, err := image.Decode(bytes.NewReader(currentFrameBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "image error")
-		}
-
-		images = append(images, &img)
+		return nil, errors.Wrap(err, "image error")
 	}
 
-	return images, nil
+	return &img, nil
 }
 
 // This checks the length of the video using the frames itself
@@ -417,13 +392,5 @@ func GetVideoLength(inVideoPath string) (int, error) {
 		return 0, err
 	}
 
-	frameRate := vh.Meta["framerate"]
-	frameRateInt, err := strconv.Atoi(frameRate)
-	if err != nil {
-		return 0, errors.Wrap(err, "strconv error")
-	}
-
-	totalSeconds := float64(len(vh.LaptopFrames)) / float64(frameRateInt)
-
-	return int(math.Ceil(totalSeconds)), nil
+	return len(vh.LaptopFrames), nil
 }

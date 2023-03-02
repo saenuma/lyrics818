@@ -16,13 +16,14 @@ The general description looks like this:
 {mobile_frames_lump}
 ```
 
+This format uses a framerate of 1
+
 ### Description of {header} section
 
 The `{header}` section made up of some subsections. It looks like this
 
 ```
 meta:
-framerate: 24
 year: 2022
 ::
 laptop_unique_frames:
@@ -53,7 +54,7 @@ mobile_frames_lump: {mobile_video_size_bytes}
 
 The `{audio}` section takes mp3 data and writes it unparsed to the video format
 
-### Description of the {video} sections
+### Description of the {laptop_frames_lump} / {mobile_frames_lump} sections
 
 The `{video}` section is made up of a lump file of unique frames.
 The unique frames must be of **png** format

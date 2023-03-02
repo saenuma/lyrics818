@@ -274,10 +274,6 @@ func UpdateMeta(inVideoPath string, meta map[string]string, tmpVideoDirectory, o
 		}
 	}
 
-	if _, ok := meta["framerate"]; !ok {
-		return errors.New("the 'meta' map doesn't contain 'framerate'")
-	}
-
 	if !strings.HasSuffix(outFilePath, ".l8f") {
 		return errors.New("The outFilePath must end with '.l8f'")
 	}
