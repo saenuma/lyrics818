@@ -186,10 +186,11 @@ music_file:
 				panic(err)
 			}
 
+			videoFileName := "video_" + time.Now().Format("20060102T150405") + ".mp4"
 			// join audio to video
 			out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
 				"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
-				filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
+				filepath.Join(rootPath, videoFileName)).CombinedOutput()
 			if err != nil {
 				fmt.Println(string(out))
 				panic(err)
@@ -214,7 +215,7 @@ music_file:
 
 			outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
 			fullOutPath := filepath.Join(rootPath, outName)
-			err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{"framerate": "24"},
+			err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, nil,
 				rootPath, fullOutPath)
 			if err != nil {
 				panic(err)
