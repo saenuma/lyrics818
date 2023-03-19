@@ -46,7 +46,7 @@ Main Commands:
           Edit to your own requirements.
 
   run     Renders a project with the config created above. It expects a a config file generated from
-          'init' command above.
+          'init' commands above.
           All files must be placed in the working directory.
 
   			`)
@@ -199,7 +199,7 @@ music_file:
 			// clearing temporary files
 			os.RemoveAll(renderPath)
 
-			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
+			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, videoFileName))
 
 		} else {
 
