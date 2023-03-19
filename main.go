@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -36,8 +37,12 @@ Directory Commands:
           in this cli program must reside.
 
 Main Commands:
-  init    init creates a lyric video config file for a single image background and would produce
-          an l8f file.
+  init1   init1 creates a lyric video config file for a single image background and would produce
+          an mp4 file.
+          Edit to your own requirements.
+
+  init2   init1 creates a lyric video config file for a single image background and would produce
+          an v117 file.
           Edit to your own requirements.
 
   run     Renders a project with the config created above. It expects a a config file generated from
@@ -49,7 +54,44 @@ Main Commands:
 	case "pwd":
 		fmt.Println(rootPath)
 
-	case "init":
+	case "init1":
+		var tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
+// a sample can be found at https://sae.ng/static/bmtf.txt
+lyrics_file:
+
+// the font_file is the file of a ttf font that the text would be printed with.
+// you could find a font on https://fonts.google.com
+font_file:
+
+// lyrics_color is the color of the rendered lyric. Example is #af1382
+lyrics_color: #666666
+
+// laptop_background_file is the background that would be used for this lyric video.
+// the laptop_background_file must be a png
+// the laptop_background_file must be of dimensions (1366px x 768px)
+laptop_background_file:
+
+// music_file is the song to add its audio to the video.
+// lyrics818 expects a mp3 music file
+// the music_file determines the duration of the video.
+music_file:
+  	`
+		configFileName := "m1_" + time.Now().Format("20060102T150405") + ".zconf"
+		writePath := filepath.Join(rootPath, configFileName)
+
+		conf, err := zazabul.ParseConfig(tmplOfMethod1)
+		if err != nil {
+			panic(err)
+		}
+
+		err = conf.Write(writePath)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
+
+	case "init2":
 		var tmplOfMethod2 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
 // a sample can be found at https://sae.ng/static/bmtf.txt
 lyrics_file:
@@ -78,7 +120,7 @@ mobile_background_file:
 music_file:
 
   	`
-		configFileName := "init_" + time.Now().Format("20060102T150405") + ".zconf"
+		configFileName := "m2_" + time.Now().Format("20060102T150405") + ".zconf"
 		writePath := filepath.Join(rootPath, configFileName)
 
 		conf, err := zazabul.ParseConfig(tmplOfMethod2)
@@ -125,27 +167,63 @@ music_file:
 			panic(err)
 		}
 
-		laptopOutName := "lframes_" + time.Now().Format("20060102T150405")
-		mobileOutName := "mframes_" + time.Now().Format("20060102T150405")
-		lrenderPath := filepath.Join(rootPath, laptopOutName)
-		os.MkdirAll(lrenderPath, 0777)
-		mrenderPath := filepath.Join(rootPath, mobileOutName)
-		os.MkdirAll(mrenderPath, 0777)
+		if strings.HasPrefix(confFileName, "m1_") {
+			outName := "frames_" + time.Now().Format("20060102T150405")
 
-		makeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, conf)
-		makeMobileFrames(mobileOutName, totalSeconds, mrenderPath, conf)
+			renderPath := filepath.Join(rootPath, outName)
+			os.MkdirAll(renderPath, 0777)
 
-		outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
-		fullOutPath := filepath.Join(rootPath, outName)
-		err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{"framerate": "24"},
-			rootPath, fullOutPath)
-		if err != nil {
-			panic(err)
+			command := GetFFMPEGCommand()
+
+			makeLaptopFrames(outName, totalSeconds, renderPath, conf)
+
+			// make video from laptop frames
+			out, err := exec.Command(command, "-framerate", "1", "-i", filepath.Join(renderPath, "%d.png"),
+				"-pix_fmt", "yuv420p",
+				filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
+			if err != nil {
+				fmt.Println(string(out))
+				panic(err)
+			}
+
+			// join audio to video
+			out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
+				"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
+				filepath.Join(rootPath, outName+".mp4")).CombinedOutput()
+			if err != nil {
+				fmt.Println(string(out))
+				panic(err)
+			}
+
+			// clearing temporary files
+			os.RemoveAll(renderPath)
+
+			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, outName+".mp4"))
+
+		} else {
+
+			laptopOutName := "lframes_" + time.Now().Format("20060102T150405")
+			mobileOutName := "mframes_" + time.Now().Format("20060102T150405")
+			lrenderPath := filepath.Join(rootPath, laptopOutName)
+			os.MkdirAll(lrenderPath, 0777)
+			mrenderPath := filepath.Join(rootPath, mobileOutName)
+			os.MkdirAll(mrenderPath, 0777)
+
+			makeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, conf)
+			makeMobileFrames(mobileOutName, totalSeconds, mrenderPath, conf)
+
+			outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
+			fullOutPath := filepath.Join(rootPath, outName)
+			err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{"framerate": "24"},
+				rootPath, fullOutPath)
+			if err != nil {
+				panic(err)
+			}
+			os.RemoveAll(lrenderPath)
+			os.RemoveAll(mrenderPath)
+
+			color2.Green.Println("The video has been generated into: ", fullOutPath)
 		}
-		os.RemoveAll(lrenderPath)
-		os.RemoveAll(mrenderPath)
-
-		color2.Green.Println("The video has been generated into: ", fullOutPath)
 
 	default:
 		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")

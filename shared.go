@@ -137,3 +137,14 @@ func ReadSecondsFromMusicFile(musicPath string) (int, error) {
 	correctedT := math.Ceil(t)
 	return int(correctedT), nil
 }
+
+func GetFFMPEGCommand() string {
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = "ffmpeg"
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+	}
+
+	return cmdPath
+}
