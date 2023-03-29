@@ -277,5 +277,6 @@ func makeLyrics(inputs map[string]string) (string, error) {
 		return "", err
 	}
 
+	os.RemoveAll(renderPath)
 	return videoFileName, nil
 }

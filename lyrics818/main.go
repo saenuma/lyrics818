@@ -92,10 +92,20 @@ func main() {
 	})
 
 	topBar.Add(refreshBtn)
+	helpWidget := widget.NewRichTextFromMarkdown(`
+## Help
+1. All files must be placed in the working directory of this program.
 
+1. Only .mp3 files are allowed for the **input music file**	
+
+1. Only .png files are allowed for the **background**
+
+1. The background_file must be of dimensions (1366px x 768px)
+	`)
 	windowBox := container.NewVBox(
 		topBar,
 		widget.NewSeparator(),
+		helpWidget,
 		formBox, outputsBox,
 	)
 

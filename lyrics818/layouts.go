@@ -17,6 +17,6 @@ func (d *fillSpace) Layout(objects []fyne.CanvasObject, containerSize fyne.Size)
 	newSize := fyne.NewSize(containerSize.Width, newHeight)
 	objects[0].Resize(newSize)
 	objects[0].Move(pos)
-	pos = pos.Add(fyne.NewPos(0, newHeight+10))
+	// pos = pos.Add(fyne.NewPos(0, newHeight+10))
 	// }
 }
