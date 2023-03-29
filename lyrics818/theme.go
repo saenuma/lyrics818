@@ -19,8 +19,8 @@ func (m myTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 	// }
 
 	if name == theme.ColorNameButton {
-		lyricsColor, _ := colorful.Hex("#F5E0B7")
-		return lyricsColor
+		aColor, _ := colorful.Hex("#F3E7CF")
+		return aColor
 	}
 	return theme.DefaultTheme().Color(name, theme.VariantLight)
 }

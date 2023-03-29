@@ -32,8 +32,9 @@ func main() {
 	})
 
 	viewSampleBtn := widget.NewButton("View Sample Lyrics File", func() {
-		box := container.NewScroll(container.NewMax(widget.NewLabel(string(sampleLyricsFile))))
-		dialog.ShowCustom("Sample Lyrics File", "Close", box, myWindow)
+		sampleLyricsLabel := widget.NewLabel(string(sampleLyricsFile))
+		innerBox := container.New(&fillSpace{}, container.NewMax(container.NewScroll(sampleLyricsLabel)))
+		dialog.ShowCustom("Sample Lyrics File", "Close", innerBox, myWindow)
 	})
 
 	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
@@ -85,6 +86,7 @@ func main() {
 
 	refreshBtn := widget.NewButton("Refresh Files List", func() {
 		lyricsForm := getLyricsForm()
+		formBox.RemoveAll()
 		formBox.Add(lyricsForm)
 		formBox.Refresh()
 	})
