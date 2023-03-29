@@ -1,234 +1,161 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"image"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
-	color2 "github.com/gookit/color"
-	"github.com/saenuma/lyrics818/l8f"
-	"github.com/saenuma/zazabul"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
 )
 
-const VersionFormat = "20060102T150405MST"
-
 func main() {
-
+	// os.Setenv("FYNE_SCALE", "0.9")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
 
-	if len(os.Args) < 2 {
-		color2.Red.Println("Expecting a command. Run with help subcommand to view help.")
-		os.Exit(1)
+	myApp := app.New()
+	myApp.Settings().SetTheme(&myTheme{})
+
+	myWindow := myApp.NewWindow("lyrics818: a more comfortable lyrics video generator")
+	myWindow.SetOnClosed(func() {
+	})
+
+	openWDBtn := widget.NewButton("Open Working Directory", func() {
+		exec.Command("cmd", "/C", "start", rootPath).Run()
+	})
+
+	viewSampleBtn := widget.NewButton("View Sample Lyrics File", func() {
+		sampleLyricsLabel := widget.NewLabel(string(sampleLyricsFile))
+		innerBox := container.New(&fillSpace{}, container.NewMax(container.NewScroll(sampleLyricsLabel)))
+		dialog.ShowCustom("Sample Lyrics File", "Close", innerBox, myWindow)
+	})
+
+	saeBtn := widget.NewButton("sae.ng", func() {
+		exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
+	})
+
+	aboutBtn := widget.NewButton("About Us", func() {
+		img, _, err := image.Decode(bytes.NewReader(SaeLogoBytes))
+		if err != nil {
+			panic(err)
+		}
+		logoImage := canvas.NewImageFromImage(img)
+		logoImage.FillMode = canvas.ImageFillOriginal
+
+		boxes := container.NewVBox(
+			container.NewCenter(logoImage),
+			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+			saeBtn,
+		)
+		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
+	})
+	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
+	formBox := container.NewPadded()
+	outputsBox := container.NewVBox()
+
+	getLyricsForm := func() *widget.Form {
+		dirFIs, err := os.ReadDir(rootPath)
+		if err != nil {
+			panic(err)
+		}
+		files := make([]string, 0)
+		for _, dirFI := range dirFIs {
+			if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
+				files = append(files, dirFI.Name())
+			}
+		}
+
+		lyricsInputForm := widget.NewForm()
+		lyricsInputForm.Append("lyrics_file", widget.NewSelect(files, nil))
+		lyricsInputForm.Append("font_file", widget.NewSelect(files, nil))
+		lyricsInputForm.Append("background_file", widget.NewSelect(files, nil))
+		lyricsInputForm.Append("music_file", widget.NewSelect(files, nil))
+		colorEntry := widget.NewEntry()
+		colorEntry.SetText("#666666")
+		lyricsInputForm.Append("lyrics_color", colorEntry)
+		lyricsInputForm.SubmitText = "Make Lyrics Video"
+		lyricsInputForm.CancelText = "Close"
+		lyricsInputForm.OnCancel = func() {
+			os.Exit(0)
+		}
+		lyricsInputForm.OnSubmit = func() {
+			outputsBox.Add(widget.NewLabel("Beginning"))
+			inputs := getFormInputs(lyricsInputForm.Items)
+			outFileName, err := makeLyrics(inputs)
+			if err != nil {
+				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
+				return
+			}
+			openOutputButton := widget.NewButton("Open Video", func() {
+				exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
+			})
+			outputsBox.Add(openOutputButton)
+			outputsBox.Refresh()
+		}
+
+		return lyricsInputForm
 	}
 
-	switch os.Args[1] {
-	case "--help", "help", "h":
-		fmt.Println(`lyrics818 is a terminal program that creates lyrics videos.
-It uses a constant picture for the background.
+	refreshBtn := widget.NewButton("Refresh Files List", func() {
+		lyricsForm := getLyricsForm()
+		formBox.RemoveAll()
+		formBox.Add(lyricsForm)
+		formBox.Refresh()
+	})
 
-Directory Commands:
-  pwd     Print working directory. This is the directory where the files needed by any command
-          in this cli program must reside.
+	topBar.Add(refreshBtn)
+	topBar.Add(aboutBtn)
+	helpWidget := widget.NewRichTextFromMarkdown(`
+## Help
+1. All files must be placed in the working directory of this program.
 
-Main Commands:
-  init1   init1 creates a lyric video config file for a single image background and would produce
-          an mp4 file.
-          Edit to your own requirements.
+1. Only .mp3 files are allowed for the **input music file**	
 
-  init2   init1 creates a lyric video config file for a single image background and would produce
-          an v117 file.
-          Edit to your own requirements.
+1. Only .png files are allowed for the **background**
 
-  run     Renders a project with the config created above. It expects a a config file generated from
-          'init' commands above.
-          All files must be placed in the working directory.
+1. The background_file must be of dimensions (1366px x 768px)
+	`)
+	windowBox := container.NewVBox(
+		topBar,
+		widget.NewSeparator(),
+		helpWidget,
+		formBox, outputsBox,
+	)
 
-  			`)
+	lyricsForm := getLyricsForm()
+	formBox.Add(lyricsForm)
+	formBox.Refresh()
 
-	case "pwd":
-		fmt.Println(rootPath)
+	myWindow.SetContent(windowBox)
+	myWindow.Resize(fyne.NewSize(800, 600))
+	myWindow.SetFixedSize(true)
+	myWindow.ShowAndRun()
+}
 
-	case "init1":
-		var tmplOfMethod1 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
-// a sample can be found at https://sae.ng/static/bmtf.txt
-lyrics_file:
-
-// the font_file is the file of a ttf font that the text would be printed with.
-// you could find a font on https://fonts.google.com
-font_file:
-
-// lyrics_color is the color of the rendered lyric. Example is #af1382
-lyrics_color: #666666
-
-// laptop_background_file is the background that would be used for this lyric video.
-// the laptop_background_file must be a png
-// the laptop_background_file must be of dimensions (1366px x 768px)
-laptop_background_file:
-
-// music_file is the song to add its audio to the video.
-// lyrics818 expects a mp3 music file
-// the music_file determines the duration of the video.
-music_file:
-  	`
-		configFileName := "m1_" + time.Now().Format("20060102T150405") + ".zconf"
-		writePath := filepath.Join(rootPath, configFileName)
-
-		conf, err := zazabul.ParseConfig(tmplOfMethod1)
-		if err != nil {
-			panic(err)
+func getFormInputs(content []*widget.FormItem) map[string]string {
+	inputs := make(map[string]string)
+	for _, formItem := range content {
+		entryWidget, ok := formItem.Widget.(*widget.Entry)
+		if ok {
+			inputs[formItem.Text] = entryWidget.Text
+			continue
 		}
 
-		err = conf.Write(writePath)
-		if err != nil {
-			panic(err)
+		selectWidget, ok := formItem.Widget.(*widget.Select)
+		if ok {
+			inputs[formItem.Text] = selectWidget.Selected
 		}
-
-		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
-
-	case "init2":
-		var tmplOfMethod2 = `// lyrics_file is the file that contains timestamps and lyrics chunks seperated by newlines.
-// a sample can be found at https://sae.ng/static/bmtf.txt
-lyrics_file:
-
-
-// the font_file is the file of a ttf font that the text would be printed with.
-// you could find a font on https://fonts.google.com
-font_file:
-
-// lyrics_color is the color of the rendered lyric. Example is #af1382
-lyrics_color: #666666
-
-// background_file is the background that would be used for this lyric video.
-// the background_file must be a png
-// the background_file must be of dimensions (1366px x 768px)
-laptop_background_file:
-
-// background_file is the background that would be used for this lyric video.
-// the background_file must be a png
-// the background_file must be of dimensions (800px x 1000px)
-mobile_background_file:
-
-// music_file is the song to add its audio to the video.
-// lyrics818 expects a mp3 music file
-// the music_file determines the duration of the video.
-music_file:
-
-  	`
-		configFileName := "m2_" + time.Now().Format("20060102T150405") + ".zconf"
-		writePath := filepath.Join(rootPath, configFileName)
-
-		conf, err := zazabul.ParseConfig(tmplOfMethod2)
-		if err != nil {
-			panic(err)
-		}
-
-		err = conf.Write(writePath)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Edit the file at '%s' before launching.\n", writePath)
-
-	case "run":
-		if len(os.Args) != 3 {
-			color2.Red.Println("The run command expects a file created by the init command")
-			os.Exit(1)
-		}
-
-		confFileName := os.Args[2]
-		confPath := filepath.Join(rootPath, confFileName)
-
-		conf, err := zazabul.LoadConfigFile(confPath)
-		if err != nil {
-			panic(err)
-		}
-
-		for _, item := range conf.Items {
-			if item.Value == "" {
-				color2.Red.Println("Every field in the launch file is compulsory.")
-				os.Exit(1)
-			}
-		}
-
-		fullMp3Path := filepath.Join(rootPath, conf.Get("music_file"))
-		if !strings.HasSuffix(fullMp3Path, ".mp3") {
-			color2.Red.Println("Expecting an mp3 file in 'music_file'")
-			os.Exit(1)
-		}
-
-		totalSeconds, err := ReadSecondsFromMusicFile(fullMp3Path)
-		if err != nil {
-			panic(err)
-		}
-
-		if strings.HasPrefix(confFileName, "m1_") {
-			outName := "frames_" + time.Now().Format("20060102T150405")
-
-			renderPath := filepath.Join(rootPath, outName)
-			os.MkdirAll(renderPath, 0777)
-
-			command := GetFFMPEGCommand()
-
-			makeLaptopFrames(outName, totalSeconds, renderPath, conf)
-
-			// make video from laptop frames
-			out, err := exec.Command(command, "-framerate", "1", "-i", filepath.Join(renderPath, "%d.png"),
-				"-pix_fmt", "yuv420p",
-				filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
-			if err != nil {
-				fmt.Println(string(out))
-				panic(err)
-			}
-
-			videoFileName := "video_" + time.Now().Format("20060102T150405") + ".mp4"
-			// join audio to video
-			out, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
-				"-i", filepath.Join(rootPath, conf.Get("music_file")), "-pix_fmt", "yuv420p",
-				filepath.Join(rootPath, videoFileName)).CombinedOutput()
-			if err != nil {
-				fmt.Println(string(out))
-				panic(err)
-			}
-
-			// clearing temporary files
-			os.RemoveAll(renderPath)
-
-			color2.Green.Println("The video has been generated into: ", filepath.Join(rootPath, videoFileName))
-
-		} else {
-
-			laptopOutName := "lframes_" + time.Now().Format("20060102T150405")
-			mobileOutName := "mframes_" + time.Now().Format("20060102T150405")
-			lrenderPath := filepath.Join(rootPath, laptopOutName)
-			os.MkdirAll(lrenderPath, 0777)
-			mrenderPath := filepath.Join(rootPath, mobileOutName)
-			os.MkdirAll(mrenderPath, 0777)
-
-			makeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, conf)
-			makeMobileFrames(mobileOutName, totalSeconds, mrenderPath, conf)
-
-			outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
-			fullOutPath := filepath.Join(rootPath, outName)
-			err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, nil,
-				rootPath, fullOutPath)
-			if err != nil {
-				panic(err)
-			}
-			os.RemoveAll(lrenderPath)
-			os.RemoveAll(mrenderPath)
-
-			color2.Green.Println("The video has been generated into: ", fullOutPath)
-		}
-
-	default:
-		color2.Red.Println("Unexpected command. Run the cli with --help to find out the supported commands.")
-		os.Exit(1)
 	}
 
+	return inputs
 }

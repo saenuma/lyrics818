@@ -139,12 +139,17 @@ func ReadSecondsFromMusicFile(musicPath string) (int, error) {
 }
 
 func GetFFMPEGCommand() string {
-	var cmdPath string
-	begin := os.Getenv("SNAP")
-	cmdPath = "ffmpeg"
-	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+	// get the right ffmpeg command
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
 	}
 
-	return cmdPath
+	devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
+	bundledPath, _ := filepath.Abs("ffmpeg.exe")
+	if DoesPathExists(devPath) {
+		return devPath
+	}
+
+	return bundledPath
 }
