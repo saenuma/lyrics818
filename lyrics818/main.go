@@ -14,14 +14,16 @@ import (
 )
 
 func main() {
-	// os.Setenv("FYNE_THEME", "dark")
+	os.Setenv("FYNE_SCALE", "0.9")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
 
 	myApp := app.New()
-	myWindow := myApp.NewWindow("hanan: a more comfortable shell / terminal")
+	myApp.Settings().SetTheme(&myTheme{})
+
+	myWindow := myApp.NewWindow("lyrics818: a more comfortable lyrics video generator")
 	myWindow.SetOnClosed(func() {
 	})
 
