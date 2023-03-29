@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"image"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -8,13 +10,14 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
 func main() {
-	os.Setenv("FYNE_SCALE", "0.9")
+	// os.Setenv("FYNE_SCALE", "0.9")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
@@ -37,6 +40,25 @@ func main() {
 		dialog.ShowCustom("Sample Lyrics File", "Close", innerBox, myWindow)
 	})
 
+	saeBtn := widget.NewButton("sae.ng", func() {
+		exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
+	})
+
+	aboutBtn := widget.NewButton("About Us", func() {
+		img, _, err := image.Decode(bytes.NewReader(SaeLogoBytes))
+		if err != nil {
+			panic(err)
+		}
+		logoImage := canvas.NewImageFromImage(img)
+		logoImage.FillMode = canvas.ImageFillOriginal
+
+		boxes := container.NewVBox(
+			container.NewCenter(logoImage),
+			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+			saeBtn,
+		)
+		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
+	})
 	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
 	formBox := container.NewPadded()
 	outputsBox := container.NewVBox()
@@ -92,6 +114,7 @@ func main() {
 	})
 
 	topBar.Add(refreshBtn)
+	topBar.Add(aboutBtn)
 	helpWidget := widget.NewRichTextFromMarkdown(`
 ## Help
 1. All files must be placed in the working directory of this program.

@@ -6,3 +6,6 @@ import (
 
 //go:embed "bmtf.txt"
 var sampleLyricsFile []byte
+
+//go:embed sae_logo.png
+var SaeLogoBytes []byte
