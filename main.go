@@ -65,22 +65,17 @@ func main() {
 	outputsBox := container.NewVBox()
 
 	getLyricsForm := func() *widget.Form {
-		dirFIs, err := os.ReadDir(rootPath)
-		if err != nil {
-			panic(err)
-		}
-		files := make([]string, 0)
-		for _, dirFI := range dirFIs {
-			if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
-				files = append(files, dirFI.Name())
-			}
-		}
+
+		txtFiles := getFilesOfType(rootPath, ".txt")
+		mp3Files := getFilesOfType(rootPath, ".mp3")
+		ttfFiles := getFilesOfType(rootPath, ".ttf")
+		pngFiles := getFilesOfType(rootPath, ".png")
 
 		lyricsInputForm := widget.NewForm()
-		lyricsInputForm.Append("lyrics_file", widget.NewSelect(files, nil))
-		lyricsInputForm.Append("font_file", widget.NewSelect(files, nil))
-		lyricsInputForm.Append("background_file", widget.NewSelect(files, nil))
-		lyricsInputForm.Append("music_file", widget.NewSelect(files, nil))
+		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
+		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
+		lyricsInputForm.Append("background_file", widget.NewSelect(pngFiles, nil))
+		lyricsInputForm.Append("music_file", widget.NewSelect(mp3Files, nil))
 		colorEntry := widget.NewEntry()
 		colorEntry.SetText("#666666")
 		lyricsInputForm.Append("lyrics_color", colorEntry)
@@ -160,4 +155,19 @@ func getFormInputs(content []*widget.FormItem) map[string]string {
 	}
 
 	return inputs
+}
+
+func getFilesOfType(rootPath, ext string) []string {
+	dirFIs, err := os.ReadDir(rootPath)
+	if err != nil {
+		panic(err)
+	}
+	files := make([]string, 0)
+	for _, dirFI := range dirFIs {
+		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
+			files = append(files, dirFI.Name())
+		}
+	}
+
+	return files
 }
