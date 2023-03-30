@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"math"
 	"os"
+	"os/exec"
 
 	"path/filepath"
 	"strconv"
@@ -27,12 +29,8 @@ func GetRootPath() (string, error) {
 		return "", errors.Wrap(err, "os error")
 	}
 
-	dd := os.Getenv("SNAP_USER_COMMON")
-
-	if strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) || dd == "" {
-		dd = filepath.Join(hd, "Lyrics818")
-		os.MkdirAll(dd, 0777)
-	}
+	dd := filepath.Join(hd, "Lyrics818")
+	os.MkdirAll(dd, 0777)
 
 	return dd, nil
 }
@@ -145,8 +143,27 @@ func GetFFMPEGCommand() string {
 		panic(err)
 	}
 
+	out, err := exec.Command("powershell", "-NoProfile", "Get-AppPackage", "-Name", " 11755SaenumaDigitalLtd.lyrics818").Output()
+	if err != nil {
+		log.Println(err)
+		log.Println(string(out))
+		panic(err)
+	}
+
+	bundledPath := ""
+	parts := strings.Split(string(out), "\n")
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+
+		if strings.HasPrefix(part, "InstallLocation") {
+			indexOfColon := strings.Index(part, ":")
+			tmp := strings.TrimSpace(part[indexOfColon+1:])
+			bundledPath = filepath.Join(tmp, "ffmpeg.exe")
+			break
+		}
+	}
+
 	devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
-	bundledPath, _ := filepath.Abs("ffmpeg.exe")
 	if DoesPathExists(devPath) {
 		return devPath
 	}

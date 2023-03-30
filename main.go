@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"image"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -93,6 +94,7 @@ func main() {
 			inputs := getFormInputs(lyricsInputForm.Items)
 			outFileName, err := makeLyrics(inputs)
 			if err != nil {
+				log.Println(err)
 				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
 				return
 			}
@@ -138,7 +140,7 @@ func main() {
 
 	myWindow.SetContent(windowBox)
 	myWindow.Resize(fyne.NewSize(800, 600))
-	myWindow.SetFixedSize(true)
+	// myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
 }
 
