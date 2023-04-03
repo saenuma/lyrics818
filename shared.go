@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"path/filepath"
 	"strconv"
@@ -137,36 +138,48 @@ func ReadSecondsFromMusicFile(musicPath string) (int, error) {
 }
 
 func GetFFMPEGCommand() string {
-	// get the right ffmpeg command
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	out, err := exec.Command("powershell", "-NoProfile", "Get-AppPackage", "-Name", " 11755SaenumaDigitalLtd.lyrics818").Output()
-	if err != nil {
-		log.Println(err)
-		log.Println(string(out))
-		panic(err)
-	}
-
-	bundledPath := ""
-	parts := strings.Split(string(out), "\n")
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-
-		if strings.HasPrefix(part, "InstallLocation") {
-			indexOfColon := strings.Index(part, ":")
-			tmp := strings.TrimSpace(part[indexOfColon+1:])
-			bundledPath = filepath.Join(tmp, "ffmpeg.exe")
-			break
+	if runtime.GOOS == "windows" {
+		// get the right ffmpeg command
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
 		}
+
+		out, err := exec.Command("powershell", "-NoProfile", "Get-AppPackage", "-Name", " 11755SaenumaDigitalLtd.lyrics818").Output()
+		if err != nil {
+			log.Println(err)
+			log.Println(string(out))
+			panic(err)
+		}
+
+		bundledPath := ""
+		parts := strings.Split(string(out), "\n")
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+
+			if strings.HasPrefix(part, "InstallLocation") {
+				indexOfColon := strings.Index(part, ":")
+				tmp := strings.TrimSpace(part[indexOfColon+1:])
+				bundledPath = filepath.Join(tmp, "ffmpeg.exe")
+				break
+			}
+		}
+
+		devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
+		if DoesPathExists(devPath) {
+			return devPath
+		}
+
+		return bundledPath
+	} else {
+		var cmdPath string
+		begin := os.Getenv("SNAP")
+		cmdPath = "ffmpeg"
+		if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+			cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+		}
+
+		return cmdPath
 	}
 
-	devPath := filepath.Join(homeDir, "bin", "ffmpeg.exe")
-	if DoesPathExists(devPath) {
-		return devPath
-	}
-
-	return bundledPath
 }
