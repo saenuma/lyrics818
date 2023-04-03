@@ -30,8 +30,12 @@ func GetRootPath() (string, error) {
 		return "", errors.Wrap(err, "os error")
 	}
 
-	dd := filepath.Join(hd, "Lyrics818")
-	os.MkdirAll(dd, 0777)
+	dd := os.Getenv("SNAP_USER_COMMON")
+
+	if strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) || dd == "" {
+		dd = filepath.Join(hd, "Lyrics818")
+		os.MkdirAll(dd, 0777)
+	}
 
 	return dd, nil
 }

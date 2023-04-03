@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -32,7 +33,11 @@ func main() {
 	})
 
 	openWDBtn := widget.NewButton("Open Working Directory", func() {
-		exec.Command("cmd", "/C", "start", rootPath).Run()
+		if runtime.GOOS == "windows" {
+			exec.Command("cmd", "/C", "start", rootPath).Run()
+		} else if runtime.GOOS == "linux" {
+			exec.Command("xdg-open", rootPath).Run()
+		}
 	})
 
 	viewSampleBtn := widget.NewButton("View Sample Lyrics File", func() {
@@ -42,7 +47,11 @@ func main() {
 	})
 
 	saeBtn := widget.NewButton("sae.ng", func() {
-		exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
+		if runtime.GOOS == "windows" {
+			exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
+		} else if runtime.GOOS == "linux" {
+			exec.Command("xdg-open", "https://sae.ng").Run()
+		}
 	})
 
 	aboutBtn := widget.NewButton("About Us", func() {
