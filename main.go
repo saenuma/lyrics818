@@ -103,7 +103,11 @@ func main() {
 				return
 			}
 			openOutputButton := widget.NewButton("Open Video", func() {
-				exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
+				if runtime.GOOS == "windows" {
+					exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
+				} else if runtime.GOOS == "linux" {
+					exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
+				}
 			})
 			outputsBox.Add(openOutputButton)
 			outputsBox.Refresh()
