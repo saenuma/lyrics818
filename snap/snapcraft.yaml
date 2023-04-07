@@ -25,6 +25,7 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+      - libtinfo-dev
     stage-snaps:
       - ffmpeg
 
