@@ -3,7 +3,7 @@ module github.com/saenuma/lyrics818
 go 1.17
 
 require (
-	fyne.io/fyne/v2 v2.3.3
+	fyne.io/fyne/v2 v2.3.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c
 	github.com/gookit/color v1.5.2
