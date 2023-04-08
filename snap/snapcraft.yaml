@@ -26,7 +26,7 @@ parts:
       - xorg-dev
       - libc6-dev
     stage-packages:
-      - libtinfo-dev
+      - libtinfo5
     stage-snaps:
       - ffmpeg
 
