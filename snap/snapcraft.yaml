@@ -40,6 +40,8 @@ parts:
       - libc6-dev
     stage-snaps:
       - ffmpeg
+    stage-packages:
+      - libglu1-mesa
     after:
       - desktop-glib-only
 
