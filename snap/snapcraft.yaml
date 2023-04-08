@@ -38,9 +38,6 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-    stage-packages:
-      - libtinfo5
-      - libglu1-mesa
     stage-snaps:
       - ffmpeg
     after:
@@ -50,7 +47,7 @@ parts:
 
 apps:
   lyrics818:
-    command: bin/lyrics818
+    command: bin/desktop-launch $SNAP/bin/lyrics818
     plugs:
     - opengl
     - x11
