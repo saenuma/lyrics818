@@ -180,6 +180,22 @@ func getFilesOfType(rootPath, ext string) []string {
 		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
 			files = append(files, dirFI.Name())
 		}
+
+		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
+			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
+			innerFiles := make([]string, 0)
+
+			for _, innerDirFI := range innerDirFIs {
+				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
+					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
+				}
+			}
+
+			if len(innerFiles) > 0 {
+				files = append(files, innerFiles...)
+			}
+		}
+
 	}
 
 	return files
