@@ -119,7 +119,8 @@ func main() {
 	colorEntry.SetText("#666666")
 
 	makeButton := widget.NewButton("Make Lyrics Video", func() {
-		outputsBox.Add(widget.NewLabel("Beginning"))
+		outLabel := widget.NewLabel("Beginning")
+		outputsBox.Add(outLabel)
 		inputs := map[string]string{
 			"lyrics_file":     lyricsFileLabel.Text,
 			"font_file":       fontFileLabel.Text,
@@ -140,9 +141,11 @@ func main() {
 				exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
 			}
 		})
+		outLabel.SetText("Done")
 		outputsBox.Add(openOutputButton)
 		outputsBox.Refresh()
 	})
+	makeButton.Importance = widget.HighImportance
 
 	closeButton := widget.NewButton("Close", func() {
 		os.Exit(0)
