@@ -18,7 +18,6 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/goki/freetype"
 	"github.com/goki/freetype/truetype"
-	color2 "github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
@@ -32,11 +31,7 @@ const (
 )
 
 func validateLyricsLaptop(inputs map[string]string, lyricsObject map[int]string) error {
-	rootPath, err := GetRootPath()
-	if err != nil {
-		return err
-	}
-	fullMp3Path := filepath.Join(rootPath, inputs["music_file"])
+	fullMp3Path := inputs["music_file"]
 	if !strings.HasSuffix(fullMp3Path, ".mp3") {
 		return errors.New("expecting an mp3 file in 'music_file'")
 	}
@@ -66,13 +61,11 @@ func validateLyricsLaptop(inputs map[string]string, lyricsObject map[int]string)
 
 func makeLaptopFrames(outName string, totalSeconds int, renderPath string, inputs map[string]string) {
 	numberOfCPUS := runtime.NumCPU()
-	rootPath, _ := GetRootPath()
-	lyricsObject := ParseLyricsFile(filepath.Join(rootPath, inputs["lyrics_file"]), totalSeconds)
+	lyricsObject := ParseLyricsFile(inputs["lyrics_file"], totalSeconds)
 
 	err := validateLyricsLaptop(inputs, lyricsObject)
 	if err != nil {
-		color2.Red.Println(err)
-		os.Exit(1)
+		panic(err)
 	}
 
 	jobsPerThread := int(math.Floor(float64(totalSeconds) / float64(numberOfCPUS)))
@@ -91,7 +84,7 @@ func makeLaptopFrames(outName string, totalSeconds int, renderPath string, input
 			for seconds := startSeconds; seconds < endSeconds; seconds++ {
 				txt := lyricsObject[seconds]
 				if txt == "" {
-					img, err := imaging.Open(filepath.Join(rootPath, inputs["background_file"]))
+					img, err := imaging.Open(inputs["background_file"])
 					if err != nil {
 						panic(err)
 					}
@@ -113,7 +106,7 @@ func makeLaptopFrames(outName string, totalSeconds int, renderPath string, input
 	for seconds := (jobsPerThread * numberOfCPUS); seconds < totalSeconds; seconds++ {
 		txt := lyricsObject[seconds]
 		if txt == "" {
-			img, err := imaging.Open(filepath.Join(rootPath, inputs["background_file"]))
+			img, err := imaging.Open(inputs["background_file"])
 			if err != nil {
 				panic(err)
 			}
@@ -129,11 +122,10 @@ func makeLaptopFrames(outName string, totalSeconds int, renderPath string, input
 }
 
 func wordWrapLaptop(inputs map[string]string, text string, writeWidth int) []string {
-	rootPath, _ := GetRootPath()
 
 	rgba := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
 
-	fontBytes, err := os.ReadFile(filepath.Join(rootPath, inputs["font_file"]))
+	fontBytes, err := os.ReadFile(inputs["font_file"])
 	if err != nil {
 		panic(err)
 	}
@@ -178,9 +170,7 @@ func wordWrapLaptop(inputs map[string]string, text string, writeWidth int) []str
 }
 
 func writeLyricsToImage(inputs map[string]string, text string) image.Image {
-	rootPath, _ := GetRootPath()
-
-	fileHandle, err := os.Open(filepath.Join(rootPath, inputs["background_file"]))
+	fileHandle, err := os.Open(inputs["background_file"])
 	if err != nil {
 		panic(err)
 	}
@@ -195,7 +185,7 @@ func writeLyricsToImage(inputs map[string]string, text string) image.Image {
 	lyricsColor, _ := colorful.Hex(inputs["lyrics_color"])
 	fg := image.NewUniform(lyricsColor)
 
-	fontBytes, err := os.ReadFile(filepath.Join(rootPath, inputs["font_file"]))
+	fontBytes, err := os.ReadFile(inputs["font_file"])
 	if err != nil {
 		panic(err)
 	}
@@ -241,7 +231,7 @@ func makeLyrics(inputs map[string]string) (string, error) {
 		return "", err
 	}
 
-	fullMp3Path := filepath.Join(rootPath, inputs["music_file"])
+	fullMp3Path := inputs["music_file"]
 	if !strings.HasSuffix(fullMp3Path, ".mp3") {
 		return "", err
 	}
@@ -271,7 +261,7 @@ func makeLyrics(inputs map[string]string) (string, error) {
 	videoFileName := "video_" + time.Now().Format("20060102T150405") + ".mp4"
 	// join audio to video
 	_, err = exec.Command(command, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
-		"-i", filepath.Join(rootPath, inputs["music_file"]), "-pix_fmt", "yuv420p",
+		"-i", inputs["music_file"], "-pix_fmt", "yuv420p",
 		filepath.Join(rootPath, videoFileName)).CombinedOutput()
 	if err != nil {
 		return "", err

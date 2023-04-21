@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -16,23 +15,24 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	sDialog "github.com/sqweek/dialog"
 )
 
 func main() {
-	// os.Setenv("FYNE_SCALE", "0.9")
+	os.Setenv("FYNE_THEME", "dark")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
 
 	myApp := app.New()
-	myApp.Settings().SetTheme(&myTheme{})
+	// myApp.Settings().SetTheme(&myTheme{})
 
 	myWindow := myApp.NewWindow("lyrics818: a more comfortable lyrics video generator")
 	myWindow.SetOnClosed(func() {
 	})
 
-	openWDBtn := widget.NewButton("Open Working Directory", func() {
+	openWDBtn := widget.NewButton("Open Outputs Directory", func() {
 		if runtime.GOOS == "windows" {
 			exec.Command("cmd", "/C", "start", rootPath).Run()
 		} else if runtime.GOOS == "linux" {
@@ -69,72 +69,95 @@ func main() {
 		)
 		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
 	})
-	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
-	formBox := container.NewPadded()
-	outputsBox := container.NewVBox()
+	topBar := container.NewCenter(container.NewHBox(openWDBtn, viewSampleBtn, aboutBtn))
 
-	getLyricsForm := func() *widget.Form {
-
-		txtFiles := getFilesOfType(rootPath, ".txt")
-		mp3Files := getFilesOfType(rootPath, ".mp3")
-		ttfFiles := getFilesOfType(rootPath, ".ttf")
-		pngFiles := getFilesOfType(rootPath, ".png")
-
-		lyricsInputForm := widget.NewForm()
-		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
-		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
-		lyricsInputForm.Append("background_file", widget.NewSelect(pngFiles, nil))
-		lyricsInputForm.Append("music_file", widget.NewSelect(mp3Files, nil))
-		colorEntry := widget.NewEntry()
-		colorEntry.SetText("#666666")
-		lyricsInputForm.Append("lyrics_color", colorEntry)
-		lyricsInputForm.SubmitText = "Make Lyrics Video"
-		lyricsInputForm.CancelText = "Close"
-		lyricsInputForm.OnCancel = func() {
-			os.Exit(0)
-		}
-		lyricsInputForm.OnSubmit = func() {
-			outputsBox.Add(widget.NewLabel("Beginning"))
-			inputs := getFormInputs(lyricsInputForm.Items)
-			outFileName, err := makeLyrics(inputs)
-			if err != nil {
-				log.Println(err)
-				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
-				return
-			}
-			openOutputButton := widget.NewButton("Open Video", func() {
-				if runtime.GOOS == "windows" {
-					exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-				} else if runtime.GOOS == "linux" {
-					exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-				}
-			})
-			outputsBox.Add(openOutputButton)
-			outputsBox.Refresh()
-		}
-
-		return lyricsInputForm
-	}
-
-	refreshBtn := widget.NewButton("Refresh Files List", func() {
-		lyricsForm := getLyricsForm()
-		formBox.RemoveAll()
-		formBox.Add(lyricsForm)
-		formBox.Refresh()
-	})
-
-	topBar.Add(refreshBtn)
-	topBar.Add(aboutBtn)
 	helpWidget := widget.NewRichTextFromMarkdown(`
 ## Help
-1. All files must be placed in the working directory of this program.
-
 1. Only .mp3 files are allowed for the **input music file**	
 
 1. Only .png files are allowed for the **background**
 
 1. The background_file must be of dimensions (1366px x 768px)
 	`)
+
+	// formBox := container.NewPadded()
+	outputsBox := container.NewVBox()
+
+	lyricsFileLabel := widget.NewLabel("")
+	getLyricsFileBtn := widget.NewButton("Get Lyrics File", func() {
+		filename, err := sDialog.File().Filter("Lyrics file", "txt").Load()
+		if err == nil {
+			lyricsFileLabel.SetText(filename)
+		}
+	})
+
+	mp3FileLabel := widget.NewLabel("")
+	getMp3FileBtn := widget.NewButton("Get Mp3 File", func() {
+		filename, err := sDialog.File().Filter("Mp3 Audio file", "mp3").Load()
+		if err == nil {
+			mp3FileLabel.SetText(filename)
+		}
+	})
+
+	fontFileLabel := widget.NewLabel("")
+	getFontFileBtn := widget.NewButton("Get Font ttf file", func() {
+		filename, err := sDialog.File().Filter("Font ttf file", "ttf").Load()
+		if err == nil {
+			fontFileLabel.SetText(filename)
+		}
+	})
+
+	backgroundFileLabel := widget.NewLabel("")
+	getBackfoundFileBtn := widget.NewButton("Get Background File", func() {
+		filename, err := sDialog.File().Filter("Background png file", "png").Load()
+		if err == nil {
+			backgroundFileLabel.SetText(filename)
+		}
+	})
+
+	colorEntry := widget.NewEntry()
+	colorEntry.SetText("#666666")
+
+	makeButton := widget.NewButton("Make Lyrics Video", func() {
+		outputsBox.Add(widget.NewLabel("Beginning"))
+		inputs := map[string]string{
+			"lyrics_file":     lyricsFileLabel.Text,
+			"font_file":       fontFileLabel.Text,
+			"background_file": backgroundFileLabel.Text,
+			"music_file":      mp3FileLabel.Text,
+			"lyrics_color":    colorEntry.Text,
+		}
+		outFileName, err := makeLyrics(inputs)
+		if err != nil {
+			log.Println(err)
+			outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
+			return
+		}
+		openOutputButton := widget.NewButton("Open Video", func() {
+			if runtime.GOOS == "windows" {
+				exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
+			} else if runtime.GOOS == "linux" {
+				exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
+			}
+		})
+		outputsBox.Add(openOutputButton)
+		outputsBox.Refresh()
+	})
+
+	closeButton := widget.NewButton("Close", func() {
+		os.Exit(0)
+	})
+
+	formBox := container.NewVBox(
+		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
+		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
+		container.NewHBox(widget.NewLabel("Background File: "), getBackfoundFileBtn, backgroundFileLabel),
+		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
+		container.NewHBox(widget.NewLabel("Color: "), container.New(&longEntry{}, colorEntry)),
+		widget.NewSeparator(),
+		container.NewCenter(container.NewHBox(closeButton, makeButton)),
+	)
+
 	windowBox := container.NewVBox(
 		topBar,
 		widget.NewSeparator(),
@@ -142,61 +165,8 @@ func main() {
 		formBox, outputsBox,
 	)
 
-	lyricsForm := getLyricsForm()
-	formBox.Add(lyricsForm)
-	formBox.Refresh()
-
 	myWindow.SetContent(windowBox)
 	myWindow.Resize(fyne.NewSize(800, 600))
-	// myWindow.SetFixedSize(true)
+	myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
-}
-
-func getFormInputs(content []*widget.FormItem) map[string]string {
-	inputs := make(map[string]string)
-	for _, formItem := range content {
-		entryWidget, ok := formItem.Widget.(*widget.Entry)
-		if ok {
-			inputs[formItem.Text] = entryWidget.Text
-			continue
-		}
-
-		selectWidget, ok := formItem.Widget.(*widget.Select)
-		if ok {
-			inputs[formItem.Text] = selectWidget.Selected
-		}
-	}
-
-	return inputs
-}
-
-func getFilesOfType(rootPath, ext string) []string {
-	dirFIs, err := os.ReadDir(rootPath)
-	if err != nil {
-		panic(err)
-	}
-	files := make([]string, 0)
-	for _, dirFI := range dirFIs {
-		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
-			files = append(files, dirFI.Name())
-		}
-
-		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
-			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
-			innerFiles := make([]string, 0)
-
-			for _, innerDirFI := range innerDirFIs {
-				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
-					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
-				}
-			}
-
-			if len(innerFiles) > 0 {
-				files = append(files, innerFiles...)
-			}
-		}
-
-	}
-
-	return files
 }
