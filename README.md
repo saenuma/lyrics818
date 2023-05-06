@@ -1,11 +1,11 @@
 # lyrics818
 
-a terminal program to create a lyrics video
+Lyrics818 generates a lyric video in mp4 format.
 
-## Installation Instructions on Linux
-1.  Install with `sudo snap install lyrics818`
+The lyric video would have a single background. It expects the lyric file, fonts, background.
 
-1.  Start using with `lyrics818 --help`
+For more details visit [sae.ng](https://sae.ng/lyrics818)
+
 
 ## License
 
