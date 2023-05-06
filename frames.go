@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"image"
 	"image/draw"
 	"math"
@@ -30,43 +28,9 @@ const (
 	LAPTOP_HEIGHT = 768
 )
 
-func validateLyricsLaptop(inputs map[string]string, lyricsObject map[int]string) error {
-	fullMp3Path := inputs["music_file"]
-	if !strings.HasSuffix(fullMp3Path, ".mp3") {
-		return errors.New("expecting an mp3 file in 'music_file'")
-	}
-	totalSeconds, err := ReadSecondsFromMusicFile(fullMp3Path)
-	if err != nil {
-		return err
-	}
-
-	// validate the length of a page of lyrics
-	for i := 1; i < totalSeconds; i++ {
-		text := lyricsObject[i]
-		texts := strings.Split(text, "\n")
-
-		finalTexts := make([]string, 0)
-		for _, txt := range texts {
-			wrappedTxts := wordWrapLaptop(inputs, txt, 1366-130)
-			finalTexts = append(finalTexts, wrappedTxts...)
-		}
-
-		if len(finalTexts) > 7 {
-			return fmt.Errorf("shorten the following text for it to fit this video:\n%s", text)
-		}
-	}
-
-	return nil
-}
-
 func makeLaptopFrames(outName string, totalSeconds int, renderPath string, inputs map[string]string) {
 	numberOfCPUS := runtime.NumCPU()
 	lyricsObject := ParseLyricsFile(inputs["lyrics_file"], totalSeconds)
-
-	err := validateLyricsLaptop(inputs, lyricsObject)
-	if err != nil {
-		panic(err)
-	}
 
 	jobsPerThread := int(math.Floor(float64(totalSeconds) / float64(numberOfCPUS)))
 	// remainder := int(math.Mod(float64(totalSeconds), float64(numberOfCPUS)))
