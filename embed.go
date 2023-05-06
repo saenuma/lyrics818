@@ -9,3 +9,6 @@ var sampleLyricsFile []byte
 
 //go:embed sae_logo.png
 var SaeLogoBytes []byte
+
+//go:embed "guitar.png"
+var GuitarJPG []byte

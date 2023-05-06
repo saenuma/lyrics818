@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	os.Setenv("FYNE_THEME", "dark")
+	os.Setenv("FYNE_THEME", "light")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
@@ -161,15 +161,23 @@ func main() {
 		container.NewCenter(container.NewHBox(closeButton, makeButton)),
 	)
 
-	windowBox := container.NewVBox(
-		topBar,
-		widget.NewSeparator(),
-		helpWidget,
-		formBox, outputsBox,
+	guitarImg, _, err := image.Decode(bytes.NewReader(GuitarJPG))
+	if err != nil {
+		panic(err)
+	}
+	guitarFyneImage := canvas.NewImageFromImage(guitarImg)
+	guitarFyneImage.FillMode = canvas.ImageFillOriginal
+	guitarBox := container.NewCenter(guitarFyneImage)
+
+	windowBox := container.NewHBox(
+		guitarBox,
+		container.NewVBox(
+			container.NewCenter(topBar),
+			helpWidget, formBox, outputsBox,
+		),
 	)
 
 	myWindow.SetContent(windowBox)
-	myWindow.Resize(fyne.NewSize(800, 600))
-	myWindow.SetFixedSize(true)
+	myWindow.Resize(fyne.NewSize(1000, 600))
 	myWindow.ShowAndRun()
 }
