@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"image"
 	"log"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -118,8 +117,7 @@ func main() {
 	colorEntry.SetText("#666666")
 
 	makeButton := widget.NewButton("Make Lyrics Video", func() {
-		outLabel := widget.NewLabel("Beginning")
-		outputsBox.Add(outLabel)
+
 		inputs := map[string]string{
 			"lyrics_file":     lyricsFileLabel.Text,
 			"font_file":       fontFileLabel.Text,
@@ -127,6 +125,15 @@ func main() {
 			"music_file":      mp3FileLabel.Text,
 			"lyrics_color":    colorEntry.Text,
 		}
+
+		for _, v := range inputs {
+			if v == "" {
+				return
+			}
+		}
+
+		outLabel := widget.NewLabel("Beginning")
+		outputsBox.Add(outLabel)
 		outFileName, err := makeLyrics(inputs)
 		if err != nil {
 			log.Println(err)
@@ -146,10 +153,6 @@ func main() {
 	})
 	makeButton.Importance = widget.HighImportance
 
-	closeButton := widget.NewButton("Close", func() {
-		os.Exit(0)
-	})
-
 	formBox := container.NewVBox(
 		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
 		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
@@ -157,7 +160,7 @@ func main() {
 		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
 		container.NewHBox(widget.NewLabel("Color: "), container.New(&longEntry{}, colorEntry)),
 		widget.NewSeparator(),
-		container.New(&halfes{}, closeButton, makeButton),
+		container.New(&halfes{}, makeButton),
 	)
 
 	guitarImg, _, err := image.Decode(bytes.NewReader(GuitarJPG))
