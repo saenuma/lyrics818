@@ -19,14 +19,13 @@ import (
 )
 
 func main() {
-	os.Setenv("FYNE_THEME", "light")
 	rootPath, err := GetRootPath()
 	if err != nil {
 		panic(err)
 	}
 
 	myApp := app.New()
-	// myApp.Settings().SetTheme(&myTheme{})
+	myApp.Settings().SetTheme(&myTheme{})
 
 	myWindow := myApp.NewWindow("lyrics818: a more comfortable lyrics video generator")
 	myWindow.SetOnClosed(func() {
@@ -158,7 +157,7 @@ func main() {
 		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
 		container.NewHBox(widget.NewLabel("Color: "), container.New(&longEntry{}, colorEntry)),
 		widget.NewSeparator(),
-		container.NewCenter(container.NewHBox(closeButton, makeButton)),
+		container.New(&halfes{}, closeButton, makeButton),
 	)
 
 	guitarImg, _, err := image.Decode(bytes.NewReader(GuitarJPG))
