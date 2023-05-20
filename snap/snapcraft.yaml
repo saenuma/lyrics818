@@ -12,46 +12,24 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 architectures:
   - build-on: amd64
 
-environment:
-  LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/dri:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa-gl:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/xorg:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio/
-  LIBGL_DRIVERS_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/dri
-
 parts:
-  desktop-glib-only:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: glib-only
-    plugin: make
-    build-packages:
-      - libglib2.0-dev
-    stage-packages:
-      - libglib2.0-bin
-
   my-part:
     # See 'snapcraft plugins'
     plugin: go
     source: .
     build-snaps:
       - go
+    stage-snaps:
+      - ffmpeg
     build-packages:
       - build-essential
       - gcc
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-    stage-snaps:
-      - ffmpeg
-    stage-packages:
-      - libglu1-mesa
-    after:
-      - desktop-glib-only
-
 
 
 apps:
-  lyrics818:
-    command: bin/desktop-launch $SNAP/bin/lyrics818
-    plugs:
-    - opengl
-    - x11
-    - desktop
-    - wayland
+  keys117:
+    command: bin/lyrics818
+    extensions: [gnome-3-38]
