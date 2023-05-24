@@ -138,7 +138,7 @@ func main() {
 
 1. The background_file must be of dimensions (1366px x 768px)
 	`)
-	windowBox := container.NewVBox(
+	rightBox := container.NewVBox(
 		topBar,
 		widget.NewSeparator(),
 		helpWidget,
@@ -149,8 +149,17 @@ func main() {
 	formBox.Add(lyricsForm)
 	formBox.Refresh()
 
+	guitarImg, _, err := image.Decode(bytes.NewReader(l8shared.GuitarJPG))
+	if err != nil {
+		panic(err)
+	}
+	guitarFyneImage := canvas.NewImageFromImage(guitarImg)
+	guitarFyneImage.FillMode = canvas.ImageFillOriginal
+	guitarBox := container.NewCenter(guitarFyneImage)
+
+	windowBox := container.NewHBox(guitarBox, rightBox)
 	myWindow.SetContent(windowBox)
-	myWindow.Resize(fyne.NewSize(800, 600))
+	myWindow.Resize(fyne.NewSize(1000, 600))
 	// myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
 }
