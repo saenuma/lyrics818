@@ -29,7 +29,7 @@ parts:
       - libc6-dev
 
 
-apps:
+apps: 
   keys117:
     command: bin/linux
     extensions: [gnome]
