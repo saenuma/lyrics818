@@ -30,6 +30,6 @@ parts:
 
 
 apps: 
-  keys117:
+  lyrics818:
     command: bin/linux
     extensions: [gnome]
