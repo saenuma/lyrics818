@@ -3,7 +3,7 @@ module github.com/saenuma/lyrics818
 go 1.17
 
 require (
-	fyne.io/fyne/v2 v2.3.1
+	fyne.io/fyne/v2 v2.3.4
 	github.com/disintegration/imaging v1.6.2
 	github.com/goki/freetype v1.0.1
 	github.com/lucasb-eyer/go-colorful v1.2.0
@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	fyne.io/systray v1.10.1-0.20230312215936-7f71b037e260 // indirect
+	fyne.io/systray v1.10.1-0.20230403195833-7dc3c09283d6 // indirect
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.0.0 // indirect
