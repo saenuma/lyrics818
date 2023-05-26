@@ -19,19 +19,18 @@ parts:
     source: .
     build-snaps:
       - go
-    # stage-snaps:
-    #   - ffmpeg
     build-packages:
       - build-essential
       - gcc
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-      - libtinfo-dev
     override-build: |
       set -xe
       go mod download
       go build -o $SNAPCRAFT_PART_INSTALL/bin/linux ./linux
+      cp $SNAPCRAFT_PART_SRC/linux/ffmpeg/ffmpeg $SNAPCRAFT_PART_INSTALL/bin/ffmpeg
+
 
 apps: 
   lyrics818:
