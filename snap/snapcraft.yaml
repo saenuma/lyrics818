@@ -19,8 +19,8 @@ parts:
     source: .
     build-snaps:
       - go
-    stage-snaps:
-      - ffmpeg
+    # stage-snaps:
+    #   - ffmpeg
     build-packages:
       - build-essential
       - gcc
