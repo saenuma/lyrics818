@@ -98,6 +98,13 @@ func main() {
 			outputsBox.Add(widget.NewLabel("Beginning"))
 			inputs := getFormInputs(lyricsInputForm.Items)
 
+			// complete the paths
+			for k, v := range inputs {
+				if k != "lyrics_color" {
+					inputs[k] = filepath.Join(rootPath, v)
+				}
+			}
+
 			command := GetFFMPEGCommand()
 			outFileName, err := l8shared.MakeVideo(inputs, command)
 			if err != nil {
