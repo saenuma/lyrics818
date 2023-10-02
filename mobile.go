@@ -89,10 +89,12 @@ func makeMobileFrames(outName string, totalSeconds int, renderPath string, conf 
 			for seconds := startSeconds; seconds < endSeconds; seconds++ {
 				txt := lyricsObject[seconds]
 				if txt == "" {
-					img, err := imaging.Open(filepath.Join(rootPath, conf.Get("mobile_background_file")))
-					if err != nil {
-						panic(err)
-					}
+					bgColor, _ := colorful.Hex(conf.Get("mobile_background_color"))
+					bg := image.NewUniform(bgColor)
+
+					img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
+					draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
+
 					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 					imaging.Save(img, outPath)
 				} else {

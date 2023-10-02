@@ -135,7 +135,7 @@ music_file:
 
 		outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
 		fullOutPath := filepath.Join(rootPath, outName)
-		err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{"framerate": "24"},
+		err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{},
 			rootPath, fullOutPath)
 		if err != nil {
 			panic(err)
