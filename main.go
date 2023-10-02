@@ -54,23 +54,21 @@ Main Commands:
 // a sample can be found at https://sae.ng/static/bmtf.txt
 lyrics_file:
 
-
-// the font_file is the file of a ttf font that the text would be printed with.
-// you could find a font on https://fonts.google.com
-font_file:
-
-// lyrics_color is the color of the rendered lyric. Example is #af1382
-lyrics_color: #666666
-
 // background_file is the background that would be used for this lyric video.
 // the background_file must be a png
 // the background_file must be of dimensions (1366px x 768px)
 laptop_background_file:
 
-// background_file is the background that would be used for this lyric video.
-// the background_file must be a png
-// the background_file must be of dimensions (800px x 1000px)
-mobile_background_file:
+// mobile background color in hex format.
+mobile_background_color: #ffffff
+
+// the font_file is the file of a ttf font that the text would be printed with.
+// you could find a font on https://fonts.google.com
+font_file:
+
+// lyrics_color is the color of the rendered lyric in hex format. Example is #af1382
+lyrics_color: #666666
+
 
 // music_file is the song to add its audio to the video.
 // lyrics818 expects a mp3 music file

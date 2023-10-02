@@ -110,10 +110,12 @@ func makeMobileFrames(outName string, totalSeconds int, renderPath string, conf 
 	for seconds := (jobsPerThread * numberOfCPUS); seconds < totalSeconds; seconds++ {
 		txt := lyricsObject[seconds]
 		if txt == "" {
-			img, err := imaging.Open(filepath.Join(rootPath, conf.Get("mobile_background_file")))
-			if err != nil {
-				panic(err)
-			}
+			bgColor, _ := colorful.Hex(conf.Get("mobile_background_color"))
+			bg := image.NewUniform(bgColor)
+
+			img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
+			draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
+
 			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 			imaging.Save(img, outPath)
 		} else {
@@ -178,17 +180,11 @@ func wordWrapMobile(conf zazabul.Config, text string, writeWidth int) []string {
 func writeLyricsToImageMobile(conf zazabul.Config, text string) image.Image {
 	rootPath, _ := GetRootPath()
 
-	fileHandle, err := os.Open(filepath.Join(rootPath, conf.Get("mobile_background_file")))
-	if err != nil {
-		panic(err)
-	}
-	pngData, _, err := image.Decode(fileHandle)
-	if err != nil {
-		panic(err)
-	}
-	b := pngData.Bounds()
-	img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
-	draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
+	bgColor, _ := colorful.Hex(conf.Get("mobile_background_color"))
+	bg := image.NewUniform(bgColor)
+
+	img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
+	draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
 
 	lyricsColor, _ := colorful.Hex(conf.Get("lyrics_color"))
 	fg := image.NewUniform(lyricsColor)
