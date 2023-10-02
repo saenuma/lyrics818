@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -136,33 +135,18 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 	laptopLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
 	mobileLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	fmt.Println(laptopLumpPath)
+	fmt.Println(mobileLumpPath)
 
-	var lvlt MakeVideoLumpTemp
-	var mvlt MakeVideoLumpTemp
+	lvlt, err := makeFramesLumpFile(inFramesLaptopDirectory, laptopLumpPath)
+	if err != nil {
+		panic(err)
+	}
 
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		out, err := makeFramesLumpFile(inFramesLaptopDirectory, laptopLumpPath)
-		if err != nil {
-			panic(err)
-		}
-		lvlt = out
-	}(&wg)
-
-	wg.Add(1)
-
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		out, err := makeFramesLumpFile(inFramesMobileDirectory, mobileLumpPath)
-		if err != nil {
-			panic(err)
-		}
-		mvlt = out
-	}(&wg)
-
-	wg.Wait()
+	mvlt, err := makeFramesLumpFile(inFramesMobileDirectory, mobileLumpPath)
+	if err != nil {
+		panic(err)
+	}
 
 	// write meta
 	outStr := "meta:\n"

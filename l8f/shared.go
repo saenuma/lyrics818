@@ -3,7 +3,6 @@ package l8f
 import (
 	"math/rand"
 	"os"
-	"time"
 
 	"github.com/pkg/errors"
 )
@@ -16,12 +15,11 @@ func doesPathExists(p string) bool {
 }
 
 func untestedRandomString(length int) string {
-	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	const charset = "abcdefghijklmnopqrstuvwxyz1234567890"
 
 	b := make([]byte, length)
 	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
 }

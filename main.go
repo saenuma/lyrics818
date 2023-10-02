@@ -140,8 +140,8 @@ music_file:
 		if err != nil {
 			panic(err)
 		}
-		os.RemoveAll(lrenderPath)
-		os.RemoveAll(mrenderPath)
+		// os.RemoveAll(lrenderPath)
+		// os.RemoveAll(mrenderPath)
 
 		color2.Green.Println("The video has been generated into: ", fullOutPath)
 

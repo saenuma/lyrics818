@@ -319,9 +319,9 @@ func ReadLaptopFrame(inVideoPath string, seconds int) (*image.Image, error) {
 	return &img, nil
 }
 
-// Read frames for 1 seconds, starting from the 'seconds' parameter
+// Read frame for 1 seconds, starting from the 'seconds' parameter
 // 'seconds' parameter starts from 1
-func ReadMobileFrames(inVideoPath string, seconds int) (*image.Image, error) {
+func ReadMobileFrame(inVideoPath string, seconds int) (*image.Image, error) {
 	vhSize, err := getHeaderLengthFromVideo(inVideoPath)
 	if err != nil {
 		return nil, err
