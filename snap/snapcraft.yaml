@@ -21,6 +21,8 @@ parts:
     # See 'snapcraft plugins'
     plugin: go
     source: .
+    build-snaps:
+      - go
 
 
 apps:
