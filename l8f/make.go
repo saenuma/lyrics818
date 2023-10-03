@@ -132,11 +132,8 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 		}
 	}
 
-	laptopLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
-	mobileLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10))
-
-	fmt.Println(laptopLumpPath)
-	fmt.Println(mobileLumpPath)
+	laptopLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10)+".bin")
+	mobileLumpPath := filepath.Join(tmpVideoDirectory, ".tmp_"+untestedRandomString(10)+".bin")
 
 	lvlt, err := makeFramesLumpFile(inFramesLaptopDirectory, laptopLumpPath)
 	if err != nil {
@@ -239,6 +236,10 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 	if err != nil {
 		return errors.Wrap(err, "io error")
 	}
+
+	// cleanup
+	os.Remove(laptopLumpPath)
+	os.Remove(mobileLumpPath)
 
 	return nil
 }
