@@ -65,7 +65,7 @@ func main() {
 			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 			saeBtn,
 		)
-		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
+		dialog.ShowCustom("About lyrics818", "Close", boxes, myWindow)
 	})
 	topBar := container.NewCenter(container.NewHBox(openWDBtn, viewSampleBtn, aboutBtn))
 
