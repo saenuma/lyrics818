@@ -1,0 +1,6 @@
+[Desktop Entry]
+Version=1.3.0
+Type=Application
+Name=Lyrics818
+Exec=lyrics818
+Icon=${SNAP}/meta/gui/lyrics818.png
