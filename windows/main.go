@@ -5,7 +5,6 @@ import (
 	"image"
 	"log"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 
 	"fyne.io/fyne/v2"
@@ -117,14 +116,18 @@ func main() {
 	colorEntry := widget.NewEntry()
 	colorEntry.SetText("#666666")
 
+	mobileBGColorEntry := widget.NewEntry()
+	mobileBGColorEntry.SetText("#ffffff")
+
 	makeButton := widget.NewButton("Make Lyrics Video", func() {
 
 		inputs := map[string]string{
-			"lyrics_file":     lyricsFileLabel.Text,
-			"font_file":       fontFileLabel.Text,
-			"background_file": backgroundFileLabel.Text,
-			"music_file":      mp3FileLabel.Text,
-			"lyrics_color":    colorEntry.Text,
+			"lyrics_file":             lyricsFileLabel.Text,
+			"font_file":               fontFileLabel.Text,
+			"background_file":         backgroundFileLabel.Text,
+			"music_file":              mp3FileLabel.Text,
+			"lyrics_color":            colorEntry.Text,
+			"mobile_background_color": mobileBGColorEntry.Text,
 		}
 
 		for _, v := range inputs {
@@ -136,21 +139,13 @@ func main() {
 		outLabel := widget.NewLabel("Beginning")
 		outputsBox.Add(outLabel)
 
-		outFileName, err := l8shared.MakeVideo2(inputs)
+		_, err := l8shared.MakeVideo2(inputs)
 		if err != nil {
 			log.Println(err)
 			outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
 			return
 		}
-		openOutputButton := widget.NewButton("Open Video", func() {
-			if runtime.GOOS == "windows" {
-				exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-			} else if runtime.GOOS == "linux" {
-				exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-			}
-		})
 		outLabel.SetText("Done")
-		outputsBox.Add(openOutputButton)
 		outputsBox.Refresh()
 	})
 	makeButton.Importance = widget.HighImportance
@@ -161,6 +156,8 @@ func main() {
 		container.NewHBox(widget.NewLabel("Background File: "), getBackfoundFileBtn, backgroundFileLabel),
 		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
 		container.NewHBox(widget.NewLabel("Color: "), container.New(&l8shared.LongEntry{}, colorEntry)),
+		container.NewHBox(widget.NewLabel("Mobile Background Color: "), container.New(&l8shared.LongEntry{}, mobileBGColorEntry)),
+
 		widget.NewSeparator(),
 		container.New(&l8shared.Halfes{}, makeButton),
 	)

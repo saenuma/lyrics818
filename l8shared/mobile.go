@@ -14,7 +14,6 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	color2 "github.com/gookit/color"
 	"github.com/lucasb-eyer/go-colorful"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
@@ -85,15 +84,12 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 		}
 	}
 
-	color2.Green.Println("Completed generating mobile frames of your lyrics video")
 }
 
 func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []string {
-	rootPath, _ := GetRootPath()
-
 	rgba := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
 
-	fontBytes, err := os.ReadFile(filepath.Join(rootPath, inputs["font_file"]))
+	fontBytes, err := os.ReadFile(inputs["font_file"])
 	if err != nil {
 		panic(err)
 	}
@@ -138,8 +134,6 @@ func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []str
 }
 
 func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image {
-	rootPath, _ := GetRootPath()
-
 	bgColor, _ := colorful.Hex(inputs["mobile_background_color"])
 	bg := image.NewUniform(bgColor)
 
@@ -149,7 +143,7 @@ func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image
 	lyricsColor, _ := colorful.Hex(inputs["lyrics_color"])
 	fg := image.NewUniform(lyricsColor)
 
-	fontBytes, err := os.ReadFile(filepath.Join(rootPath, inputs["font_file"]))
+	fontBytes, err := os.ReadFile(inputs["font_file"])
 	if err != nil {
 		panic(err)
 	}
