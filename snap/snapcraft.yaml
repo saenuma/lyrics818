@@ -30,9 +30,17 @@ parts:
       set -xe
       go mod download
       go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 ./linux
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/play ./play
+
 
 
 apps: 
   lyrics818:
     command: bin/lyrics818
     extensions: [gnome]
+  
+  play:
+    command: bin/play
+    extensions: [gnome]
+    plugs:
+      - audio-playback
