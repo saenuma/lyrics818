@@ -12,6 +12,10 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 architectures:
   - build-on: amd64
 
+layout:
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
+    
 parts:
   my-part:
     # See 'snapcraft plugins'
