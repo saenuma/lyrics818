@@ -8,27 +8,39 @@ import (
 	"os"
 	"time"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/disintegration/imaging"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 	"github.com/saenuma/lyrics818/l8f"
 )
 
 func main() {
+	os.Setenv("FYNE_THEME", "dark")
 	if len(os.Args) == 1 {
 		panic("Expecting the filename of a video as only argument")
 	}
 
 	inVideoPath := os.Args[1]
+	mobilePlay := false
+	if len(os.Args) == 3 && os.Args[2] == "mobile" {
+		mobilePlay = true
+	}
 
 	myApp := app.New()
 	w := myApp.NewWindow("playing lyrics818 video - " + inVideoPath)
 
-	blackImg := image.NewRGBA(image.Rect(0, 0, 1366, 768))
+	var blackImg *image.RGBA
+	if mobilePlay {
+		blackImg = image.NewRGBA(image.Rect(0, 0, 480, 600))
+	} else {
+		blackImg = image.NewRGBA(image.Rect(0, 0, 1366, 768))
+	}
 	draw.Draw(blackImg, blackImg.Bounds(), image.NewUniform(color.Black), blackImg.Bounds().Min, draw.Src)
 
 	videoImage := canvas.NewImageFromImage(blackImg)
@@ -79,16 +91,29 @@ func main() {
 		startTime := time.Now()
 
 		beginSeconds := TimeFormatToSeconds(seek)
-		currFrame, _ := l8f.ReadLaptopFrame(inVideoPath, beginSeconds)
-		videoImage.Image = *currFrame
+		var currFrame *image.Image
+		if mobilePlay {
+			currFrame, _ = l8f.ReadMobileFrame(inVideoPath, 0)
+			tmp := imaging.Fit(*currFrame, 400, 500, imaging.Lanczos)
+			videoImage.Image = tmp
+		} else {
+			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, 0)
+			videoImage.Image = *currFrame
+		}
 		videoImage.Refresh()
 
 		// We can wait for the sound to finish playing using something like this
 		for player.IsPlaying() {
 			seconds := time.Since(startTime).Seconds() + float64(beginSeconds)
 			playTime.SetText(secondsToMinutes(int(seconds)))
-			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
-			videoImage.Image = *currFrame
+			if mobilePlay {
+				currFrame, _ = l8f.ReadMobileFrame(inVideoPath, int(seconds))
+				tmp := imaging.Fit(*currFrame, 480, 600, imaging.Lanczos)
+				videoImage.Image = tmp
+			} else {
+				currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
+				videoImage.Image = *currFrame
+			}
 			videoImage.Refresh()
 
 			time.Sleep(time.Second)
@@ -111,6 +136,7 @@ func main() {
 
 	go beginPlayAt(player, "0:00")
 
-	w.SetFixedSize(false)
+	w.Resize(fyne.NewSize(1200, 500))
+	// w.SetFixedSize(true)
 	w.ShowAndRun()
 }
