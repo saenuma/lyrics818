@@ -7,6 +7,8 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/goki/freetype v1.0.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/hajimehoshi/oto/v2 v2.4.2
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf
@@ -18,6 +20,7 @@ require (
 	fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a // indirect
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/ebitengine/purego v0.4.1 // indirect
 	github.com/fredbi/uri v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fyne-io/gl-js v0.0.0-20220119005834-d2da28d9ccfe // indirect
