@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -35,11 +34,13 @@ func main() {
 	myApp := app.New()
 	w := myApp.NewWindow("playing lyrics818 video - " + inVideoPath)
 
+	tmpWf64, tmpHf64 := 1366*0.8, 768*0.8
+	laptopW, laptopH := int(tmpWf64), int(tmpHf64)
 	var blackImg *image.RGBA
 	if mobilePlay {
 		blackImg = image.NewRGBA(image.Rect(0, 0, 480, 600))
 	} else {
-		blackImg = image.NewRGBA(image.Rect(0, 0, 1366, 768))
+		blackImg = image.NewRGBA(image.Rect(0, 0, laptopW, laptopH))
 	}
 	draw.Draw(blackImg, blackImg.Bounds(), image.NewUniform(color.Black), blackImg.Bounds().Min, draw.Src)
 
@@ -98,7 +99,8 @@ func main() {
 			videoImage.Image = tmp
 		} else {
 			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, 0)
-			videoImage.Image = *currFrame
+			tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+			videoImage.Image = tmp
 		}
 		videoImage.Refresh()
 
@@ -112,7 +114,8 @@ func main() {
 				videoImage.Image = tmp
 			} else {
 				currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
-				videoImage.Image = *currFrame
+				tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+				videoImage.Image = tmp
 			}
 			videoImage.Refresh()
 
@@ -136,7 +139,6 @@ func main() {
 
 	go beginPlayAt(player, "0:00")
 
-	w.Resize(fyne.NewSize(1200, 500))
 	// w.SetFixedSize(true)
 	w.ShowAndRun()
 }
