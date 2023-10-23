@@ -6,9 +6,6 @@ import (
 	"image/color"
 	"image/draw"
 	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"time"
 
 	"fyne.io/fyne/v2/app"
@@ -23,14 +20,14 @@ import (
 )
 
 func main() {
-	if runtime.GOOS == "linux" {
-		hd, _ := os.UserHomeDir()
-		dd := os.Getenv("SNAP_USER_DATA")
-		if !strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) && dd != "" {
-			outpath := filepath.Join(dd, ".asoundrc")
-			os.WriteFile(outpath, SoundRC, 0666)
-		}
-	}
+	// if runtime.GOOS == "linux" {
+	// 	hd, _ := os.UserHomeDir()
+	// 	dd := os.Getenv("SNAP_USER_DATA")
+	// 	if !strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) && dd != "" {
+	// 		outpath := filepath.Join(dd, ".asoundrc")
+	// 		os.WriteFile(outpath, SoundRC, 0666)
+	// 	}
+	// }
 
 	os.Setenv("FYNE_THEME", "dark")
 	if len(os.Args) == 1 {
