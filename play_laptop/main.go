@@ -119,7 +119,5 @@ func main() {
 	w.SetContent(windowBox)
 
 	go beginPlayAt(player, "0:00")
-
-	// w.SetFixedSize(true)
 	w.ShowAndRun()
 }
