@@ -17,40 +17,24 @@ import (
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 	"github.com/saenuma/lyrics818/l8f"
+	"github.com/saenuma/lyrics818/l8shared"
 )
 
 func main() {
-	// if runtime.GOOS == "linux" {
-	// 	hd, _ := os.UserHomeDir()
-	// 	dd := os.Getenv("SNAP_USER_DATA")
-	// 	if !strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) && dd != "" {
-	// 		outpath := filepath.Join(dd, ".asoundrc")
-	// 		os.WriteFile(outpath, SoundRC, 0666)
-	// 	}
-	// }
-
 	os.Setenv("FYNE_THEME", "dark")
 	if len(os.Args) == 1 {
 		panic("Expecting the filename of a video as only argument")
 	}
 
 	inVideoPath := os.Args[1]
-	mobilePlay := false
-	if len(os.Args) == 3 && os.Args[2] == "mobile" {
-		mobilePlay = true
-	}
 
 	myApp := app.New()
 	w := myApp.NewWindow("playing lyrics818 video - " + inVideoPath)
 
 	tmpWf64, tmpHf64 := 1366*0.8, 768*0.8
 	laptopW, laptopH := int(tmpWf64), int(tmpHf64)
-	var blackImg *image.RGBA
-	if mobilePlay {
-		blackImg = image.NewRGBA(image.Rect(0, 0, 480, 600))
-	} else {
-		blackImg = image.NewRGBA(image.Rect(0, 0, laptopW, laptopH))
-	}
+
+	blackImg := image.NewRGBA(image.Rect(0, 0, laptopW, laptopH))
 	draw.Draw(blackImg, blackImg.Bounds(), image.NewUniform(color.Black), blackImg.Bounds().Min, draw.Src)
 
 	videoImage := canvas.NewImageFromImage(blackImg)
@@ -100,32 +84,20 @@ func main() {
 		player.Play()
 		startTime := time.Now()
 
-		beginSeconds := TimeFormatToSeconds(seek)
-		var currFrame *image.Image
-		if mobilePlay {
-			currFrame, _ = l8f.ReadMobileFrame(inVideoPath, 0)
-			tmp := imaging.Fit(*currFrame, 400, 500, imaging.Lanczos)
-			videoImage.Image = tmp
-		} else {
-			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, 0)
-			tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
-			videoImage.Image = tmp
-		}
+		beginSeconds := l8shared.TimeFormatToSeconds(seek)
+
+		currFrame, _ := l8f.ReadLaptopFrame(inVideoPath, 0)
+		tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+		videoImage.Image = tmp
 		videoImage.Refresh()
 
 		// We can wait for the sound to finish playing using something like this
 		for player.IsPlaying() {
 			seconds := time.Since(startTime).Seconds() + float64(beginSeconds)
-			playTime.SetText(secondsToMinutes(int(seconds)))
-			if mobilePlay {
-				currFrame, _ = l8f.ReadMobileFrame(inVideoPath, int(seconds))
-				tmp := imaging.Fit(*currFrame, 480, 600, imaging.Lanczos)
-				videoImage.Image = tmp
-			} else {
-				currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
-				tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
-				videoImage.Image = tmp
-			}
+			playTime.SetText(l8shared.SecondsToMinutes(int(seconds)))
+			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
+			tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+			videoImage.Image = tmp
 			videoImage.Refresh()
 
 			time.Sleep(time.Second)
@@ -139,7 +111,7 @@ func main() {
 			go beginPlayAt(player, playTime.Text)
 		}
 	})
-	totalLengthLabel := widget.NewLabel(secondsToMinutes(videoLength))
+	totalLengthLabel := widget.NewLabel(l8shared.SecondsToMinutes(videoLength))
 
 	toolsBox := container.NewCenter(container.NewHBox(playBtn, playTime, totalLengthLabel))
 
