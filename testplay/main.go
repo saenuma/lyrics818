@@ -2,9 +2,7 @@ package main
 
 import (
 	"bytes"
-	"image"
-	"image/color"
-	"image/draw"
+	"fmt"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -35,6 +33,10 @@ func main() {
 	})
 
 	widthSelect := widget.NewSelect([]string{"laptop", "mobile"}, nil)
+	widthSelect.Selected = "laptop"
+
+	startAtEntry := widget.NewEntry()
+	startAtEntry.SetText("0:00")
 
 	// Usually 44100 or 48000. Other values might cause distortions in Oto
 	samplingRate := 44100
@@ -57,35 +59,53 @@ func main() {
 	tmpWf64, tmpHf64 := 1366*0.8, 768*0.8
 	laptopW, laptopH := int(tmpWf64), int(tmpHf64)
 
-	blackImg := image.NewRGBA(image.Rect(0, 0, laptopW, laptopH))
-	draw.Draw(blackImg, blackImg.Bounds(), image.NewUniform(color.Black), blackImg.Bounds().Min, draw.Src)
-
-	videoImage := canvas.NewImageFromImage(blackImg)
-	videoImage.FillMode = canvas.ImageFillOriginal
+	videoImage := canvas.NewImageFromImage(nil)
 
 	playTime := widget.NewLabel("0:00")
 	totalLengthLabel := widget.NewLabel("0:00")
 
-	beginPlayAt := func(player oto.Player, seek, inVideoPath string) {
+	beginPlayAt := func(player oto.Player, seek, inVideoPath, mode string) {
 		// Play starts playing the sound and returns without waiting for it (Play() is async).
 		player.Play()
 		startTime := time.Now()
 
 		beginSeconds := l8shared.TimeFormatToSeconds(seek)
 
-		currFrame, _ := l8f.ReadLaptopFrame(inVideoPath, 0)
-		tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
-		videoImage.Image = tmp
-		videoImage.Refresh()
+		if mode == "laptop" {
+			currFrame, _ := l8f.ReadLaptopFrame(inVideoPath, 0)
+			tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+			videoImage.Image = tmp
+			videoImage.FillMode = canvas.ImageFillOriginal
+			videoImage.Refresh()
+		} else if mode == "mobile" {
+			currFrame, _ := l8f.ReadMobileFrame(inVideoPath, 0)
+			tmp := imaging.Fit(*currFrame, 400, 500, imaging.Lanczos)
+			videoImage.Image = tmp
+			videoImage.FillMode = canvas.ImageFillOriginal
+			videoImage.Refresh()
+		}
 
 		// We can wait for the sound to finish playing using something like this
 		for player.IsPlaying() {
 			seconds := time.Since(startTime).Seconds() + float64(beginSeconds)
 			playTime.SetText(l8shared.SecondsToMinutes(int(seconds)))
-			currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
-			tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
-			videoImage.Image = tmp
-			videoImage.Refresh()
+			// currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
+			// tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+			// videoImage.Image = tmp
+			// videoImage.Refresh()
+
+			if mode == "laptop" {
+				currFrame, _ := l8f.ReadLaptopFrame(inVideoPath, int(seconds))
+				tmp := imaging.Fit(*currFrame, laptopW, laptopH, imaging.Lanczos)
+				videoImage.Image = tmp
+				videoImage.Refresh()
+			} else if mode == "mobile" {
+				currFrame, _ := l8f.ReadMobileFrame(inVideoPath, int(seconds))
+				tmp := imaging.Fit(*currFrame, 400, 500, imaging.Lanczos)
+				videoImage.Image = tmp
+
+				videoImage.Refresh()
+			}
 
 			time.Sleep(time.Second)
 		}
@@ -114,6 +134,7 @@ func main() {
 			panic("mp3.NewDecoder failed: " + err.Error())
 		}
 
+		fmt.Println(decodedMp3.Length())
 		// Create a new 'player' that will handle our sound. Paused by default.
 		player := otoCtx.NewPlayer(decodedMp3)
 
@@ -122,7 +143,7 @@ func main() {
 		vidBox.Add(container.NewPadded(videoImage))
 		vidBox.Add(toolsBox)
 
-		go beginPlayAt(player, "0:00", vidFileLabel.Text)
+		go beginPlayAt(player, startAtEntry.Text, vidFileLabel.Text, widthSelect.Selected)
 
 	})
 
@@ -130,6 +151,7 @@ func main() {
 		container.NewHBox(widget.NewLabel("Lyrics818 Video File: "), getVidFileBtn),
 		vidFileLabel,
 		container.NewHBox(widget.NewLabel("Laptop or Mobile: "), widthSelect),
+		container.NewHBox(widget.NewLabel("Start at: "), container.New(&l8shared.LongEntry{}, startAtEntry)),
 
 		widget.NewSeparator(),
 		playBtn,
