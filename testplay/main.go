@@ -1,8 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
+	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -11,14 +13,16 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/disintegration/imaging"
-	"github.com/hajimehoshi/go-mp3"
-	"github.com/hajimehoshi/oto/v2"
 	"github.com/saenuma/lyrics818/l8f"
 	"github.com/saenuma/lyrics818/l8shared"
 	sDialog "github.com/sqweek/dialog"
 )
 
 func main() {
+	ffplayCmd := GetFFPlayCommand()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // cancel when we are finished consuming integers
+
 	myApp := app.New()
 	w := myApp.NewWindow("Test Videos made with Lyrics818")
 
@@ -38,24 +42,6 @@ func main() {
 	startAtEntry := widget.NewEntry()
 	startAtEntry.SetText("0:00")
 
-	// Usually 44100 or 48000. Other values might cause distortions in Oto
-	samplingRate := 44100
-
-	// Number of channels (aka locations) to play sounds from. Either 1 or 2.
-	// 1 is mono sound, and 2 is stereo (most speakers are stereo).
-	numOfChannels := 2
-
-	// Bytes used by a channel to represent one sample. Either 1 or 2 (usually 2).
-	audioBitDepth := 2
-
-	// Remember that you should **not** create more than one context
-	otoCtx, readyChan, err := oto.NewContext(samplingRate, numOfChannels, audioBitDepth)
-	if err != nil {
-		panic("oto.NewContext failed: " + err.Error())
-	}
-	// It might take a bit for the hardware audio devices to be ready, so we wait on the channel.
-	<-readyChan
-
 	tmpWf64, tmpHf64 := 1366*0.8, 768*0.8
 	laptopW, laptopH := int(tmpWf64), int(tmpHf64)
 
@@ -64,11 +50,14 @@ func main() {
 	playTime := widget.NewLabel("0:00")
 	totalLengthLabel := widget.NewLabel("0:00")
 
-	beginPlayAt := func(player oto.Player, seek, inVideoPath, mode string) {
-		// Play starts playing the sound and returns without waiting for it (Play() is async).
-		player.Play()
-		startTime := time.Now()
+	rootPath, _ := l8shared.GetRootPath()
+	tmpAudioPath := filepath.Join(rootPath, "tmp_audio.mp3")
 
+	beginPlayAt := func(seek, inVideoPath, mode string) {
+		startTime := time.Now()
+		go func() {
+			exec.CommandContext(ctx, ffplayCmd, tmpAudioPath, "-nodisp", "-ss", seek).Run()
+		}()
 		beginSeconds := l8shared.TimeFormatToSeconds(seek)
 
 		if mode == "laptop" {
@@ -86,7 +75,7 @@ func main() {
 		}
 
 		// We can wait for the sound to finish playing using something like this
-		for player.IsPlaying() {
+		for {
 			seconds := time.Since(startTime).Seconds() + float64(beginSeconds)
 			playTime.SetText(l8shared.SecondsToMinutes(int(seconds)))
 			// currFrame, _ = l8f.ReadLaptopFrame(inVideoPath, int(seconds))
@@ -121,6 +110,8 @@ func main() {
 			panic(err)
 		}
 
+		os.WriteFile(tmpAudioPath, audioBytes, 0777)
+
 		videoLength, err := l8f.GetVideoLength(vidFileLabel.Text)
 		if err != nil {
 			panic(err)
@@ -128,22 +119,12 @@ func main() {
 
 		totalLengthLabel.SetText(l8shared.SecondsToMinutes(videoLength))
 
-		// Decode file
-		decodedMp3, err := mp3.NewDecoder(bytes.NewReader(audioBytes))
-		if err != nil {
-			panic("mp3.NewDecoder failed: " + err.Error())
-		}
-
-		fmt.Println(decodedMp3.Length())
-		// Create a new 'player' that will handle our sound. Paused by default.
-		player := otoCtx.NewPlayer(decodedMp3)
-
 		toolsBox := container.NewCenter(container.NewHBox(playTime, totalLengthLabel))
 
 		vidBox.Add(container.NewPadded(videoImage))
 		vidBox.Add(toolsBox)
 
-		go beginPlayAt(player, startAtEntry.Text, vidFileLabel.Text, widthSelect.Selected)
+		go beginPlayAt(startAtEntry.Text, vidFileLabel.Text, widthSelect.Selected)
 
 	})
 
@@ -158,6 +139,9 @@ func main() {
 	)
 
 	windowBox := container.NewHBox(formBox, vidBox)
+	w.SetOnClosed(func() {
+		cancel()
+	})
 	w.SetContent(windowBox)
 	w.Resize(fyne.NewSize(1200, 600))
 	w.ShowAndRun()
