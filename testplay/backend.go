@@ -77,7 +77,7 @@ func startBackend() {
 
 		currentDevice = r.FormValue("device")
 		os.WriteFile(tmpAudioPath, audioBytes, 0777)
-		fmt.Println("ok")
+		fmt.Fprint(w, "ok")
 	})
 
 	r.HandleFunc("/get_audio", func(w http.ResponseWriter, r *http.Request) {

@@ -31,6 +31,11 @@
 </head>
 <body>
   <script>
+    function timeFormatToSeconds(startStr) {
+      var parts = startStr.split(":")
+      seconds = 60 * parseInt(parts[0]) + parseInt(parts[1])
+      return seconds
+    }
     audioAddr = ""
 
     $(document).ready(function() {
@@ -51,15 +56,15 @@
           "start_time": $("input[name=start_time]").val()
         }
 
-        lastFrame = 0
+        lastFrame = timeFormatToSeconds(toSend["start_time"])
         $.post("/begin_player", toSend, function(data) {
           var audioPlayer = document.createElement("audio")
           audioPlayer.src = "/get_audio"
           audioPlayer.load()
-
+          audioPlayer.currentTime = lastFrame
           audioPlayer.play()
 
-          $("#frame").attr("src", "/get_frame/0") 
+          $("#frame").attr("src", "/get_frame/" + lastFrame.toString()) 
 
           setInterval(function() {
             lastFrame += 1
