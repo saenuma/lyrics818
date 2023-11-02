@@ -62,6 +62,8 @@
       $("#play_btn").click(function(e) {
         e.preventDefault();
 
+        $("#play_btn").attr("disabled", "disabled")
+        
         var toSend = {
           "vid_file": $("#id_l818_file").val(),
           "device": $("select[name=device]").val(),
