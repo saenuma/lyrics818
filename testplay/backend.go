@@ -30,6 +30,7 @@ func startBackend() {
 	tmpAudioPath := filepath.Join(playerPath, "tmp_audio.mp3")
 
 	currentVideoPath := ""
+	currentDevice := ""
 
 	r.HandleFunc("/gs/{obj}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -74,6 +75,7 @@ func startBackend() {
 			panic(err)
 		}
 
+		currentDevice = r.FormValue("device")
 		os.WriteFile(tmpAudioPath, audioBytes, 0777)
 		fmt.Println("ok")
 	})
@@ -87,8 +89,14 @@ func startBackend() {
 		frameNumStr := vars["number"]
 
 		frameNum, _ := strconv.Atoi(frameNumStr)
-		currFrame, _ := l8f.ReadLaptopFrame(currentVideoPath, frameNum)
-		imaging.Save(*currFrame, filepath.Join(playerPath, "frame.png"))
+		if currentDevice == "laptop" {
+			currFrame, _ := l8f.ReadLaptopFrame(currentVideoPath, frameNum)
+			imaging.Save(*currFrame, filepath.Join(playerPath, "frame.png"))
+		} else {
+			currFrame, _ := l8f.ReadMobileFrame(currentVideoPath, frameNum)
+			imaging.Save(*currFrame, filepath.Join(playerPath, "frame.png"))
+
+		}
 
 		http.ServeFile(w, r, filepath.Join(playerPath, "frame.png"))
 	})
