@@ -36,6 +36,18 @@
       seconds = 60 * parseInt(parts[0]) + parseInt(parts[1])
       return seconds
     }
+
+    function secondsToMinutes(inSeconds) {
+	    var minutes = inSeconds / 60
+	    var seconds = inSeconds % 60
+      var returnStr = Math.floor(minutes).toString() + ":"
+      if (Math.floor(seconds) < 10) {
+        returnStr += "0"
+      }
+      returnStr += Math.floor(seconds).toString()
+      return returnStr
+    }
+
     audioAddr = ""
 
     $(document).ready(function() {
@@ -58,6 +70,12 @@
 
         lastFrame = timeFormatToSeconds(toSend["start_time"])
         $.post("/begin_player", toSend, function(data) {
+
+          var currentVideoLength = ""
+          $.get("/get_current_vid_length", function(data) {
+            currentVideoLength = data;
+          })
+
           var audioPlayer = document.createElement("audio")
           audioPlayer.src = "/get_audio"
           audioPlayer.load()
@@ -69,6 +87,7 @@
           setInterval(function() {
             lastFrame += 1
             $("#frame").attr("src", "/get_frame/" + lastFrame.toString())
+            $("#current_time").text("Play Time: " + secondsToMinutes(lastFrame)  + " Duration: " + currentVideoLength )
           }, 1000)
         })
       })
@@ -103,6 +122,7 @@
 
     <div id="player_box">
       <img id="frame" />
+      <p id="current_time"></p>
     </div>
   </div>
 </body>

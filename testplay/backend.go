@@ -84,6 +84,15 @@ func startBackend() {
 		http.ServeFile(w, r, tmpAudioPath)
 	})
 
+	r.HandleFunc("/get_current_vid_length", func(w http.ResponseWriter, r *http.Request) {
+		videoLength, err := l8f.GetVideoLength(currentVideoPath)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Fprint(w, l8shared.SecondsToMinutes(videoLength))
+	})
+
 	r.HandleFunc("/get_frame/{number}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		frameNumStr := vars["number"]
