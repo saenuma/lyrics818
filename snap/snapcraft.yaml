@@ -32,11 +32,12 @@ parts:
       - libasound2-dev
     stage-packages:
       - libasound2-dev
+      - ffmpeg
     override-build: |
       set -xe
       go mod download
       go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 ./linux
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/play ./play
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/testplay_linux ./testplay
 
 
 
@@ -45,8 +46,8 @@ apps:
     command: bin/lyrics818
     extensions: [gnome]
   
-  play:
-    command: bin/play
+  testplay:
+    command: bin/testplay
     extensions: [gnome]
     plugs:
       - alsa
