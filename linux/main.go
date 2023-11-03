@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -76,10 +75,10 @@ func main() {
 
 	getLyricsForm := func() *widget.Form {
 
-		txtFiles := getFilesOfType(rootPath, ".txt")
-		mp3Files := getFilesOfType(rootPath, ".mp3")
-		ttfFiles := getFilesOfType(rootPath, ".ttf")
-		pngFiles := getFilesOfType(rootPath, ".png")
+		txtFiles := l8shared.GetFilesOfType(rootPath, ".txt")
+		mp3Files := l8shared.GetFilesOfType(rootPath, ".mp3")
+		ttfFiles := l8shared.GetFilesOfType(rootPath, ".ttf")
+		pngFiles := l8shared.GetFilesOfType(rootPath, ".png")
 
 		lyricsInputForm := widget.NewForm()
 		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
@@ -194,35 +193,4 @@ func getFormInputs(content []*widget.FormItem) map[string]string {
 	}
 
 	return inputs
-}
-
-func getFilesOfType(rootPath, ext string) []string {
-	dirFIs, err := os.ReadDir(rootPath)
-	if err != nil {
-		panic(err)
-	}
-	files := make([]string, 0)
-	for _, dirFI := range dirFIs {
-		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
-			files = append(files, dirFI.Name())
-		}
-
-		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
-			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
-			innerFiles := make([]string, 0)
-
-			for _, innerDirFI := range innerDirFIs {
-				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
-					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
-				}
-			}
-
-			if len(innerFiles) > 0 {
-				files = append(files, innerFiles...)
-			}
-		}
-
-	}
-
-	return files
 }

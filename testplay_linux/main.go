@@ -15,10 +15,14 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/saenuma/lyrics818/l8f"
 	"github.com/saenuma/lyrics818/l8shared"
-	sDialog "github.com/sqweek/dialog"
 )
 
 func main() {
+	rootPath, err := l8shared.GetRootPath()
+	if err != nil {
+		panic(err)
+	}
+
 	ffplayCmd := GetFFPlayCommand()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel() // cancel when we are finished consuming integers
@@ -28,13 +32,8 @@ func main() {
 
 	vidBox := container.NewVBox()
 
-	vidFileLabel := widget.NewLabel("")
-	getVidFileBtn := widget.NewButton("Select lyrics818 Video", func() {
-		filename, err := sDialog.File().Filter("lyrics818 video", "l8f").Load()
-		if err == nil {
-			vidFileLabel.SetText(filename)
-		}
-	})
+	l8Files := l8shared.GetFilesOfType(rootPath, ".l8f")
+	l8Select := widget.NewSelect(l8Files, nil)
 
 	widthSelect := widget.NewSelect([]string{"laptop", "mobile"}, nil)
 	widthSelect.Selected = "laptop"
@@ -50,7 +49,6 @@ func main() {
 	playTime := widget.NewLabel("0:00")
 	totalLengthLabel := widget.NewLabel("0:00")
 
-	rootPath, _ := l8shared.GetRootPath()
 	tmpAudioPath := filepath.Join(rootPath, "tmp_audio.mp3")
 
 	beginPlayAt := func(seek, inVideoPath, mode string) {
@@ -101,18 +99,20 @@ func main() {
 	}
 
 	playBtn := widget.NewButton("Play Lyrics818 Video", func() {
-		if vidFileLabel.Text == "" {
+		if l8Select.Selected == "" {
 			return
 		}
 
-		audioBytes, err := l8f.ReadAudio(vidFileLabel.Text)
+		vidPath := filepath.Join(rootPath, l8Select.Selected)
+
+		audioBytes, err := l8f.ReadAudio(vidPath)
 		if err != nil {
 			panic(err)
 		}
 
 		os.WriteFile(tmpAudioPath, audioBytes, 0777)
 
-		videoLength, err := l8f.GetVideoLength(vidFileLabel.Text)
+		videoLength, err := l8f.GetVideoLength(vidPath)
 		if err != nil {
 			panic(err)
 		}
@@ -124,13 +124,12 @@ func main() {
 		vidBox.Add(container.NewPadded(videoImage))
 		vidBox.Add(toolsBox)
 
-		go beginPlayAt(startAtEntry.Text, vidFileLabel.Text, widthSelect.Selected)
+		go beginPlayAt(startAtEntry.Text, vidPath, widthSelect.Selected)
 
 	})
 
 	formBox := container.NewVBox(
-		container.NewHBox(widget.NewLabel("Lyrics818 Video File: "), getVidFileBtn),
-		vidFileLabel,
+		container.NewHBox(widget.NewLabel("Lyrics818 Video File: "), l8Select),
 		container.NewHBox(widget.NewLabel("Laptop or Mobile: "), widthSelect),
 		container.NewHBox(widget.NewLabel("Start at: "), container.New(&l8shared.LongEntry{}, startAtEntry)),
 
