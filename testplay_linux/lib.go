@@ -11,7 +11,7 @@ func GetFFPlayCommand() string {
 	begin := os.Getenv("SNAP")
 	cmdPath = "ffplay"
 	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "ffplay")
+		cmdPath = filepath.Join(begin, "usr", "bin", "ffplay")
 	}
 
 	return cmdPath
