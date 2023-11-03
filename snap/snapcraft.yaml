@@ -29,9 +29,6 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-      - libasound2-dev
-    stage-packages:
-      - libasound2-dev
     stage-snaps:
       - ffmpeg-2204/latest/stable
     override-build: |
