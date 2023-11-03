@@ -32,7 +32,8 @@ parts:
       - libasound2-dev
     stage-packages:
       - libasound2-dev
-      - ffmpeg
+    stage-snaps:
+      - ffmpeg/latest/stable
     override-build: |
       set -xe
       go mod download
