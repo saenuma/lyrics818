@@ -78,20 +78,18 @@ func main() {
 		txtFiles := l8shared.GetFilesOfType(rootPath, ".txt")
 		mp3Files := l8shared.GetFilesOfType(rootPath, ".mp3")
 		ttfFiles := l8shared.GetFilesOfType(rootPath, ".ttf")
-		pngFiles := l8shared.GetFilesOfType(rootPath, ".png")
+
+		bgColorEntry := widget.NewEntry()
+		bgColorEntry.SetText("#ffffff")
 
 		lyricsInputForm := widget.NewForm()
-		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
-		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
-		lyricsInputForm.Append("background_file", widget.NewSelect(pngFiles, nil))
 		lyricsInputForm.Append("music_file", widget.NewSelect(mp3Files, nil))
+		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
+		lyricsInputForm.Append("background_color", bgColorEntry)
+		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
+
 		colorEntry := widget.NewEntry()
 		colorEntry.SetText("#666666")
-
-		mobileBGColorEntry := widget.NewEntry()
-		mobileBGColorEntry.SetText("#ffffff")
-
-		lyricsInputForm.Append("mobile_background_color", mobileBGColorEntry)
 
 		lyricsInputForm.Append("lyrics_color", colorEntry)
 		lyricsInputForm.SubmitText = "Make Lyrics Video"
@@ -105,7 +103,7 @@ func main() {
 
 			// complete the paths
 			for k, v := range inputs {
-				if k == "lyrics_color" || k == "mobile_background_color" {
+				if k == "lyrics_color" || k == "background_color" {
 					continue
 				} else {
 					inputs[k] = filepath.Join(rootPath, v)
@@ -148,9 +146,7 @@ func main() {
 1. Only .mp3 files are allowed for the **input music file**	
 
 1. Only .png files are allowed for the **background**
-
-1. The background_file must be of dimensions (1366px x 768px)
-	`)
+`)
 	rightBox := container.NewVBox(
 		topBar,
 		widget.NewSeparator(),

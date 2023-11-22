@@ -105,29 +105,20 @@ func main() {
 		}
 	})
 
-	backgroundFileLabel := widget.NewLabel("")
-	getBackfoundFileBtn := widget.NewButton("Get Background File", func() {
-		filename, err := sDialog.File().Filter("Background png file", "png").Load()
-		if err == nil {
-			backgroundFileLabel.SetText(filename)
-		}
-	})
-
 	colorEntry := widget.NewEntry()
 	colorEntry.SetText("#666666")
 
-	mobileBGColorEntry := widget.NewEntry()
-	mobileBGColorEntry.SetText("#ffffff")
+	bgColorEntry := widget.NewEntry()
+	bgColorEntry.SetText("#ffffff")
 
 	makeButton := widget.NewButton("Make Lyrics Video", func() {
 
 		inputs := map[string]string{
-			"lyrics_file":             lyricsFileLabel.Text,
-			"font_file":               fontFileLabel.Text,
-			"background_file":         backgroundFileLabel.Text,
-			"music_file":              mp3FileLabel.Text,
-			"lyrics_color":            colorEntry.Text,
-			"mobile_background_color": mobileBGColorEntry.Text,
+			"lyrics_file":      lyricsFileLabel.Text,
+			"font_file":        fontFileLabel.Text,
+			"music_file":       mp3FileLabel.Text,
+			"lyrics_color":     colorEntry.Text,
+			"background_color": bgColorEntry.Text,
 		}
 
 		for _, v := range inputs {
@@ -151,12 +142,11 @@ func main() {
 	makeButton.Importance = widget.HighImportance
 
 	formBox := container.NewVBox(
-		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
-		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
-		container.NewHBox(widget.NewLabel("Background File: "), getBackfoundFileBtn, backgroundFileLabel),
 		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
-		container.NewHBox(widget.NewLabel("Color: "), container.New(&l8shared.LongEntry{}, colorEntry)),
-		container.NewHBox(widget.NewLabel("Mobile Background Color: "), container.New(&l8shared.LongEntry{}, mobileBGColorEntry)),
+		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
+		container.NewHBox(widget.NewLabel("Background Color: "), container.New(&l8shared.LongEntry{}, bgColorEntry)),
+		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
+		container.NewHBox(widget.NewLabel("Lyrics Color: "), container.New(&l8shared.LongEntry{}, colorEntry)),
 
 		widget.NewSeparator(),
 		container.New(&l8shared.Halfes{}, makeButton),
