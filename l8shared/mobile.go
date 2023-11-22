@@ -102,7 +102,7 @@ func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []str
 		Dst: rgba,
 		Src: image.Black,
 		Face: truetype.NewFace(fontParsed, &truetype.Options{
-			Size:    SIZE,
+			Size:    MSIZE,
 			DPI:     DPI,
 			Hinting: font.HintingNone,
 		}),
@@ -155,7 +155,7 @@ func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image
 	c := freetype.NewContext()
 	c.SetDPI(DPI)
 	c.SetFont(fontParsed)
-	c.SetFontSize(SIZE)
+	c.SetFontSize(MSIZE)
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
 	c.SetSrc(fg)
@@ -170,13 +170,13 @@ func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image
 	}
 
 	// Draw the text.
-	pt := freetype.Pt(40, 50+int(c.PointToFixed(SIZE)>>6))
+	pt := freetype.Pt(40, 50+int(c.PointToFixed(MSIZE)>>6))
 	for _, s := range finalTexts {
 		_, err = c.DrawString(s, pt)
 		if err != nil {
 			panic(err)
 		}
-		pt.Y += c.PointToFixed(SIZE * SPACING)
+		pt.Y += c.PointToFixed(MSIZE * SPACING)
 	}
 
 	return img

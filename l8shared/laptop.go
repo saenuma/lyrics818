@@ -167,12 +167,12 @@ func WriteLyricsToImage(inputs map[string]string, text string) image.Image {
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := wordWrapLaptop(inputs, txt, LAPTOP_WIDTH-50)
+		wrappedTxts := wordWrapLaptop(inputs, txt, LAPTOP_WIDTH-160)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 
 	// Draw the text.
-	pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
+	pt := freetype.Pt(60, 50+int(c.PointToFixed(SIZE)>>6))
 	for _, s := range finalTexts {
 		_, err = c.DrawString(s, pt)
 		if err != nil {
