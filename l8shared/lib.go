@@ -18,7 +18,7 @@ import (
 
 const (
 	DPI     = 72.0
-	SIZE    = 80.0
+	SIZE    = 70.0
 	SPACING = 1.1
 )
 

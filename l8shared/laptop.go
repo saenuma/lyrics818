@@ -22,8 +22,8 @@ import (
 const VersionFormat = "20060102T150405MST"
 
 const (
-	LAPTOP_WIDTH  = 1366
-	LAPTOP_HEIGHT = 768
+	LAPTOP_WIDTH  = 1000
+	LAPTOP_HEIGHT = 600
 )
 
 func MakeLaptopFrames(outName string, totalSeconds int, renderPath string, inputs map[string]string) {
@@ -46,10 +46,12 @@ func MakeLaptopFrames(outName string, totalSeconds int, renderPath string, input
 			for seconds := startSeconds; seconds < endSeconds; seconds++ {
 				txt := lyricsObject[seconds]
 				if txt == "" {
-					img, err := imaging.Open(inputs["background_file"])
-					if err != nil {
-						panic(err)
-					}
+					bgColor, _ := colorful.Hex(inputs["background_color"])
+					bg := image.NewUniform(bgColor)
+
+					img := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
+					draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
+
 					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 					imaging.Save(img, outPath)
 				} else {
@@ -68,10 +70,12 @@ func MakeLaptopFrames(outName string, totalSeconds int, renderPath string, input
 	for seconds := (jobsPerThread * numberOfCPUS); seconds < totalSeconds; seconds++ {
 		txt := lyricsObject[seconds]
 		if txt == "" {
-			img, err := imaging.Open(inputs["background_file"])
-			if err != nil {
-				panic(err)
-			}
+			bgColor, _ := colorful.Hex(inputs["background_color"])
+			bg := image.NewUniform(bgColor)
+
+			img := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
+			draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
+
 			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 			imaging.Save(img, outPath)
 		} else {
@@ -132,17 +136,11 @@ func wordWrapLaptop(inputs map[string]string, text string, writeWidth int) []str
 }
 
 func WriteLyricsToImage(inputs map[string]string, text string) image.Image {
-	fileHandle, err := os.Open(inputs["background_file"])
-	if err != nil {
-		panic(err)
-	}
-	pngData, _, err := image.Decode(fileHandle)
-	if err != nil {
-		panic(err)
-	}
-	b := pngData.Bounds()
-	img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
-	draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
+	bgColor, _ := colorful.Hex(inputs["background_color"])
+	bg := image.NewUniform(bgColor)
+
+	img := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
+	draw.Draw(img, img.Bounds(), bg, image.Point{}, draw.Src)
 
 	lyricsColor, _ := colorful.Hex(inputs["lyrics_color"])
 	fg := image.NewUniform(lyricsColor)
@@ -169,7 +167,7 @@ func WriteLyricsToImage(inputs map[string]string, text string) image.Image {
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := wordWrapLaptop(inputs, txt, LAPTOP_WIDTH-130)
+		wrappedTxts := wordWrapLaptop(inputs, txt, LAPTOP_WIDTH-50)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 

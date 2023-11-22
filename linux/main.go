@@ -110,20 +110,14 @@ func main() {
 				}
 			}
 
-			outFileName, err := l8shared.MakeVideo2(inputs)
+			_, err := l8shared.MakeVideo2(inputs)
 			if err != nil {
 				log.Println(err)
 				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
 				return
 			}
-			openOutputButton := widget.NewButton("Open Video", func() {
-				if runtime.GOOS == "windows" {
-					exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-				} else if runtime.GOOS == "linux" {
-					exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-				}
-			})
-			outputsBox.Add(openOutputButton)
+
+			outputsBox.Add(widget.NewLabel("Done. Check Working Directory"))
 			outputsBox.Refresh()
 		}
 

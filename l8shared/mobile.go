@@ -46,7 +46,7 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 			for seconds := startSeconds; seconds < endSeconds; seconds++ {
 				txt := lyricsObject[seconds]
 				if txt == "" {
-					bgColor, _ := colorful.Hex(inputs["mobile_background_color"])
+					bgColor, _ := colorful.Hex(inputs["background_color"])
 					bg := image.NewUniform(bgColor)
 
 					img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
@@ -69,7 +69,7 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 	for seconds := (jobsPerThread * numberOfCPUS); seconds < totalSeconds; seconds++ {
 		txt := lyricsObject[seconds]
 		if txt == "" {
-			bgColor, _ := colorful.Hex(inputs["mobile_background_color"])
+			bgColor, _ := colorful.Hex(inputs["background_color"])
 			bg := image.NewUniform(bgColor)
 
 			img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
@@ -134,7 +134,7 @@ func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []str
 }
 
 func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image {
-	bgColor, _ := colorful.Hex(inputs["mobile_background_color"])
+	bgColor, _ := colorful.Hex(inputs["background_color"])
 	bg := image.NewUniform(bgColor)
 
 	img := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
