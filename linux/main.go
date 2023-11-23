@@ -137,9 +137,12 @@ func main() {
 ## Help
 1. All files must be placed in the working directory of this program.
 
-1. Only .mp3 files are allowed for the **input music file**	
+1. Only .mp3 files are allowed for the **music file**	
 
-1. Only .png files are allowed for the **background**
+1. Only .ttf files are allowed for the **font file**
+
+1. Only .txt files are allowed for the **lyrics file**
+
 `)
 	rightBox := container.NewVBox(
 		topBar,

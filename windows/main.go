@@ -69,15 +69,6 @@ func main() {
 	})
 	topBar := container.NewCenter(container.NewHBox(openWDBtn, viewSampleBtn, aboutBtn))
 
-	helpWidget := widget.NewRichTextFromMarkdown(`
-## Help
-1. Only .mp3 files are allowed for the **input music file**	
-
-1. Only .png files are allowed for the **background**
-
-1. The background_file must be of dimensions (1366px x 768px)
-	`)
-
 	// formBox := container.NewPadded()
 	outputsBox := container.NewVBox()
 
@@ -164,7 +155,8 @@ func main() {
 		guitarBox,
 		container.NewVBox(
 			container.NewCenter(topBar),
-			helpWidget, formBox, outputsBox,
+			widget.NewSeparator(),
+			formBox, outputsBox,
 		),
 	)
 
