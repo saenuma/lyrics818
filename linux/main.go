@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -23,6 +24,18 @@ func main() {
 	rootPath, err := l8shared.GetRootPath()
 	if err != nil {
 		panic(err)
+	}
+
+	// delete temporary files
+	rootPathFIs, _ := os.ReadDir(rootPath)
+	for _, rpfi := range rootPathFIs {
+		if strings.HasPrefix(rpfi.Name(), "lframes_") || strings.HasPrefix(rpfi.Name(), "mframes_") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
+
+		if strings.HasSuffix(rpfi.Name(), ".bin") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
 	}
 
 	myApp := app.New()
