@@ -35,7 +35,7 @@ func MakeVideo2(inputs map[string]string) (string, error) {
 	MakeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, inputs)
 	MakeMobileFrames(mobileOutName, totalSeconds, mrenderPath, inputs)
 
-	outName := "video_" + time.Now().Format("20060102T150405") + ".l8f"
+	outName := strings.ReplaceAll(filepath.Base(fullMp3Path), ".mp3", ".l8f")
 	fullOutPath := filepath.Join(rootPath, outName)
 	err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{},
 		rootPath, fullOutPath)
