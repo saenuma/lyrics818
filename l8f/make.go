@@ -145,15 +145,8 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 		panic(err)
 	}
 
-	// write meta
-	outStr := "meta:\n"
-	for metaKey, metaValue := range meta {
-		outStr += metaKey + ": " + metaValue + "\n"
-	}
-	outStr += "::\n"
-
 	// write laptop_unique_frames
-	outStr += "laptop_unique_frames:\n"
+	outStr := "laptop_unique_frames:\n"
 	for _, ufq := range lvlt.UniqueFrames {
 		outStr += fmt.Sprintf("%d: %d\n", ufq.FirstFrameNumber, ufq.Size)
 	}
@@ -241,116 +234,5 @@ func MakeL8F(inFramesLaptopDirectory, inFramesMobileDirectory, inAudioFile strin
 	os.Remove(laptopLumpPath)
 	os.Remove(mobileLumpPath)
 
-	return nil
-}
-
-// the framerate must be stored in the **meta** as a string
-func UpdateMeta(inVideoPath string, meta map[string]string, tmpVideoDirectory, outFilePath string) error {
-	for k, v := range meta {
-		if strings.Contains(k, "\n") || strings.Contains(v, "\n") {
-			return errors.New("The meta elements must not contain newline")
-		}
-		if strings.Contains(k, ":") || strings.Contains(v, ":") {
-			return errors.New("The meta elements must not contain ':' ")
-		}
-	}
-
-	if !strings.HasSuffix(outFilePath, ".l8f") {
-		return errors.New("The outFilePath must end with '.l8f'")
-	}
-
-	vhSize, err := getHeaderLengthFromVideo(inVideoPath)
-	if err != nil {
-		return err
-	}
-	vh, err := ReadHeaderFromVideo(inVideoPath)
-	if err != nil {
-		return err
-	}
-
-	vh.Meta = meta
-
-	audioBytes := make([]byte, vh.AudioSize)
-
-	rawVideoHandle, err := os.Open(inVideoPath)
-	if err != nil {
-		return errors.Wrap(err, "os error")
-	}
-	defer rawVideoHandle.Close()
-
-	audioOffset := vhSize + 1 + len(fmt.Sprintf("%d", vhSize))
-	_, err = rawVideoHandle.ReadAt(audioBytes, int64(audioOffset))
-	if err != nil {
-		return errors.Wrap(err, "strconv error")
-	}
-
-	laptopVideoBytes := make([]byte, vh.LaptopVideoSize)
-	laptopVideoOffset := audioOffset + vh.AudioSize
-	_, err = rawVideoHandle.ReadAt(laptopVideoBytes, int64(laptopVideoOffset))
-	if err != nil {
-		return errors.Wrap(err, "strconv error")
-	}
-
-	mobileVideoBytes := make([]byte, vh.MobileVideoSize)
-	mobileVideoOffset := audioOffset + vh.AudioSize + vh.LaptopVideoSize
-	_, err = rawVideoHandle.ReadAt(mobileVideoBytes, int64(mobileVideoOffset))
-	if err != nil {
-		return errors.Wrap(err, "strconv error")
-	}
-
-	// write meta
-	outStr := "meta:\n"
-	for metaKey, metaValue := range vh.Meta {
-		outStr += metaKey + ": " + metaValue + "\n"
-	}
-	outStr += "::\n"
-
-	// write unique_frames
-	outStr += "laptop_unique_frames:\n"
-	for _, ufq := range vh.LaptopUniqueFrames {
-		outStr += fmt.Sprintf("%d: %d\n", ufq[0], ufq[1])
-	}
-	outStr += "::\n"
-
-	// write frames info
-	outStr += "laptop_frames:\n"
-	for frameNumber, pointedToFrameNumber := range vh.LaptopFrames {
-		outStr += fmt.Sprintf("%d: %d\n", frameNumber, pointedToFrameNumber)
-	}
-	outStr += "::\n"
-
-	// write unique_frames
-	outStr += "mobile_unique_frames:\n"
-	for _, ufq := range vh.MobileUniqueFrames {
-		outStr += fmt.Sprintf("%d: %d\n", ufq[0], ufq[1])
-	}
-	outStr += "::\n"
-
-	// write frames info
-	outStr += "mobile_frames:\n"
-	for frameNumber, pointedToFrameNumber := range vh.MobileFrames {
-		outStr += fmt.Sprintf("%d: %d\n", frameNumber, pointedToFrameNumber)
-	}
-	outStr += "::\n"
-
-	// write lumps
-	outStr += "binary:\n"
-	outStr += fmt.Sprintf("audio: %d\n", vh.AudioSize)
-	outStr += fmt.Sprintf("laptop_frames_lump: %d\n", vh.LaptopVideoSize)
-	outStr += fmt.Sprintf("mobile_frames_lump: %d\n", vh.MobileVideoSize)
-	outStr += "::\n"
-
-	outVideoHandle, err := os.OpenFile(outFilePath, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return errors.Wrap(err, "os error")
-	}
-	defer outVideoHandle.Close()
-
-	outVideoHandle.WriteString(fmt.Sprintf("%d\n", len(outStr)))
-	outVideoHandle.WriteString(outStr)
-
-	outVideoHandle.Write(audioBytes)
-	outVideoHandle.Write(laptopVideoBytes)
-	outVideoHandle.Write(mobileVideoBytes)
 	return nil
 }

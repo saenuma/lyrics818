@@ -81,21 +81,23 @@ func ReadHeaderFromVideo(inVideoPath string) (VideoHeader, error) {
 
 	// begin parsing Video header
 	metaBeginPart := strings.Index(headerStr, "meta:")
-	metaEndPart := strings.Index(headerStr[metaBeginPart:], "::")
-	if metaEndPart == -1 {
-		return evh, errors.New("Bad Header: meta section must end with a '::'.")
-	}
-	metaPart := headerStr[metaBeginPart+len("meta:\n") : metaBeginPart+metaEndPart]
-	meta := make(map[string]string)
-	for _, line := range strings.Split(metaPart, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
+	if metaBeginPart != -1 {
+		metaEndPart := strings.Index(headerStr[metaBeginPart:], "::")
+		if metaEndPart == -1 {
+			return evh, errors.New("Bad Header: meta section must end with a '::'.")
 		}
-		partsOfLine := strings.Split(line, ":")
-		meta[partsOfLine[0]] = strings.TrimSpace(partsOfLine[1])
+		metaPart := headerStr[metaBeginPart+len("meta:\n") : metaBeginPart+metaEndPart]
+		meta := make(map[string]string)
+		for _, line := range strings.Split(metaPart, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			partsOfLine := strings.Split(line, ":")
+			meta[partsOfLine[0]] = strings.TrimSpace(partsOfLine[1])
+		}
+		evh.Meta = meta
 	}
-	evh.Meta = meta
 
 	luniqueFramesBeginPart := strings.Index(headerStr, "laptop_unique_frames:")
 	luniqueFramesEndPart := strings.Index(headerStr[luniqueFramesBeginPart:], "::")
