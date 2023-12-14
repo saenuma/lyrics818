@@ -1,6 +1,0 @@
-[Desktop Entry]
-Version=1.3.0
-Type=Application
-Name=Lyrics818 TestPlay
-Exec=lyrics818.testplay
-Icon=${SNAP}/meta/gui/lyrics818.png

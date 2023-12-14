@@ -1,10 +1,11 @@
 # lyrics818
 
-a program to create a lyrics video in its own format.
+Lyrics818 generates a lyric video in mp4 format.
 
+The lyric video would have a single background. It expects the lyric file, fonts, background.
 
-## Developer notes
-Download ffplay.exe before running /testplay
+For more details visit [sae.ng](https://sae.ng/lyrics818)
+
 
 ## License
 
