@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"image"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -22,6 +24,18 @@ func main() {
 	rootPath, err := l8shared.GetRootPath()
 	if err != nil {
 		panic(err)
+	}
+
+	// delete temporary files
+	rootPathFIs, _ := os.ReadDir(rootPath)
+	for _, rpfi := range rootPathFIs {
+		if strings.HasPrefix(rpfi.Name(), "lframes_") || strings.HasPrefix(rpfi.Name(), "mframes_") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
+
+		if strings.HasSuffix(rpfi.Name(), ".bin") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
 	}
 
 	myApp := app.New()
@@ -66,17 +80,18 @@ func main() {
 			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 			saeBtn,
 		)
-		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
+		dialog.ShowCustom("About lyrics818", "Close", boxes, myWindow)
 	})
 	topBar := container.NewCenter(container.NewHBox(openWDBtn, viewSampleBtn, aboutBtn))
 
 	helpWidget := widget.NewRichTextFromMarkdown(`
 ## Help
-1. Only .mp3 files are allowed for the **input music file**	
 
-1. Only .png files are allowed for the **background**
+1. Only .mp3 files are allowed for the **music file**	
 
-1. The background_file must be of dimensions (1366px x 768px)
+1. Only .ttf files are allowed for the **font file**
+
+1. Only .txt files are allowed for the **lyrics file**
 	`)
 
 	// formBox := container.NewPadded()
@@ -106,25 +121,20 @@ func main() {
 		}
 	})
 
-	backgroundFileLabel := widget.NewLabel("")
-	getBackfoundFileBtn := widget.NewButton("Get Background File", func() {
-		filename, err := sDialog.File().Filter("Background png file", "png").Load()
-		if err == nil {
-			backgroundFileLabel.SetText(filename)
-		}
-	})
-
 	colorEntry := widget.NewEntry()
 	colorEntry.SetText("#666666")
+
+	bgColorEntry := widget.NewEntry()
+	bgColorEntry.SetText("#ffffff")
 
 	makeButton := widget.NewButton("Make Lyrics Video", func() {
 
 		inputs := map[string]string{
-			"lyrics_file":     lyricsFileLabel.Text,
-			"font_file":       fontFileLabel.Text,
-			"background_file": backgroundFileLabel.Text,
-			"music_file":      mp3FileLabel.Text,
-			"lyrics_color":    colorEntry.Text,
+			"lyrics_file":      lyricsFileLabel.Text,
+			"font_file":        fontFileLabel.Text,
+			"music_file":       mp3FileLabel.Text,
+			"lyrics_color":     colorEntry.Text,
+			"background_color": bgColorEntry.Text,
 		}
 
 		for _, v := range inputs {
@@ -136,32 +146,24 @@ func main() {
 		outLabel := widget.NewLabel("Beginning")
 		outputsBox.Add(outLabel)
 
-		command := GetFFMPEGCommand()
-		outFileName, err := l8shared.MakeVideo(inputs, command)
+		_, err := l8shared.MakeVideo2(inputs)
 		if err != nil {
 			log.Println(err)
 			outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
 			return
 		}
-		openOutputButton := widget.NewButton("Open Video", func() {
-			if runtime.GOOS == "windows" {
-				exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-			} else if runtime.GOOS == "linux" {
-				exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-			}
-		})
 		outLabel.SetText("Done")
-		outputsBox.Add(openOutputButton)
 		outputsBox.Refresh()
 	})
 	makeButton.Importance = widget.HighImportance
 
 	formBox := container.NewVBox(
-		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
-		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
-		container.NewHBox(widget.NewLabel("Background File: "), getBackfoundFileBtn, backgroundFileLabel),
 		container.NewHBox(widget.NewLabel("Music File: "), getMp3FileBtn, mp3FileLabel),
-		container.NewHBox(widget.NewLabel("Color: "), container.New(&l8shared.LongEntry{}, colorEntry)),
+		container.NewHBox(widget.NewLabel("Lyrics File: "), getLyricsFileBtn, lyricsFileLabel),
+		container.NewHBox(widget.NewLabel("Background Color: "), container.New(&l8shared.LongEntry{}, bgColorEntry)),
+		container.NewHBox(widget.NewLabel("Font File: "), getFontFileBtn, fontFileLabel),
+		container.NewHBox(widget.NewLabel("Lyrics Color: "), container.New(&l8shared.LongEntry{}, colorEntry)),
+
 		widget.NewSeparator(),
 		container.New(&l8shared.Halfes{}, makeButton),
 	)

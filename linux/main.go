@@ -26,6 +26,18 @@ func main() {
 		panic(err)
 	}
 
+	// delete temporary files
+	rootPathFIs, _ := os.ReadDir(rootPath)
+	for _, rpfi := range rootPathFIs {
+		if strings.HasPrefix(rpfi.Name(), "lframes_") || strings.HasPrefix(rpfi.Name(), "mframes_") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
+
+		if strings.HasSuffix(rpfi.Name(), ".bin") {
+			os.RemoveAll(filepath.Join(rootPath, rpfi.Name()))
+		}
+	}
+
 	myApp := app.New()
 	myApp.Settings().SetTheme(&l8shared.MyTheme{})
 
@@ -68,7 +80,7 @@ func main() {
 			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 			saeBtn,
 		)
-		dialog.ShowCustom("About keys117", "Close", boxes, myWindow)
+		dialog.ShowCustom("About lyrics818", "Close", boxes, myWindow)
 	})
 	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
 	formBox := container.NewPadded()
@@ -76,18 +88,22 @@ func main() {
 
 	getLyricsForm := func() *widget.Form {
 
-		txtFiles := getFilesOfType(rootPath, ".txt")
-		mp3Files := getFilesOfType(rootPath, ".mp3")
-		ttfFiles := getFilesOfType(rootPath, ".ttf")
-		pngFiles := getFilesOfType(rootPath, ".png")
+		txtFiles := l8shared.GetFilesOfType(rootPath, ".txt")
+		mp3Files := l8shared.GetFilesOfType(rootPath, ".mp3")
+		ttfFiles := l8shared.GetFilesOfType(rootPath, ".ttf")
+
+		bgColorEntry := widget.NewEntry()
+		bgColorEntry.SetText("#ffffff")
 
 		lyricsInputForm := widget.NewForm()
-		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
-		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
-		lyricsInputForm.Append("background_file", widget.NewSelect(pngFiles, nil))
 		lyricsInputForm.Append("music_file", widget.NewSelect(mp3Files, nil))
+		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
+		lyricsInputForm.Append("background_color", bgColorEntry)
+		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
+
 		colorEntry := widget.NewEntry()
 		colorEntry.SetText("#666666")
+
 		lyricsInputForm.Append("lyrics_color", colorEntry)
 		lyricsInputForm.SubmitText = "Make Lyrics Video"
 		lyricsInputForm.CancelText = "Close"
@@ -100,26 +116,21 @@ func main() {
 
 			// complete the paths
 			for k, v := range inputs {
-				if k != "lyrics_color" {
+				if k == "lyrics_color" || k == "background_color" {
+					continue
+				} else {
 					inputs[k] = filepath.Join(rootPath, v)
 				}
 			}
 
-			command := GetFFMPEGCommand()
-			outFileName, err := l8shared.MakeVideo(inputs, command)
+			_, err := l8shared.MakeVideo2(inputs)
 			if err != nil {
 				log.Println(err)
 				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
 				return
 			}
-			openOutputButton := widget.NewButton("Open Video", func() {
-				if runtime.GOOS == "windows" {
-					exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-				} else if runtime.GOOS == "linux" {
-					exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-				}
-			})
-			outputsBox.Add(openOutputButton)
+
+			outputsBox.Add(widget.NewLabel("Done. Check Working Directory"))
 			outputsBox.Refresh()
 		}
 
@@ -139,12 +150,13 @@ func main() {
 ## Help
 1. All files must be placed in the working directory of this program.
 
-1. Only .mp3 files are allowed for the **input music file**	
+1. Only .mp3 files are allowed for the **music file**	
 
-1. Only .png files are allowed for the **background**
+1. Only .ttf files are allowed for the **font file**
 
-1. The background_file must be of dimensions (1366px x 768px)
-	`)
+1. Only .txt files are allowed for the **lyrics file**
+
+`)
 	rightBox := container.NewVBox(
 		topBar,
 		widget.NewSeparator(),
@@ -187,35 +199,4 @@ func getFormInputs(content []*widget.FormItem) map[string]string {
 	}
 
 	return inputs
-}
-
-func getFilesOfType(rootPath, ext string) []string {
-	dirFIs, err := os.ReadDir(rootPath)
-	if err != nil {
-		panic(err)
-	}
-	files := make([]string, 0)
-	for _, dirFI := range dirFIs {
-		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
-			files = append(files, dirFI.Name())
-		}
-
-		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
-			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
-			innerFiles := make([]string, 0)
-
-			for _, innerDirFI := range innerDirFIs {
-				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
-					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
-				}
-			}
-
-			if len(innerFiles) > 0 {
-				files = append(files, innerFiles...)
-			}
-		}
-
-	}
-
-	return files
 }

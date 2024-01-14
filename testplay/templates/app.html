@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>testplay - Test Videos made with Lyrics818</title>
+  <script src="/gs/jquery-3.6.0.min.js"></script>
+  <style>
+    #form_box {
+      float: left;
+      width:300px;
+      margin-right: 20px;
+    }
+
+    #player_box {
+      float: left;
+      width: 800px;
+      margin-left: 20px;
+    }
+
+    #frame {
+      width: 95%;
+    }
+
+    * {
+      font-weight: bold;
+    }
+    #form_box div {
+      margin-bottom: 10px;
+    }
+  </style>
+
+</head>
+<body>
+  <script>
+    function timeFormatToSeconds(startStr) {
+      var parts = startStr.split(":")
+      seconds = 60 * parseInt(parts[0]) + parseInt(parts[1])
+      return seconds
+    }
+
+    function secondsToMinutes(inSeconds) {
+	    var minutes = inSeconds / 60
+	    var seconds = inSeconds % 60
+      var returnStr = Math.floor(minutes).toString() + ":"
+      if (Math.floor(seconds) < 10) {
+        returnStr += "0"
+      }
+      returnStr += Math.floor(seconds).toString()
+      return returnStr
+    }
+
+    audioAddr = ""
+
+    $(document).ready(function() {
+
+      $("#get_l818_file_btn").click(function() {
+        $.get("/pick_l818_file", function(data) {
+          $("#l818_file_disp").text(data);
+          $("#id_l818_file").val(data);
+        })
+      });
+
+      $("#play_btn").click(function(e) {
+        e.preventDefault();
+
+        $("#play_btn").attr("disabled", "disabled")
+        
+        var toSend = {
+          "vid_file": $("#id_l818_file").val(),
+          "device": $("select[name=device]").val(),
+          "start_time": $("input[name=start_time]").val()
+        }
+
+        lastFrame = timeFormatToSeconds(toSend["start_time"])
+        $.post("/begin_player", toSend, function(data) {
+
+          var currentVideoLength = ""
+          $.get("/get_current_vid_length", function(data) {
+            currentVideoLength = data;
+          })
+
+          var audioPlayer = document.createElement("audio")
+          audioPlayer.src = "/get_audio"
+          audioPlayer.load()
+          audioPlayer.currentTime = lastFrame
+          audioPlayer.play()
+
+          $("#frame").attr("src", "/get_frame/" + lastFrame.toString()) 
+
+          setInterval(function() {
+            lastFrame += 1
+            $("#frame").attr("src", "/get_frame/" + lastFrame.toString())
+            $("#current_time").text("Play Time: " + secondsToMinutes(lastFrame)  + " Duration: " + currentVideoLength )
+          }, 1000)
+        })
+      })
+    });
+
+
+  </script>
+  <div id="container">
+    <div id="form_box">
+      <div>
+        <label>Lyrics818 Video file</label>
+        <button id="get_l818_file_btn" type="button">Pick File</button>
+        <input type="hidden" id="id_l818_file" name="l818_file" />
+        <p id="l818_file_disp"></p>
+      </div>
+      <div>
+        <label>Device</label>
+        <select name="device">
+          <option selected>laptop</option>
+          <option>mobile</option>
+        </select>
+      </div>
+      <div>
+        <label>Start Time</label>
+        <input type="text" name="start_time" value="0:00" />
+      </div>
+
+      <div>
+        <button type="button" id="play_btn">Test Lyrics818 Video</button>
+      </div>
+    </div>
+
+    <div id="player_box">
+      <img id="frame" />
+      <p id="current_time"></p>
+    </div>
+  </div>
+</body>
+</html>
+

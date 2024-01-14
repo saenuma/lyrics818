@@ -1,6 +1,7 @@
 package l8shared
 
 import (
+	"fmt"
 	"math"
 	"os"
 
@@ -17,7 +18,8 @@ import (
 
 const (
 	DPI     = 72.0
-	SIZE    = 80.0
+	SIZE    = 60.0
+	MSIZE   = 80.0
 	SPACING = 1.1
 )
 
@@ -50,6 +52,17 @@ func TimeFormatToSeconds(s string) int {
 	}
 	totalSecondsOfSong := (60 * minutesPartConverted) + secondsPartConverted
 	return totalSecondsOfSong
+}
+
+func SecondsToMinutes(inSeconds int) string {
+	minutes := inSeconds / 60
+	seconds := inSeconds % 60
+	secondsStr := fmt.Sprintf("%d", seconds)
+	if seconds < 10 {
+		secondsStr = "0" + secondsStr
+	}
+	str := fmt.Sprintf("%d:%s", minutes, secondsStr)
+	return str
 }
 
 func DoesPathExists(p string) bool {
@@ -136,4 +149,35 @@ func ReadSecondsFromMusicFile(musicPath string) (int, error) {
 
 	correctedT := math.Ceil(t)
 	return int(correctedT), nil
+}
+
+func GetFilesOfType(rootPath, ext string) []string {
+	dirFIs, err := os.ReadDir(rootPath)
+	if err != nil {
+		panic(err)
+	}
+	files := make([]string, 0)
+	for _, dirFI := range dirFIs {
+		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
+			files = append(files, dirFI.Name())
+		}
+
+		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
+			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
+			innerFiles := make([]string, 0)
+
+			for _, innerDirFI := range innerDirFIs {
+				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
+					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
+				}
+			}
+
+			if len(innerFiles) > 0 {
+				files = append(files, innerFiles...)
+			}
+		}
+
+	}
+
+	return files
 }
