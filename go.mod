@@ -6,6 +6,9 @@ require (
 	fyne.io/fyne/v2 v2.4.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/goki/freetype v1.0.1
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/gorilla/mux v1.8.0
+	github.com/jchv/go-webview2 v0.0.0-20221223143126-dc24628cff85
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf
@@ -28,6 +31,7 @@ require (
 	github.com/go-text/typesetting v0.0.0-20231013144250-6cc35dbfae7d // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
