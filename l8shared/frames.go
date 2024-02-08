@@ -222,11 +222,10 @@ func MakeVideo(inputs map[string]string, ffmpegCommandPath string) (string, erro
 		return "", err
 	}
 
-	videoFileName := strings.ReplaceAll(filepath.Base(fullMp3Path), ".mp3", ".mp4")
+	videoFileName := strings.ReplaceAll(fullMp3Path, ".mp3", ".mp4")
 	// join audio to video
 	_, err = exec.Command(ffmpegCommandPath, "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
-		"-i", inputs["music_file"], "-pix_fmt", "yuv420p",
-		filepath.Join(rootPath, videoFileName)).CombinedOutput()
+		"-i", inputs["music_file"], "-pix_fmt", "yuv420p", videoFileName).CombinedOutput()
 	if err != nil {
 		return "", err
 	}
