@@ -25,14 +25,14 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-    override-build: |
-      set -xe
-      go mod download
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/linux ./linux
-      cp $SNAPCRAFT_PART_SRC/linux/ffmpeg/ffmpeg $SNAPCRAFT_PART_INSTALL/bin/ffmpeg
 
+  ff-part:
+    plugin: dump
+    source: https://storage.googleapis.com/saenuma_public/ffmpeg.tar.xz
+    organize:
+      ffmpeg: bin/
 
 apps: 
   lyrics818:
-    command: bin/linux
+    command: bin/lyrics818
     extensions: [gnome]
