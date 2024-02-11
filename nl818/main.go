@@ -10,6 +10,7 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/saenuma/lyrics818/l8shared"
 )
 
 const (
@@ -27,6 +28,7 @@ const (
 
 var objCoords map[int]g143.RectSpecs
 var currentWindowFrame image.Image
+var tmpFrame image.Image
 
 func main() {
 	// _, err := v3shared.GetRootPath()
@@ -51,7 +53,7 @@ func main() {
 	// }()
 
 	// respond to the mouse
-	// window.SetMouseButtonCallback(mouseBtnCallback)
+	window.SetMouseButtonCallback(mouseBtnCallback)
 	// respond to the keyboard
 	// window.SetKeyCallback(keyCallback)
 
@@ -226,4 +228,63 @@ func allDraws(window *glfw.Window) {
 
 	// save the frame
 	currentWindowFrame = ggCtx.Image()
+}
+
+func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	if action != glfw.Release {
+		return
+	}
+
+	xPos, yPos := window.GetCursorPos()
+	xPosInt := int(xPos)
+	yPosInt := int(yPos)
+
+	wWidth, wHeight := window.GetSize()
+
+	// var widgetRS g143.RectSpecs
+	var widgetCode int
+
+	for code, RS := range objCoords {
+		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+			// widgetRS = RS
+			widgetCode = code
+			break
+		}
+	}
+
+	if widgetCode == 0 {
+		return
+	}
+
+	switch widgetCode {
+	case OpenWDBtn:
+		rootPath, _ := l8shared.GetRootPath()
+		externalLaunch(rootPath)
+
+	case ViewLyricsBtn:
+		tmpFrame = currentWindowFrame
+
+		drawSampleLyricsDialog(window, currentWindowFrame)
+
+	case DialogCloseButton:
+		if tmpFrame != nil {
+			// send the frame to glfw window
+			windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+			g143.DrawImage(wWidth, wHeight, tmpFrame, windowRS)
+			window.SwapBuffers()
+
+			currentWindowFrame = tmpFrame
+			tmpFrame = nil
+		}
+
+	case RenderBtn:
+		// if len(instructions) == 0 {
+		// 	return
+		// }
+		// drawRenderView(window, currentWindowFrame)
+		// window.SetMouseButtonCallback(nil)
+		// window.SetKeyCallback(nil)
+		// inChannel <- true
+	}
+
 }
