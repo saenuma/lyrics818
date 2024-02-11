@@ -220,7 +220,7 @@ func allDraws(window *glfw.Window) {
 
 	// render button
 	beginXOffset2 := 350
-	ggCtx.SetHexColor("#D09090")
+	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
 	ggCtx.DrawRoundedRectangle(float64(beginXOffset2), 480, rStrW+50, rStrH+25, (rStrH+25)/2)
@@ -229,7 +229,7 @@ func allDraws(window *glfw.Window) {
 	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 50, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 480}
 	objCoords[RenderBtn] = rBtnRS
 
-	ggCtx.SetHexColor("#444")
+	ggCtx.SetHexColor("#fff")
 	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 485+fontSize)
 
 	// send the frame to glfw window
