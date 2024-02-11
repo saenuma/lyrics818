@@ -32,6 +32,19 @@ parts:
     organize:
       ffmpeg: bin/
 
+  pickers:
+    # See 'snapcraft plugins'
+    plugin: go
+    source: https://github.com/saenuma/pickers.git
+    build-snaps:
+      - go
+    build-packages:
+      - build-essential
+      - gcc
+      - libgl1-mesa-dev
+      - xorg-dev
+      - libc6-dev
+
 apps: 
   lyrics818:
     command: bin/lyrics818

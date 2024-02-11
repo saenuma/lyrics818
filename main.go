@@ -1,221 +1,454 @@
 package main
 
 import (
-	"bytes"
 	"image"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
+	"time"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/widget"
+	g143 "github.com/bankole7782/graphics143"
+	"github.com/fogleman/gg"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/saenuma/lyrics818/l8shared"
 )
 
+const (
+	fps             = 10
+	fontSize        = 20
+	OpenWDBtn       = 101
+	ViewLyricsBtn   = 102
+	SelectLyricsBtn = 103
+	FontFileBtn     = 104
+	BgFileBtn       = 105
+	MusicFileBtn    = 106
+	LyricsColorBtn  = 107
+	RenderBtn       = 109
+)
+
+var objCoords map[int]g143.RectSpecs
+var currentWindowFrame image.Image
+var tmpFrame image.Image
+var inputsStore map[string]string
+
+var inChannel chan bool
+var clearAfterRender bool
+
 func main() {
-	// os.Setenv("FYNE_SCALE", "0.9")
-	rootPath, err := l8shared.GetRootPath()
+	// _, err := v3shared.GetRootPath()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	runtime.LockOSThread()
+
+	objCoords = make(map[int]g143.RectSpecs)
+	inputsStore = make(map[string]string)
+	inChannel = make(chan bool)
+
+	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
+	allDraws(window)
+
+	go func() {
+		for {
+			<-inChannel
+			command := GetFFMPEGCommand()
+			_, err := l8shared.MakeVideo(inputsStore, command)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			clearAfterRender = true
+		}
+	}()
+
+	// respond to the mouse
+	window.SetMouseButtonCallback(mouseBtnCallback)
+	// respond to the keyboard
+	// window.SetKeyCallback(keyCallback)
+
+	for !window.ShouldClose() {
+		t := time.Now()
+		glfw.PollEvents()
+
+		if clearAfterRender {
+			// clear the UI and redraw
+			inputsStore = make(map[string]string)
+			allDraws(window)
+			drawEndRenderView(window, currentWindowFrame)
+			time.Sleep(5 * time.Second)
+			allDraws(window)
+			// register the ViewMain mouse callback
+			window.SetMouseButtonCallback(mouseBtnCallback)
+			clearAfterRender = false
+		}
+
+		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
+	}
+
+}
+
+func getDefaultFontPath() string {
+	fontPath := filepath.Join(os.TempDir(), "l818_font.ttf")
+	os.WriteFile(fontPath, DefaultFont, 0777)
+	return fontPath
+}
+
+func allDraws(window *glfw.Window) {
+	wWidth, wHeight := window.GetSize()
+
+	// frame buffer
+	ggCtx := gg.NewContext(wWidth, wHeight)
+
+	// background rectangle
+	ggCtx.DrawRectangle(0, 0, float64(wWidth), float64(wHeight))
+	ggCtx.SetHexColor("#ffffff")
+	ggCtx.Fill()
+
+	// load font
+	fontPath := getDefaultFontPath()
+	err := ggCtx.LoadFontFace(fontPath, 20)
 	if err != nil {
 		panic(err)
 	}
 
-	myApp := app.New()
-	myApp.Settings().SetTheme(&l8shared.MyTheme{})
+	// open working directory button
+	beginXOffset := 200
+	ggCtx.SetHexColor("#D09090")
+	owdStr := "Open Working Directory"
+	owdStrW, owdStrH := ggCtx.MeasureString(owdStr)
+	ggCtx.DrawRoundedRectangle(float64(beginXOffset), 10, owdStrW+50, owdStrH+25, (owdStrH+25)/2)
+	ggCtx.Fill()
 
-	myWindow := myApp.NewWindow("lyrics818: a more comfortable lyrics video generator")
-	myWindow.SetOnClosed(func() {
-	})
+	owdBtnRS := g143.RectSpecs{Width: int(owdStrW) + 50, Height: int(owdStrH) + 25, OriginX: beginXOffset, OriginY: 10}
+	objCoords[OpenWDBtn] = owdBtnRS
 
-	openWDBtn := widget.NewButton("Open Working Directory", func() {
-		if runtime.GOOS == "windows" {
-			exec.Command("cmd", "/C", "start", rootPath).Run()
-		} else if runtime.GOOS == "linux" {
-			exec.Command("xdg-open", rootPath).Run()
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(owdStr, float64(beginXOffset)+25, 35)
+
+	// view sample lyrics button
+	ggCtx.SetHexColor("#90D092")
+	vslStr := "View Sample Lyrics"
+	vslStrWidth, vslStrHeight := ggCtx.MeasureString(vslStr)
+	nexBtnOriginX := owdBtnRS.OriginX + owdBtnRS.Width + 30
+	ggCtx.DrawRoundedRectangle(float64(nexBtnOriginX), 10, vslStrWidth+50, vslStrHeight+25, (vslStrHeight+25)/2)
+	ggCtx.Fill()
+
+	vslBtnRS := g143.RectSpecs{Width: int(vslStrWidth) + 50, Height: int(vslStrHeight) + 25, OriginX: nexBtnOriginX,
+		OriginY: 10}
+	objCoords[ViewLyricsBtn] = vslBtnRS
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(vslStr, float64(vslBtnRS.OriginX)+25, 35)
+
+	// Help messages
+	ggCtx.LoadFontFace(fontPath, 30)
+	ggCtx.DrawString("Help", 40, 50+30)
+	ggCtx.LoadFontFace(fontPath, 20)
+
+	msg1 := "1. All files must be placed in the working directory of this program."
+	msg2 := "2. The background_file must be of dimensions (1366px x 768px)"
+
+	ggCtx.DrawString(msg1, 60, 90+fontSize)
+	ggCtx.DrawString(msg2, 60, 90+30+fontSize)
+
+	// lyrics file button
+	lfStr := "Select Lyrics File (.txt)"
+	lfStrW, _ := ggCtx.MeasureString(lfStr)
+	ggCtx.SetHexColor("#5F699F")
+	ggCtx.DrawRoundedRectangle(40, 160, lfStrW+40, 40, 10)
+	ggCtx.Fill()
+
+	lfrs := g143.NRectSpecs(40, 160, int(lfStrW+40), 40)
+	objCoords[SelectLyricsBtn] = lfrs
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(lfStr, 60, 165+fontSize)
+
+	// font file button
+	ffStr := "Select Font File (.ttf)"
+	ffStrW, _ := ggCtx.MeasureString(ffStr)
+	ggCtx.SetHexColor("#5F699F")
+	ggCtx.DrawRoundedRectangle(40, 220, ffStrW+40, 40, 10)
+	ggCtx.Fill()
+
+	ffrs := g143.NRectSpecs(40, 220, int(ffStrW+40), 40)
+	objCoords[FontFileBtn] = ffrs
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(ffStr, 60, 225+fontSize)
+
+	// background file button
+	bfStr := "Select Background File (.png)"
+	bfStrW, _ := ggCtx.MeasureString(bfStr)
+	ggCtx.SetHexColor("#5F699F")
+	ggCtx.DrawRoundedRectangle(40, 280, bfStrW+40, 40, 10)
+	ggCtx.Fill()
+
+	bfrs := g143.NRectSpecs(40, 280, int(bfStrW+40), 40)
+	objCoords[BgFileBtn] = bfrs
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(bfStr, 60, 285+fontSize)
+
+	// music file button
+	mfStr := "Select Music File (.mp3)"
+	mfStrW, _ := ggCtx.MeasureString(mfStr)
+	ggCtx.SetHexColor("#5F699F")
+	ggCtx.DrawRoundedRectangle(40, 340, mfStrW+40, 40, 10)
+	ggCtx.Fill()
+
+	mfrs := g143.NRectSpecs(40, 340, int(mfStrW+40), 40)
+	objCoords[MusicFileBtn] = mfrs
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(mfStr, 60, 345+fontSize)
+
+	// lyrics color button
+	lcStr := "Pick Lyrics Color"
+	lcStrW, _ := ggCtx.MeasureString(lcStr)
+	ggCtx.SetHexColor("#5F699F")
+	ggCtx.DrawRoundedRectangle(40, 400, lcStrW+40, 40, 10)
+	ggCtx.Fill()
+
+	lcrs := g143.NRectSpecs(40, 400, int(lcStrW+40), 40)
+	objCoords[LyricsColorBtn] = lcrs
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(lcStr, 60, 405+fontSize)
+
+	// render button
+	beginXOffset2 := 350
+	ggCtx.SetHexColor("#D09090")
+	rStr := "Make Lyrics Video (.mp4)"
+	rStrW, rStrH := ggCtx.MeasureString(rStr)
+	ggCtx.DrawRoundedRectangle(float64(beginXOffset2), 480, rStrW+50, rStrH+25, (rStrH+25)/2)
+	ggCtx.Fill()
+
+	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 50, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 480}
+	objCoords[RenderBtn] = rBtnRS
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 485+fontSize)
+
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+	window.SwapBuffers()
+
+	// save the frame
+	currentWindowFrame = ggCtx.Image()
+}
+
+func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	if action != glfw.Release {
+		return
+	}
+
+	xPos, yPos := window.GetCursorPos()
+	xPosInt := int(xPos)
+	yPosInt := int(yPos)
+
+	wWidth, wHeight := window.GetSize()
+
+	rootPath, _ := l8shared.GetRootPath()
+
+	var widgetRS g143.RectSpecs
+	var widgetCode int
+
+	for code, RS := range objCoords {
+		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+			widgetRS = RS
+			widgetCode = code
+			break
 		}
-	})
+	}
 
-	viewSampleBtn := widget.NewButton("View Sample Lyrics File", func() {
-		sampleLyricsLabel := widget.NewLabel(string(l8shared.SampleLyricsFile))
-		innerBox := container.New(&l8shared.FillSpace{}, container.NewMax(container.NewScroll(sampleLyricsLabel)))
-		dialog.ShowCustom("Sample Lyrics File", "Close", innerBox, myWindow)
-	})
+	if widgetCode == 0 {
+		return
+	}
 
-	saeBtn := widget.NewButton("sae.ng", func() {
-		if runtime.GOOS == "windows" {
-			exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
-		} else if runtime.GOOS == "linux" {
-			exec.Command("xdg-open", "https://sae.ng").Run()
+	switch widgetCode {
+	case OpenWDBtn:
+		rootPath, _ := l8shared.GetRootPath()
+		externalLaunch(rootPath)
+
+	case ViewLyricsBtn:
+		tmpFrame = currentWindowFrame
+
+		drawSampleLyricsDialog(window, currentWindowFrame)
+
+	case DialogCloseButton:
+		if tmpFrame != nil {
+			// send the frame to glfw window
+			windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+			g143.DrawImage(wWidth, wHeight, tmpFrame, windowRS)
+			window.SwapBuffers()
+
+			currentWindowFrame = tmpFrame
+			tmpFrame = nil
 		}
-	})
 
-	aboutBtn := widget.NewButton("About Us", func() {
-		img, _, err := image.Decode(bytes.NewReader(l8shared.SaeLogoBytes))
+	case SelectLyricsBtn:
+		filename := pickFileUbuntu("txt")
+		if filename == "" {
+			return
+		}
+		inputsStore["lyrics_file"] = filepath.Join(rootPath, filename)
+
+		// write lyrics file
+		ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+		// load font
+		fontPath := getDefaultFontPath()
+		err := ggCtx.LoadFontFace(fontPath, 20)
 		if err != nil {
 			panic(err)
 		}
-		logoImage := canvas.NewImageFromImage(img)
-		logoImage.FillMode = canvas.ImageFillOriginal
 
-		boxes := container.NewVBox(
-			container.NewCenter(logoImage),
-			widget.NewLabelWithStyle("Brought to You with Love by", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-			saeBtn,
-		)
-		dialog.ShowCustom("About Lyrics818", "Close", boxes, myWindow)
-	})
-	topBar := container.NewHBox(openWDBtn, viewSampleBtn)
-	formBox := container.NewPadded()
-	outputsBox := container.NewVBox()
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
 
-	getLyricsForm := func() *widget.Form {
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
 
-		txtFiles := getFilesOfType(rootPath, ".txt")
-		mp3Files := getFilesOfType(rootPath, ".mp3")
-		ttfFiles := getFilesOfType(rootPath, ".ttf")
-		pngFiles := getFilesOfType(rootPath, ".png")
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+		window.SwapBuffers()
 
-		lyricsInputForm := widget.NewForm()
-		lyricsInputForm.Append("lyrics_file", widget.NewSelect(txtFiles, nil))
-		lyricsInputForm.Append("font_file", widget.NewSelect(ttfFiles, nil))
-		lyricsInputForm.Append("background_file", widget.NewSelect(pngFiles, nil))
-		lyricsInputForm.Append("music_file", widget.NewSelect(mp3Files, nil))
-		colorEntry := widget.NewEntry()
-		colorEntry.SetText("#666666")
-		lyricsInputForm.Append("lyrics_color", colorEntry)
-		lyricsInputForm.SubmitText = "Make Lyrics Video"
-		lyricsInputForm.CancelText = "Close"
-		lyricsInputForm.OnCancel = func() {
-			os.Exit(0)
+		// save the frame
+		currentWindowFrame = ggCtx.Image()
+
+	case FontFileBtn:
+		filename := pickFileUbuntu("ttf")
+		if filename == "" {
+			return
 		}
-		lyricsInputForm.OnSubmit = func() {
-			outputsBox.Add(widget.NewLabel("Beginning"))
-			inputs := getFormInputs(lyricsInputForm.Items)
+		inputsStore["font_file"] = filepath.Join(rootPath, filename)
 
-			// complete the paths
-			for k, v := range inputs {
-				if k != "lyrics_color" {
-					inputs[k] = filepath.Join(rootPath, v)
-				}
-			}
+		// write lyrics file
+		ggCtx := gg.NewContextForImage(currentWindowFrame)
 
-			command := GetFFMPEGCommand()
-			outFileName, err := l8shared.MakeVideo(inputs, command)
-			if err != nil {
-				log.Println(err)
-				outputsBox.Add(widget.NewLabel("Error occured: " + err.Error()))
-				return
-			}
-			openOutputButton := widget.NewButton("Open Video", func() {
-				if runtime.GOOS == "windows" {
-					exec.Command("cmd", "/C", "start", filepath.Join(rootPath, outFileName)).Run()
-				} else if runtime.GOOS == "linux" {
-					exec.Command("xdg-open", filepath.Join(rootPath, outFileName)).Run()
-				}
-			})
-			outputsBox.Add(openOutputButton)
-			outputsBox.Refresh()
+		// load font
+		fontPath := getDefaultFontPath()
+		err := ggCtx.LoadFontFace(fontPath, 20)
+		if err != nil {
+			panic(err)
 		}
 
-		return lyricsInputForm
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+		window.SwapBuffers()
+
+		// save the frame
+		currentWindowFrame = ggCtx.Image()
+
+	case BgFileBtn:
+		filename := pickFileUbuntu("png")
+		if filename == "" {
+			return
+		}
+		inputsStore["background_file"] = filepath.Join(rootPath, filename)
+
+		// write lyrics file
+		ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+		// load font
+		fontPath := getDefaultFontPath()
+		err := ggCtx.LoadFontFace(fontPath, 20)
+		if err != nil {
+			panic(err)
+		}
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+		window.SwapBuffers()
+
+		// save the frame
+		currentWindowFrame = ggCtx.Image()
+
+	case MusicFileBtn:
+		filename := pickFileUbuntu("mp3")
+		if filename == "" {
+			return
+		}
+		inputsStore["music_file"] = filepath.Join(rootPath, filename)
+
+		// write lyrics file
+		ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+		// load font
+		fontPath := getDefaultFontPath()
+		err := ggCtx.LoadFontFace(fontPath, 20)
+		if err != nil {
+			panic(err)
+		}
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+		window.SwapBuffers()
+
+		// save the frame
+		currentWindowFrame = ggCtx.Image()
+
+	case LyricsColorBtn:
+		tmpColor := pickColor()
+		if tmpColor == "" {
+			return
+		}
+		inputsStore["lyrics_color"] = tmpColor
+
+		// show sample color
+		ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+		ggCtx.SetHexColor(tmpColor)
+		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), 100, 40)
+		ggCtx.Fill()
+
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+		window.SwapBuffers()
+
+		// save the frame
+		currentWindowFrame = ggCtx.Image()
+
+	case RenderBtn:
+		if len(inputsStore) != 5 {
+			return
+		}
+
+		drawRenderView(window, currentWindowFrame)
+		window.SetMouseButtonCallback(nil)
+		window.SetKeyCallback(nil)
+		inChannel <- true
 	}
 
-	refreshBtn := widget.NewButton("Refresh Files List", func() {
-		lyricsForm := getLyricsForm()
-		formBox.RemoveAll()
-		formBox.Add(lyricsForm)
-		formBox.Refresh()
-	})
-
-	topBar.Add(refreshBtn)
-	topBar.Add(aboutBtn)
-	helpWidget := widget.NewRichTextFromMarkdown(`
-## Help
-1. All files must be placed in the working directory of this program.
-
-1. Only .mp3 files are allowed for the **input music file**	
-
-1. Only .png files are allowed for the **background**
-
-1. The background_file must be of dimensions (1366px x 768px)
-	`)
-	rightBox := container.NewVBox(
-		topBar,
-		widget.NewSeparator(),
-		helpWidget,
-		formBox, outputsBox,
-	)
-
-	lyricsForm := getLyricsForm()
-	formBox.Add(lyricsForm)
-	formBox.Refresh()
-
-	guitarImg, _, err := image.Decode(bytes.NewReader(l8shared.GuitarJPG))
-	if err != nil {
-		panic(err)
-	}
-	guitarFyneImage := canvas.NewImageFromImage(guitarImg)
-	guitarFyneImage.FillMode = canvas.ImageFillOriginal
-	guitarBox := container.NewCenter(guitarFyneImage)
-
-	windowBox := container.NewHBox(guitarBox, rightBox)
-	myWindow.SetContent(windowBox)
-	myWindow.Resize(fyne.NewSize(1000, 600))
-	// myWindow.SetFixedSize(true)
-	myWindow.ShowAndRun()
-}
-
-func getFormInputs(content []*widget.FormItem) map[string]string {
-	inputs := make(map[string]string)
-	for _, formItem := range content {
-		entryWidget, ok := formItem.Widget.(*widget.Entry)
-		if ok {
-			inputs[formItem.Text] = entryWidget.Text
-			continue
-		}
-
-		selectWidget, ok := formItem.Widget.(*widget.Select)
-		if ok {
-			inputs[formItem.Text] = selectWidget.Selected
-		}
-	}
-
-	return inputs
-}
-
-func getFilesOfType(rootPath, ext string) []string {
-	dirFIs, err := os.ReadDir(rootPath)
-	if err != nil {
-		panic(err)
-	}
-	files := make([]string, 0)
-	for _, dirFI := range dirFIs {
-		if !dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") && strings.HasSuffix(dirFI.Name(), ext) {
-			files = append(files, dirFI.Name())
-		}
-
-		if dirFI.IsDir() && !strings.HasPrefix(dirFI.Name(), ".") {
-			innerDirFIs, _ := os.ReadDir(filepath.Join(rootPath, dirFI.Name()))
-			innerFiles := make([]string, 0)
-
-			for _, innerDirFI := range innerDirFIs {
-				if !innerDirFI.IsDir() && !strings.HasPrefix(innerDirFI.Name(), ".") && strings.HasSuffix(innerDirFI.Name(), ext) {
-					innerFiles = append(innerFiles, filepath.Join(dirFI.Name(), innerDirFI.Name()))
-				}
-			}
-
-			if len(innerFiles) > 0 {
-				files = append(files, innerFiles...)
-			}
-		}
-
-	}
-
-	return files
 }
