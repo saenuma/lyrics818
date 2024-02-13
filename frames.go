@@ -1,4 +1,4 @@
-package l8shared
+package main
 
 import (
 	"image"
@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
-	"github.com/goki/freetype"
-	"github.com/goki/freetype/truetype"
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
 	"github.com/lucasb-eyer/go-colorful"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"

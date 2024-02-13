@@ -11,7 +11,6 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/saenuma/lyrics818/l8shared"
 )
 
 const (
@@ -54,7 +53,7 @@ func main() {
 		for {
 			<-inChannel
 			command := GetFFMPEGCommand()
-			_, err := l8shared.MakeVideo(inputsStore, command)
+			_, err := MakeVideo(inputsStore, command)
 			if err != nil {
 				log.Println(err)
 				return
@@ -252,7 +251,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 	wWidth, wHeight := window.GetSize()
 
-	rootPath, _ := l8shared.GetRootPath()
+	rootPath, _ := GetRootPath()
 
 	var widgetRS g143.RectSpecs
 	var widgetCode int
@@ -271,7 +270,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 	switch widgetCode {
 	case OpenWDBtn:
-		rootPath, _ := l8shared.GetRootPath()
+		rootPath, _ := GetRootPath()
 		externalLaunch(rootPath)
 
 	case ViewLyricsBtn:

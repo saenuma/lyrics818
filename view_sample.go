@@ -8,7 +8,6 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/saenuma/lyrics818/l8shared"
 )
 
 const (
@@ -17,7 +16,7 @@ const (
 
 func drawSampleLyricsDialog(window *glfw.Window, currentFrame image.Image) {
 
-	_ = l8shared.SampleLyricsFile
+	_ = SampleLyricsFile
 
 	wWidth, wHeight := window.GetSize()
 
@@ -59,7 +58,7 @@ func drawSampleLyricsDialog(window *glfw.Window, currentFrame image.Image) {
 		panic(err)
 	}
 
-	for i, piece := range strings.Split(string(l8shared.SampleLyricsFile), "\n") {
+	for i, piece := range strings.Split(string(SampleLyricsFile), "\n") {
 		if i == 29 {
 			break
 		}
