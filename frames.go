@@ -205,7 +205,7 @@ func MakeVideo(inputs map[string]string, ffmpegCommandPath string) (string, erro
 		return "", err
 	}
 
-	outName := "frames_" + time.Now().Format("20060102T150405")
+	outName := ".frames_" + time.Now().Format("20060102T150405")
 
 	renderPath := filepath.Join(rootPath, outName)
 	os.MkdirAll(renderPath, 0777)
