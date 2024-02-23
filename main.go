@@ -4,6 +4,7 @@ import (
 	"image"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -24,6 +25,7 @@ const (
 	MusicFileBtn    = 106
 	LyricsColorBtn  = 107
 	RenderBtn       = 109
+	OurSite         = 110
 )
 
 var objCoords map[int]g143.RectSpecs
@@ -230,6 +232,16 @@ func allDraws(window *glfw.Window) {
 
 	ggCtx.SetHexColor("#fff")
 	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 485+fontSize)
+
+	// draw our site below
+	ggCtx.SetHexColor("#9C5858")
+	fromAddr := "sae.ng"
+	fromAddrWidth, fromAddrHeight := ggCtx.MeasureString(fromAddr)
+	fromAddrOriginX := (wWidth - int(fromAddrWidth)) / 2
+	ggCtx.DrawString(fromAddr, float64(fromAddrOriginX), float64(wHeight-int(fromAddrHeight)))
+	fars := g143.RectSpecs{OriginX: fromAddrOriginX, OriginY: wHeight - 40,
+		Width: int(fromAddrWidth), Height: 40}
+	objCoords[OurSite] = fars
 
 	// send the frame to glfw window
 	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -438,6 +450,14 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 		// save the frame
 		currentWindowFrame = ggCtx.Image()
+
+	case OurSite:
+
+		if runtime.GOOS == "windows" {
+			exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
+		} else if runtime.GOOS == "linux" {
+			exec.Command("xdg-open", "https://sae.ng").Run()
+		}
 
 	case RenderBtn:
 		if len(inputsStore) != 5 {
