@@ -30,7 +30,6 @@ const (
 
 var objCoords map[int]g143.RectSpecs
 var currentWindowFrame image.Image
-var tmpFrame image.Image
 var inputsStore map[string]string
 
 var inChannel chan bool
@@ -286,8 +285,6 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		externalLaunch(rootPath)
 
 	case ViewLyricsBtn:
-		tmpFrame = currentWindowFrame
-
 		drawSampleLyricsDialog(window, currentWindowFrame)
 
 	case DialogCloseButton:
