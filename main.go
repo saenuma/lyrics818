@@ -291,15 +291,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		drawSampleLyricsDialog(window, currentWindowFrame)
 
 	case DialogCloseButton:
-		if tmpFrame != nil {
-			// send the frame to glfw window
-			windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-			g143.DrawImage(wWidth, wHeight, tmpFrame, windowRS)
-			window.SwapBuffers()
-
-			currentWindowFrame = tmpFrame
-			tmpFrame = nil
-		}
+		allDraws(window)
 
 	case SelectLyricsBtn:
 		filename := pickFileUbuntu("txt")
