@@ -12,6 +12,7 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/sqweek/dialog"
 )
 
 const (
@@ -260,16 +261,11 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	xPosInt := int(xPos)
 	yPosInt := int(yPos)
 
-	wWidth, wHeight := window.GetSize()
-
-	rootPath, _ := GetRootPath()
-
-	var widgetRS g143.RectSpecs
 	var widgetCode int
 
 	for code, RS := range objCoords {
 		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
-			widgetRS = RS
+			// widgetRS = RS
 			widgetCode = code
 			break
 		}
@@ -291,154 +287,42 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		allDraws(window)
 
 	case SelectLyricsBtn:
-		filename := pickFileUbuntu("txt")
-		if filename == "" {
+		filename, err := dialog.File().Filter("Formatted Lyrics File", "txt").Load()
+		if filename == "" || err != nil {
 			return
 		}
-		inputsStore["lyrics_file"] = filepath.Join(rootPath, filename)
 
-		// write lyrics file
-		ggCtx := gg.NewContextForImage(currentWindowFrame)
-
-		// load font
-		fontPath := getDefaultFontPath()
-		err := ggCtx.LoadFontFace(fontPath, 20)
-		if err != nil {
-			panic(err)
-		}
-
-		ggCtx.SetHexColor("#fff")
-		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
-		ggCtx.Fill()
-
-		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
-
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
-		window.SwapBuffers()
-
-		// save the frame
-		currentWindowFrame = ggCtx.Image()
+		inputsStore["lyrics_file"] = filename
+		displayInputs(window)
 
 	case FontFileBtn:
-		filename := pickFileUbuntu("ttf")
-		if filename == "" {
+		filename, err := dialog.File().Filter("Font file", "ttf").Load()
+		if filename == "" || err != nil {
 			return
 		}
-		inputsStore["font_file"] = filepath.Join(rootPath, filename)
 
-		// write lyrics file
-		ggCtx := gg.NewContextForImage(currentWindowFrame)
-
-		// load font
-		fontPath := getDefaultFontPath()
-		err := ggCtx.LoadFontFace(fontPath, 20)
-		if err != nil {
-			panic(err)
-		}
-
-		ggCtx.SetHexColor("#fff")
-		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
-		ggCtx.Fill()
-
-		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
-
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
-		window.SwapBuffers()
-
-		// save the frame
-		currentWindowFrame = ggCtx.Image()
+		inputsStore["font_file"] = filename
+		displayInputs(window)
 
 	case BgFileBtn:
-		filename := pickFileUbuntu("png")
-		if filename == "" {
+		filename, err := dialog.File().Filter("Background file", "png").Load()
+		if filename == "" || err != nil {
 			return
 		}
-		inputsStore["background_file"] = filepath.Join(rootPath, filename)
-
-		// write lyrics file
-		ggCtx := gg.NewContextForImage(currentWindowFrame)
-
-		// load font
-		fontPath := getDefaultFontPath()
-		err := ggCtx.LoadFontFace(fontPath, 20)
-		if err != nil {
-			panic(err)
-		}
-
-		ggCtx.SetHexColor("#fff")
-		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
-		ggCtx.Fill()
-
-		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
-
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
-		window.SwapBuffers()
-
-		// save the frame
-		currentWindowFrame = ggCtx.Image()
+		inputsStore["background_file"] = filename
+		displayInputs(window)
 
 	case MusicFileBtn:
-		filename := pickFileUbuntu("mp3")
-		if filename == "" {
+		filename, err := dialog.File().Filter("Mp3 audio file", "mp3").Load()
+		if filename == "" || err != nil {
 			return
 		}
-		inputsStore["music_file"] = filepath.Join(rootPath, filename)
-
-		// write lyrics file
-		ggCtx := gg.NewContextForImage(currentWindowFrame)
-
-		// load font
-		fontPath := getDefaultFontPath()
-		err := ggCtx.LoadFontFace(fontPath, 20)
-		if err != nil {
-			panic(err)
-		}
-
-		ggCtx.SetHexColor("#fff")
-		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
-		ggCtx.Fill()
-
-		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
-
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
-		window.SwapBuffers()
-
-		// save the frame
-		currentWindowFrame = ggCtx.Image()
+		inputsStore["music_file"] = filename
+		displayInputs(window)
 
 	case LyricsColorBtn:
-		tmpColor := pickColor()
-		if tmpColor == "" {
-			return
-		}
-		inputsStore["lyrics_color"] = tmpColor
-
-		// show sample color
-		ggCtx := gg.NewContextForImage(currentWindowFrame)
-
-		ggCtx.SetHexColor(tmpColor)
-		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), 100, 40)
-		ggCtx.Fill()
-
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
-		window.SwapBuffers()
-
-		// save the frame
-		currentWindowFrame = ggCtx.Image()
+		drawColorDialog(window)
+		window.SetMouseButtonCallback(colorDialogMouseBtnCallback)
 
 	case OurSite:
 
@@ -459,4 +343,73 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		inChannel <- true
 	}
 
+}
+
+func displayInputs(window *glfw.Window) {
+	wWidth, wHeight := window.GetSize()
+
+	ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+	// load font
+	fontPath := getDefaultFontPath()
+	err := ggCtx.LoadFontFace(fontPath, 20)
+	if err != nil {
+		panic(err)
+	}
+
+	// lyrics file
+	slbRS := objCoords[SelectLyricsBtn]
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawRectangle(400, float64(slbRS.OriginY), float64(wWidth)-400, 40)
+	ggCtx.Fill()
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(inputsStore["lyrics_file"], 400, float64(slbRS.OriginY)+fontSize)
+
+	// font file
+	ffbRS := objCoords[FontFileBtn]
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawRectangle(400, float64(ffbRS.OriginY), float64(wWidth)-400, 40)
+	ggCtx.Fill()
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(inputsStore["font_file"], 400, float64(ffbRS.OriginY)+fontSize)
+
+	// bg file
+
+	bfbRS := objCoords[BgFileBtn]
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawRectangle(400, float64(bfbRS.OriginY), float64(wWidth)-400, 40)
+	ggCtx.Fill()
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(inputsStore["background_file"], 400, float64(bfbRS.OriginY)+fontSize)
+
+	// music file
+	mfbRS := objCoords[MusicFileBtn]
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawRectangle(400, float64(mfbRS.OriginY), float64(wWidth)-400, 40)
+	ggCtx.Fill()
+
+	ggCtx.SetHexColor("#444")
+	ggCtx.DrawString(inputsStore["music_file"], 400, float64(mfbRS.OriginY)+fontSize)
+
+	// color
+	color := "#fff"
+	if tmpColor, ok := inputsStore["lyrics_color"]; ok {
+		color = tmpColor
+	}
+
+	lcbRS := objCoords[LyricsColorBtn]
+	ggCtx.SetHexColor(color)
+	ggCtx.DrawRoundedRectangle(400, float64(lcbRS.OriginY), 100, 40, 5)
+	ggCtx.Fill()
+
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+	window.SwapBuffers()
+
+	// save the frame
+	currentWindowFrame = ggCtx.Image()
 }
