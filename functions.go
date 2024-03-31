@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -143,4 +144,56 @@ func externalLaunch(p string) {
 	} else if runtime.GOOS == "linux" {
 		exec.Command("xdg-open", p).Run()
 	}
+}
+
+func pickFileUbuntu(exts string) string {
+	homeDir, _ := os.UserHomeDir()
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = filepath.Join(homeDir, "bin", "fpicker")
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "fpicker")
+	}
+
+	rootPath, _ := GetRootPath()
+	cmd := exec.Command(cmdPath, rootPath, exts)
+
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
+}
+
+func pickColor() string {
+	homeDir, _ := os.UserHomeDir()
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = filepath.Join(homeDir, "bin", "cpicker")
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "cpicker")
+	}
+
+	cmd := exec.Command(cmdPath)
+
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
+}
+
+func GetFFMPEGCommand() string {
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = "ffmpeg"
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+	}
+
+	return cmdPath
 }
