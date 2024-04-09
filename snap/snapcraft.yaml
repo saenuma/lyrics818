@@ -74,7 +74,7 @@ parts:
     override-build: |
       set -xe
       go mod download
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 ./linux
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 .
       go build -o $SNAPCRAFT_PART_INSTALL/bin/testplay ./testplay
 
 apps: 
