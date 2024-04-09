@@ -78,6 +78,12 @@
             currentVideoLength = data;
           })
 
+          if (toSend["device"] == "mobile") {
+            $("#frame").css("width", "45%");
+          } else {
+            $("#frame").css("width", "95%");
+          }
+          
           var audioPlayer = document.createElement("audio")
           audioPlayer.src = "/get_audio"
           audioPlayer.load()
