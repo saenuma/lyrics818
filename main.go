@@ -53,8 +53,7 @@ func main() {
 	go func() {
 		for {
 			<-inChannel
-			command := GetFFMPEGCommand()
-			_, err := MakeVideo(inputsStore, command)
+			_, err := MakeVideo(inputsStore)
 			if err != nil {
 				log.Println(err)
 				return
