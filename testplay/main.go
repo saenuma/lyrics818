@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	ffplayCmd := GetFFPlayCommand()
+	mplayCmd := GetMPCommand()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel() // cancel when we are finished consuming integers
 
@@ -54,7 +54,7 @@ func main() {
 	beginPlayAt := func(seek, inVideoPath, mode string) {
 		startTime := time.Now()
 		go func() {
-			exec.CommandContext(ctx, ffplayCmd, tmpAudioPath, "-nodisp", "-ss", seek).Run()
+			exec.CommandContext(ctx, mplayCmd, "-s", seek, tmpAudioPath).Run()
 		}()
 		beginSeconds := l8shared.TimeFormatToSeconds(seek)
 

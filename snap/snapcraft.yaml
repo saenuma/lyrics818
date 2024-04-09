@@ -25,12 +25,8 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-
-  ff-part:
-    plugin: dump
-    source: https://storage.googleapis.com/saenuma_public/ffmpeg.tar.xz
-    organize:
-      ffmpeg: bin/
+    stage-packages:
+      - madplay
 
   pickers:
     # See 'snapcraft plugins'
@@ -49,3 +45,10 @@ apps:
   lyrics818:
     command: bin/lyrics818
     extensions: [gnome]
+
+  testplay:
+    command: bin/testplay
+    extensions: [gnome]
+    plugs:
+      - alsa
+      - audio-playback
