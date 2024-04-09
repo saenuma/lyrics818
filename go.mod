@@ -9,14 +9,18 @@ require (
 	github.com/fogleman/gg v1.3.0
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/gorilla/mux v1.8.1
+	github.com/jchv/go-webview2 v0.0.0-20221223143126-dc24628cff85
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pkg/errors v0.9.1
+	github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf
 	github.com/tcolgate/mp3 v0.0.0-20170426193717-e79c5a46d300
 	golang.org/x/image v0.13.0
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e // indirect
+	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -28,6 +32,7 @@ require (
 	github.com/go-text/typesetting v0.1.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
