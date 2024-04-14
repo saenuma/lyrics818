@@ -58,6 +58,11 @@ parts:
       - libmad0
       - libaudio2
       - libsndio7.0
+    override-build: |
+      set -xe
+      go mod download
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 .
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/testplay ./testplay
 
   pickers:
     # See 'snapcraft plugins'
@@ -71,11 +76,6 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-    override-build: |
-      set -xe
-      go mod download
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 .
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/testplay ./testplay
 
 apps: 
   lyrics818:
