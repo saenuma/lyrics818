@@ -261,8 +261,6 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 	wWidth, wHeight := window.GetSize()
 
-	rootPath, _ := GetRootPath()
-
 	var widgetRS g143.RectSpecs
 	var widgetCode int
 
@@ -294,7 +292,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		if filename == "" {
 			return
 		}
-		inputsStore["lyrics_file"] = filepath.Join(rootPath, filename)
+		inputsStore["lyrics_file"] = filename
 
 		// write lyrics file
 		ggCtx := gg.NewContextForImage(currentWindowFrame)
@@ -311,7 +309,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.Fill()
 
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -326,7 +324,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		if filename == "" {
 			return
 		}
-		inputsStore["font_file"] = filepath.Join(rootPath, filename)
+		inputsStore["font_file"] = filename
 
 		// write lyrics file
 		ggCtx := gg.NewContextForImage(currentWindowFrame)
@@ -343,7 +341,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.Fill()
 
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -358,7 +356,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		if filename == "" {
 			return
 		}
-		inputsStore["background_file"] = filepath.Join(rootPath, filename)
+		inputsStore["background_file"] = filename
 
 		// write lyrics file
 		ggCtx := gg.NewContextForImage(currentWindowFrame)
@@ -375,7 +373,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.Fill()
 
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -390,7 +388,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		if filename == "" {
 			return
 		}
-		inputsStore["music_file"] = filepath.Join(rootPath, filename)
+		inputsStore["music_file"] = filename
 
 		// write lyrics file
 		ggCtx := gg.NewContextForImage(currentWindowFrame)
@@ -407,7 +405,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.Fill()
 
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filename, 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
