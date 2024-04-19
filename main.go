@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	g143 "github.com/bankole7782/graphics143"
@@ -276,6 +277,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		return
 	}
 
+	rootPath, _ := GetRootPath()
+
 	switch widgetCode {
 	case OpenWDBtn:
 		rootPath, _ := GetRootPath()
@@ -308,8 +311,9 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
 		ggCtx.Fill()
 
+		displayFilename := strings.ReplaceAll(filename, rootPath, "")
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(displayFilename, 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -340,8 +344,9 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
 		ggCtx.Fill()
 
+		displayFilename := strings.ReplaceAll(filename, rootPath, "")
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(displayFilename, 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -372,8 +377,9 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
 		ggCtx.Fill()
 
+		displayFilename := strings.ReplaceAll(filename, rootPath, "")
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(displayFilename, 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -404,8 +410,9 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ggCtx.DrawRectangle(400, float64(widgetRS.OriginY), float64(wWidth)-400, 40)
 		ggCtx.Fill()
 
+		displayFilename := strings.ReplaceAll(filename, rootPath, "")
 		ggCtx.SetHexColor("#444")
-		ggCtx.DrawString(filepath.Base(filename), 400, float64(widgetRS.OriginY)+fontSize)
+		ggCtx.DrawString(displayFilename, 400, float64(widgetRS.OriginY)+fontSize)
 
 		// send the frame to glfw window
 		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
