@@ -2,14 +2,14 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/saenuma/lyrics818/l8f"
 )
 
-func MakeVideo(inputs map[string]string) (string, error) {
+func MakeVideo(inputs map[string]string, ffmpegCommandPath string) (string, error) {
+
 	rootPath, err := GetRootPath()
 	if err != nil {
 		return "", err
@@ -25,25 +25,31 @@ func MakeVideo(inputs map[string]string) (string, error) {
 		return "", err
 	}
 
-	laptopOutName := "lframes_" + time.Now().Format("20060102T150405")
-	mobileOutName := "mframes_" + time.Now().Format("20060102T150405")
-	lrenderPath := filepath.Join(rootPath, laptopOutName)
-	os.MkdirAll(lrenderPath, 0777)
-	mrenderPath := filepath.Join(rootPath, mobileOutName)
-	os.MkdirAll(mrenderPath, 0777)
+	outName := ".frames_" + time.Now().Format("20060102T150405")
 
-	MakeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, inputs)
-	MakeMobileFrames(mobileOutName, totalSeconds, mrenderPath, inputs)
+	renderPath := filepath.Join(rootPath, outName)
+	os.MkdirAll(renderPath, 0777)
 
-	outName := strings.ReplaceAll(filepath.Base(fullMp3Path), ".mp3", ".l8f")
-	fullOutPath := filepath.Join(rootPath, outName)
-	err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{},
-		rootPath, fullOutPath)
+	// command := GetFFMPEGCommand()
+
+	MakeLaptopFrames(outName, totalSeconds, renderPath, inputs)
+
+	// make video from laptop frames
+	_, err = exec.Command(ffmpegCommandPath, "-framerate", "1", "-i", filepath.Join(renderPath, "%d.png"),
+		"-pix_fmt", "yuv420p",
+		filepath.Join(renderPath, "tmp_"+outName+".mp4")).CombinedOutput()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	os.RemoveAll(lrenderPath)
-	os.RemoveAll(mrenderPath)
 
-	return outName, nil
+	videoFileName := strings.ReplaceAll(fullMp3Path, ".mp3", ".mp4")
+	// join audio to video
+	_, err = exec.Command(ffmpegCommandPath, "-y", "-i", filepath.Join(renderPath, "tmp_"+outName+".mp4"),
+		"-i", inputs["music_file"], "-pix_fmt", "yuv420p", videoFileName).CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+
+	os.RemoveAll(renderPath)
+	return videoFileName, nil
 }
