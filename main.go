@@ -54,8 +54,7 @@ func main() {
 	go func() {
 		for {
 			<-inChannel
-			ffPath := GetFFMPEGCommand()
-			_, err := MakeVideo(inputsStore, ffPath)
+			_, err := MakeVideo(inputsStore)
 			if err != nil {
 				log.Println(err)
 				return
@@ -222,7 +221,7 @@ func allDraws(window *glfw.Window) {
 	// render button
 	beginXOffset2 := 350
 	ggCtx.SetHexColor("#A965B5")
-	rStr := "Make Lyrics Video (.mp4)"
+	rStr := "Make Lyrics Video (.l8f)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
 	ggCtx.DrawRoundedRectangle(float64(beginXOffset2), 480, rStrW+50, rStrH+25, (rStrH+25)/2)
 	ggCtx.Fill()
