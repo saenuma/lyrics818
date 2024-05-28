@@ -63,6 +63,8 @@ parts:
       go mod download
       go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 .
       go build -o $SNAPCRAFT_PART_INSTALL/bin/testplay ./testplay
+    after:
+      - alsa
 
   pickers:
     # See 'snapcraft plugins'
@@ -88,5 +90,6 @@ apps:
     plugs:
       - alsa
       - audio-playback
+      - pulseaudio
     environment:
       ALSA_CONFIG_PATH: /snap/$SNAPCRAFT_PROJECT_NAME/current/usr/share/alsa/alsa.conf
