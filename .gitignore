@@ -16,5 +16,3 @@
 
 bin/
 *.snap
-
-!windows/ffmpeg/ffmpeg.exe
