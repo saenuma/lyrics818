@@ -26,14 +26,15 @@ const (
 	MusicFileBtn    = 106
 	LyricsColorBtn  = 107
 	RenderBtn       = 109
-	OurSite         = 110
+	RenderL8fBtn    = 110
+	OurSite         = 111
 )
 
 var objCoords map[int]g143.RectSpecs
 var currentWindowFrame image.Image
 var inputsStore map[string]string
 
-var inChannel chan bool
+var inChannel chan string
 var clearAfterRender bool
 
 func main() {
@@ -46,19 +47,28 @@ func main() {
 
 	objCoords = make(map[int]g143.RectSpecs)
 	inputsStore = make(map[string]string)
-	inChannel = make(chan bool)
+	inChannel = make(chan string)
 
 	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
 	drawDefaultUI(window)
 
 	go func() {
 		for {
-			<-inChannel
-			ffPath := GetFFMPEGCommand()
-			_, err := MakeVideo(inputsStore, ffPath)
-			if err != nil {
-				log.Println(err)
-				return
+			method := <-inChannel
+			if method == "mp4" {
+				ffPath := GetFFMPEGCommand()
+				_, err := MakeVideo(inputsStore, ffPath)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+			} else if method == "l8f" {
+				_, err := MakeVideoL8F(inputsStore)
+				if err != nil {
+					log.Println(err)
+					return
+				}
 			}
 			clearAfterRender = true
 		}
@@ -220,7 +230,7 @@ func drawDefaultUI(window *glfw.Window) {
 	ggCtx.DrawString(lcStr, 60, 405+fontSize)
 
 	// render button
-	beginXOffset2 := 350
+	beginXOffset2 := 250
 	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
@@ -232,6 +242,20 @@ func drawDefaultUI(window *glfw.Window) {
 
 	ggCtx.SetHexColor("#fff")
 	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 485+fontSize)
+
+	// render l8f button
+	rl8X := beginXOffset2 + rBtnRS.Width + 50
+	ggCtx.SetHexColor("#674C6A")
+	rl8L := "Make Lyrics Video (.l8f)"
+	rl8LW, rl8LH := ggCtx.MeasureString(rl8L)
+	ggCtx.DrawRoundedRectangle(float64(rl8X), 480, rl8LW+50, rl8LH+25, (rl8LH+25)/2)
+	ggCtx.Fill()
+
+	rl8BtnRS := g143.NRectSpecs(rl8X, 480, int(rl8LW)+50, int(rl8LH)+25)
+	objCoords[RenderL8fBtn] = rl8BtnRS
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(rl8L, float64(rl8X)+25, 485+fontSize)
 
 	// draw our site below
 	ggCtx.SetHexColor("#9C5858")
@@ -448,7 +472,17 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		drawRenderView(window, currentWindowFrame)
 		window.SetMouseButtonCallback(nil)
 		window.SetKeyCallback(nil)
-		inChannel <- true
+		inChannel <- "mp4"
+
+	case RenderL8fBtn:
+		if len(inputsStore) != 5 {
+			return
+		}
+
+		drawRenderView(window, currentWindowFrame)
+		window.SetMouseButtonCallback(nil)
+		window.SetKeyCallback(nil)
+		inChannel <- "l8f"
 	}
 
 }
