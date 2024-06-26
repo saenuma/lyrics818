@@ -82,15 +82,14 @@ func MakeVideoL8F(inputs map[string]string) (string, error) {
 	MakeLaptopFrames(laptopOutName, totalSeconds, lrenderPath, inputs)
 	MakeMobileFrames(mobileOutName, totalSeconds, mrenderPath, inputs)
 
-	outName := strings.ReplaceAll(filepath.Base(fullMp3Path), ".mp3", ".l8f")
-	fullOutPath := filepath.Join(rootPath, outName)
+	videoFileName := strings.ReplaceAll(fullMp3Path, ".mp3", ".l8f")
 	err = l8f.MakeL8F(lrenderPath, mrenderPath, fullMp3Path, map[string]string{},
-		rootPath, fullOutPath)
+		rootPath, videoFileName)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	os.RemoveAll(lrenderPath)
 	os.RemoveAll(mrenderPath)
 
-	return outName, nil
+	return videoFileName, nil
 }
