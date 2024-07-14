@@ -11,6 +11,7 @@ import (
 	"time"
 
 	g143 "github.com/bankole7782/graphics143"
+	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
@@ -35,6 +36,8 @@ var inputsStore map[string]string
 
 var inChannel chan bool
 var clearAfterRender bool
+
+var cursorEventsCount = 0
 
 func main() {
 	// _, err := v3shared.GetRootPath()
@@ -69,6 +72,7 @@ func main() {
 	window.SetMouseButtonCallback(mouseBtnCallback)
 	// respond to the keyboard
 	// window.SetKeyCallback(keyCallback)
+	window.SetCursorPosCallback(cursorPosCB)
 
 	for !window.ShouldClose() {
 		t := time.Now()
@@ -243,6 +247,83 @@ func allDraws(window *glfw.Window) {
 	fars := g143.RectSpecs{OriginX: fromAddrOriginX, OriginY: wHeight - 40,
 		Width: int(fromAddrWidth), Height: 40}
 	objCoords[OurSite] = fars
+
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+	window.SwapBuffers()
+
+	// save the frame
+	currentWindowFrame = ggCtx.Image()
+}
+
+func refreshInputsOnWindow(window *glfw.Window) {
+	wWidth, wHeight := window.GetSize()
+
+	ggCtx := gg.NewContextForImage(currentWindowFrame)
+
+	// load font
+	fontPath := getDefaultFontPath()
+	err := ggCtx.LoadFontFace(fontPath, 20)
+	if err != nil {
+		panic(err)
+	}
+
+	// lyrics file
+	if _, ok := inputsStore["lyrics_file"]; ok {
+		sLBRS := objCoords[SelectLyricsBtn]
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(sLBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(inputsStore["lyrics_file"]), 400, float64(sLBRS.OriginY)+fontSize)
+	}
+
+	// font file
+	if _, ok := inputsStore["font_file"]; ok {
+		sFFBRS := objCoords[FontFileBtn]
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(sFFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(inputsStore["font_file"]), 400, float64(sFFBRS.OriginY)+fontSize)
+	}
+
+	// bg file
+	if _, ok := inputsStore["background_file"]; ok {
+
+		bGFBRS := objCoords[BgFileBtn]
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(bGFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(inputsStore["background_file"]), 400, float64(bGFBRS.OriginY)+fontSize)
+	}
+
+	// music file
+	if _, ok := inputsStore["music_file"]; ok {
+		mFBRS := objCoords[MusicFileBtn]
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(mFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(inputsStore["music_file"]), 400, float64(mFBRS.OriginY)+fontSize)
+
+	}
+
+	// color
+	if _, ok := inputsStore["lyrics_color"]; ok {
+		cBRS := objCoords[LyricsColorBtn]
+		ggCtx.SetHexColor(inputsStore["lyrics_color"])
+		ggCtx.DrawRectangle(400, float64(cBRS.OriginY), 100, 40)
+		ggCtx.Fill()
+	}
 
 	// send the frame to glfw window
 	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -464,5 +545,54 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetKeyCallback(nil)
 		inChannel <- true
 	}
+
+}
+
+func cursorPosCB(window *glfw.Window, xpos, ypos float64) {
+	if runtime.GOOS == "linux" {
+		// linux fires too many events
+		cursorEventsCount += 1
+		if cursorEventsCount != 10 {
+			return
+		} else {
+			cursorEventsCount = 0
+		}
+	}
+
+	wWidth, wHeight := window.GetSize()
+
+	var widgetRS g143.RectSpecs
+	var widgetCode int
+
+	xPosInt := int(xpos)
+	yPosInt := int(ypos)
+	for code, RS := range objCoords {
+		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+			widgetRS = RS
+			widgetCode = code
+			break
+		}
+	}
+
+	if widgetCode == 0 {
+		allDraws(window)
+		refreshInputsOnWindow(window)
+		return
+	}
+
+	rectA := image.Rect(widgetRS.OriginX, widgetRS.OriginY,
+		widgetRS.OriginX+widgetRS.Width,
+		widgetRS.OriginY+widgetRS.Height)
+
+	pieceOfCurrentFrame := imaging.Crop(currentWindowFrame, rectA)
+	invertedPiece := imaging.Invert(pieceOfCurrentFrame)
+
+	ggCtx := gg.NewContextForImage(currentWindowFrame)
+	ggCtx.DrawImage(invertedPiece, widgetRS.OriginX, widgetRS.OriginY)
+
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
+	window.SwapBuffers()
 
 }
