@@ -30,6 +30,7 @@ const (
 )
 
 var objCoords map[int]g143.RectSpecs
+var colorObjCoords map[int]g143.RectSpecs
 
 var emptyFrameNoInputs image.Image
 
@@ -52,6 +53,7 @@ func main() {
 	runtime.LockOSThread()
 
 	objCoords = make(map[int]g143.RectSpecs)
+	colorObjCoords = make(map[int]g143.RectSpecs)
 	inputsStore = make(map[string]string)
 	inChannel = make(chan bool)
 
@@ -427,6 +429,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	case LyricsColorBtn:
 		drawPickColors(window)
 		window.SetMouseButtonCallback(pickColorsMouseCallback)
+		window.SetCursorPosCallback(nil)
 
 	case OurSite:
 		externalLaunch("https://sae.ng")

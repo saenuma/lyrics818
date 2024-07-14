@@ -43,7 +43,7 @@ func drawPickColors(window *glfw.Window) {
 		ggCtx.DrawRectangle(float64(currentX), float64(currentY), float64(boxDimension), float64(boxDimension))
 		ggCtx.Fill()
 		aColorRS := g143.RectSpecs{OriginX: currentX, OriginY: currentY, Width: boxDimension, Height: boxDimension}
-		objCoords[i+1] = aColorRS
+		colorObjCoords[i+1] = aColorRS
 
 		newX := currentX + boxDimension + gutter
 		if newX > (wWidth - boxDimension) {
@@ -70,9 +70,11 @@ func pickColorsMouseCallback(window *glfw.Window, button glfw.MouseButton, actio
 	xPosInt := int(xPos)
 	yPosInt := int(yPos)
 
+	wWidth, wHeight := window.GetSize()
+
 	var widgetCode int
 
-	for code, RS := range objCoords {
+	for code, RS := range colorObjCoords {
 		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
 			widgetCode = code
 			break
@@ -86,8 +88,12 @@ func pickColorsMouseCallback(window *glfw.Window, button glfw.MouseButton, actio
 	inputsStore["lyrics_color"] = allColors[widgetCode-1]
 
 	// go back
-	drawDefaultUI(window)
 	window.SetMouseButtonCallback(mouseBtnCallback)
-	refreshInputsOnWindow(window)
+	window.SetCursorPosCallback(cursorPosCB)
 
+	currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+	window.SwapBuffers()
 }
