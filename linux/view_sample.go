@@ -87,6 +87,4 @@ func drawSampleLyricsDialog(window *glfw.Window, currentFrame image.Image) {
 	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
 	window.SwapBuffers()
 
-	// save the frame
-	currentWindowFrame = ggCtx.Image()
 }
