@@ -4,7 +4,6 @@ import (
 	"image"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -436,12 +435,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case OurSite:
-
-		if runtime.GOOS == "windows" {
-			exec.Command("cmd", "/C", "start", "https://sae.ng").Run()
-		} else if runtime.GOOS == "linux" {
-			exec.Command("xdg-open", "https://sae.ng").Run()
-		}
+		externalLaunch("https://sae.ng")
 
 	case RenderBtn:
 		if len(inputsStore) != 5 {
