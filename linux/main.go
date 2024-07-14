@@ -41,10 +41,13 @@ var clearAfterRender bool
 var cursorEventsCount = 0
 
 func main() {
-	// _, err := v3shared.GetRootPath()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	rootPath, err := GetRootPath()
+	if err != nil {
+		panic(err)
+	}
+
+	sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
+	os.WriteFile(sampleLyricsPath, SampleLyricsFile, 0777)
 
 	runtime.LockOSThread()
 
@@ -71,8 +74,7 @@ func main() {
 
 	// respond to the mouse
 	window.SetMouseButtonCallback(mouseBtnCallback)
-	// respond to the keyboard
-	// window.SetKeyCallback(keyCallback)
+	// respond to mouse movement
 	window.SetCursorPosCallback(cursorPosCB)
 
 	for !window.ShouldClose() {
@@ -86,8 +88,12 @@ func main() {
 			drawEndRenderView(window, emptyFrameNoInputs)
 			time.Sleep(5 * time.Second)
 			allDraws(window)
-			// register the ViewMain mouse callback
+
+			// respond to the mouse
 			window.SetMouseButtonCallback(mouseBtnCallback)
+			// respond to mouse movement
+			window.SetCursorPosCallback(cursorPosCB)
+
 			clearAfterRender = false
 		}
 
@@ -362,16 +368,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		externalLaunch(rootPath)
 
 	case ViewLyricsBtn:
-		currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
-		drawSampleLyricsDialog(window, currentFrame)
-
-	case DialogCloseButton:
-		currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
-		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
-		window.SwapBuffers()
-		return
+		sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
+		externalLaunch(sampleLyricsPath)
 
 	case SelectLyricsBtn:
 		filename := pickFileUbuntu("txt")
@@ -451,9 +449,10 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		}
 
 		currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
-		drawRenderView(window, currentFrame)
 		window.SetMouseButtonCallback(nil)
 		window.SetKeyCallback(nil)
+		window.SetCursorPosCallback(nil)
+		drawRenderView(window, currentFrame)
 		inChannel <- true
 	}
 
