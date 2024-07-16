@@ -162,10 +162,8 @@ func allDraws(window *glfw.Window) {
 	ggCtx.DrawString("Help", 40, 50+30)
 	ggCtx.LoadFontFace(fontPath, 20)
 
-	msg2 := "1. The background_file must be of dimensions (1366px x 768px)"
-
+	msg1 := "1. The background_file must be of dimensions (1366px x 768px)"
 	ggCtx.DrawString(msg1, 60, 90+fontSize)
-	ggCtx.DrawString(msg2, 60, 90+30+fontSize)
 
 	// lyrics file button
 	lfStr := "Select Lyrics File (.txt)"
