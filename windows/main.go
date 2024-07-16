@@ -133,7 +133,7 @@ func allDraws(window *glfw.Window) {
 	ggCtx.SetHexColor("#D09090")
 	owdStr := "Open Working Directory"
 	owdStrW, owdStrH := ggCtx.MeasureString(owdStr)
-	ggCtx.DrawRoundedRectangle(float64(beginXOffset), 10, owdStrW+50, owdStrH+25, (owdStrH+25)/2)
+	ggCtx.DrawRectangle(float64(beginXOffset), 10, owdStrW+50, owdStrH+25)
 	ggCtx.Fill()
 
 	owdBtnRS := g143.RectSpecs{Width: int(owdStrW) + 50, Height: int(owdStrH) + 25, OriginX: beginXOffset, OriginY: 10}
@@ -147,7 +147,7 @@ func allDraws(window *glfw.Window) {
 	vslStr := "View Sample Lyrics"
 	vslStrWidth, vslStrHeight := ggCtx.MeasureString(vslStr)
 	nexBtnOriginX := owdBtnRS.OriginX + owdBtnRS.Width + 30
-	ggCtx.DrawRoundedRectangle(float64(nexBtnOriginX), 10, vslStrWidth+50, vslStrHeight+25, (vslStrHeight+25)/2)
+	ggCtx.DrawRectangle(float64(nexBtnOriginX), 10, vslStrWidth+50, vslStrHeight+25)
 	ggCtx.Fill()
 
 	vslBtnRS := g143.RectSpecs{Width: int(vslStrWidth) + 50, Height: int(vslStrHeight) + 25, OriginX: nexBtnOriginX,
@@ -172,7 +172,7 @@ func allDraws(window *glfw.Window) {
 	lfStr := "Select Lyrics File (.txt)"
 	lfStrW, _ := ggCtx.MeasureString(lfStr)
 	ggCtx.SetHexColor("#5F699F")
-	ggCtx.DrawRoundedRectangle(40, 160, lfStrW+40, 40, 10)
+	ggCtx.DrawRectangle(40, 160, lfStrW+40, 40)
 	ggCtx.Fill()
 
 	lfrs := g143.NRectSpecs(40, 160, int(lfStrW+40), 40)
@@ -185,7 +185,7 @@ func allDraws(window *glfw.Window) {
 	ffStr := "Select Font File (.ttf)"
 	ffStrW, _ := ggCtx.MeasureString(ffStr)
 	ggCtx.SetHexColor("#5F699F")
-	ggCtx.DrawRoundedRectangle(40, 220, ffStrW+40, 40, 10)
+	ggCtx.DrawRectangle(40, 220, ffStrW+40, 40)
 	ggCtx.Fill()
 
 	ffrs := g143.NRectSpecs(40, 220, int(ffStrW+40), 40)
@@ -198,7 +198,7 @@ func allDraws(window *glfw.Window) {
 	bfStr := "Select Background File (.png)"
 	bfStrW, _ := ggCtx.MeasureString(bfStr)
 	ggCtx.SetHexColor("#5F699F")
-	ggCtx.DrawRoundedRectangle(40, 280, bfStrW+40, 40, 10)
+	ggCtx.DrawRectangle(40, 280, bfStrW+40, 40)
 	ggCtx.Fill()
 
 	bfrs := g143.NRectSpecs(40, 280, int(bfStrW+40), 40)
@@ -211,7 +211,7 @@ func allDraws(window *glfw.Window) {
 	mfStr := "Select Music File (.mp3)"
 	mfStrW, _ := ggCtx.MeasureString(mfStr)
 	ggCtx.SetHexColor("#5F699F")
-	ggCtx.DrawRoundedRectangle(40, 340, mfStrW+40, 40, 10)
+	ggCtx.DrawRectangle(40, 340, mfStrW+40, 40)
 	ggCtx.Fill()
 
 	mfrs := g143.NRectSpecs(40, 340, int(mfStrW+40), 40)
@@ -224,7 +224,7 @@ func allDraws(window *glfw.Window) {
 	lcStr := "Pick Lyrics Color"
 	lcStrW, _ := ggCtx.MeasureString(lcStr)
 	ggCtx.SetHexColor("#5F699F")
-	ggCtx.DrawRoundedRectangle(40, 400, lcStrW+40, 40, 10)
+	ggCtx.DrawRectangle(40, 400, lcStrW+40, 40)
 	ggCtx.Fill()
 
 	lcrs := g143.NRectSpecs(40, 400, int(lcStrW+40), 40)
@@ -238,10 +238,13 @@ func allDraws(window *glfw.Window) {
 	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
-	ggCtx.DrawRoundedRectangle(float64(beginXOffset2), 480, rStrW+50, rStrH+25, (rStrH+25)/2)
+	ggCtx.DrawRectangle(float64(beginXOffset2), 480, rStrW+70, rStrH+25)
+	ggCtx.Fill()
+	ggCtx.SetHexColor("#5D435E")
+	ggCtx.DrawRoundedRectangle(float64(beginXOffset2)+rStrW+40, 480+10, 20, 20, 10)
 	ggCtx.Fill()
 
-	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 50, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 480}
+	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 480}
 	objCoords[RenderBtn] = rBtnRS
 
 	ggCtx.SetHexColor("#fff")
@@ -265,7 +268,6 @@ func allDraws(window *glfw.Window) {
 	// save the frame
 	emptyFrameNoInputs = ggCtx.Image()
 }
-
 func refreshInputsOnWindow(window *glfw.Window, frame image.Image) image.Image {
 	wWidth, _ := window.GetSize()
 
