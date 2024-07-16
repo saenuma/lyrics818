@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	fps             = 10
+	fps             = 24
 	fontSize        = 20
 	OpenWDBtn       = 101
 	ViewLyricsBtn   = 102
