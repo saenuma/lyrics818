@@ -50,6 +50,12 @@ parts:
       - xorg-dev
       - libc6-dev
 
+  ff-part:
+    plugin: dump
+    source: https://storage.googleapis.com/saenuma_public/ffmpeg.tar.xz
+    organize:
+      ffmpeg: bin/
+      
 apps: 
   lyrics818:
     command: bin/lyrics818
