@@ -25,7 +25,6 @@ const (
 	MusicFileBtn    = 106
 	LyricsColorBtn  = 107
 	RenderBtn       = 109
-	RenderL8fBtn    = 110
 	OurSite         = 111
 )
 
@@ -35,7 +34,7 @@ var emptyFrameNoInputs image.Image
 
 var inputsStore map[string]string
 
-var inChannel chan string
+var inChannel chan bool
 var clearAfterRender bool
 
 var cursorEventsCount = 0
@@ -53,28 +52,19 @@ func main() {
 
 	objCoords = make(map[int]g143.RectSpecs)
 	inputsStore = make(map[string]string)
-	inChannel = make(chan string)
+	inChannel = make(chan bool)
 
 	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
 	allDraws(window)
 
 	go func() {
 		for {
-			method := <-inChannel
-			if method == "mp4" {
-				ffPath := GetFFMPEGCommand()
-				_, err := MakeVideo(inputsStore, ffPath)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-			} else if method == "l8f" {
-				_, err := MakeVideoL8F(inputsStore)
-				if err != nil {
-					log.Println(err)
-					return
-				}
+			<-inChannel
+			ffPath := GetFFMPEGCommand()
+			_, err := MakeVideo(inputsStore, ffPath)
+			if err != nil {
+				log.Println(err)
+				return
 			}
 
 			clearAfterRender = true
@@ -241,39 +231,21 @@ func allDraws(window *glfw.Window) {
 	ggCtx.DrawString(lcStr, 60, 405+fontSize)
 
 	// render button
-	beginXOffset2 := 200
+	beginXOffset2 := 350
 	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
-	ggCtx.DrawRectangle(float64(beginXOffset2), 500, rStrW+70, rStrH+25)
+	ggCtx.DrawRectangle(float64(beginXOffset2), 480, rStrW+70, rStrH+25)
 	ggCtx.Fill()
 	ggCtx.SetHexColor("#5D435E")
-	ggCtx.DrawRoundedRectangle(float64(beginXOffset2)+rStrW+40, 500+10, 20, 20, 10)
+	ggCtx.DrawRoundedRectangle(float64(beginXOffset2)+rStrW+40, 480+10, 20, 20, 10)
 	ggCtx.Fill()
 
-	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 500}
+	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 480}
 	objCoords[RenderBtn] = rBtnRS
 
 	ggCtx.SetHexColor("#fff")
-	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 505+fontSize)
-
-	// render l8f button
-	rl8X := beginXOffset2 + rBtnRS.Width + 50
-	ggCtx.SetHexColor("#674C6A")
-	rl8L := "Make Lyrics Video (.l8f)"
-	rl8LW, rl8LH := ggCtx.MeasureString(rl8L)
-	ggCtx.DrawRectangle(float64(rl8X), 500, rl8LW+70, rl8LH+25)
-	ggCtx.Fill()
-
-	ggCtx.SetHexColor("#fff")
-	ggCtx.DrawRoundedRectangle(float64(rl8X)+rl8LW+40, 500+10, 20, 20, 10)
-	ggCtx.Fill()
-
-	rl8BtnRS := g143.NRectSpecs(rl8X, 500, int(rl8LW)+70, int(rl8LH)+25)
-	objCoords[RenderL8fBtn] = rl8BtnRS
-
-	ggCtx.SetHexColor("#fff")
-	ggCtx.DrawString(rl8L, float64(rl8X)+25, 505+fontSize)
+	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 485+fontSize)
 
 	// draw our site below
 	ggCtx.SetHexColor("#9C5858")
@@ -478,20 +450,9 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
 		drawRenderView(window, currentFrame)
-		inChannel <- "mp4"
-
-	case RenderL8fBtn:
-		if len(inputsStore) != 5 {
-			return
-		}
-
-		currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
-		window.SetMouseButtonCallback(nil)
-		window.SetKeyCallback(nil)
-		window.SetCursorPosCallback(nil)
-		drawRenderView(window, currentFrame)
-		inChannel <- "l8f"
+		inChannel <- true
 	}
+
 }
 
 func cursorPosCB(window *glfw.Window, xpos, ypos float64) {
