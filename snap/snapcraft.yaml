@@ -25,13 +25,6 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
-    stage-packages:
-      - madplay
-      - libao4
-      - libasound2
-      - libmad0
-      - libaudio2
-      - libsndio7.0
     override-build: |
       set -xe
       go mod download
@@ -49,6 +42,12 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+
+  ff-part:
+    plugin: dump
+    source: https://storage.googleapis.com/saenuma_public/ffmpeg.tar.xz
+    organize:
+      ffmpeg: bin/
 
 apps: 
   lyrics818:
