@@ -12,6 +12,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/saenuma/lyrics818/internal"
 	"github.com/sqweek/dialog"
 )
 
@@ -42,7 +43,7 @@ var clearAfterRender bool
 var cursorEventsCount = 0
 
 func main() {
-	rootPath, err := GetRootPath()
+	rootPath, err := internal.GetRootPath()
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +65,7 @@ func main() {
 		for {
 			<-inChannel
 			ffPath := GetFFMPEGCommand()
-			_, err := MakeVideo(inputsStore, ffPath)
+			_, err := internal.MakeVideo(inputsStore, ffPath)
 			if err != nil {
 				log.Println(err)
 				return
@@ -362,15 +363,15 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		return
 	}
 
-	rootPath, _ := GetRootPath()
+	rootPath, _ := internal.GetRootPath()
 
 	switch widgetCode {
 	case OpenWDBtn:
-		externalLaunch(rootPath)
+		internal.ExternalLaunch(rootPath)
 
 	case ViewLyricsBtn:
 		sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
-		externalLaunch(sampleLyricsPath)
+		internal.ExternalLaunch(sampleLyricsPath)
 
 	case SelectLyricsBtn:
 		filename, err := dialog.File().Filter("Lyrics File", "txt").Load()
@@ -431,7 +432,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetCursorPosCallback(nil)
 
 	case OurSite:
-		externalLaunch("https://sae.ng")
+		internal.ExternalLaunch("https://sae.ng")
 
 	case RenderBtn:
 		if len(inputsStore) != 5 {
