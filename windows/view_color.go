@@ -6,6 +6,7 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/saenuma/lyrics818/internal"
 )
 
 var allColors []string
@@ -27,7 +28,7 @@ func drawPickColors(window *glfw.Window) {
 	ggCtx.Fill()
 
 	// load font
-	fontPath := getDefaultFontPath()
+	fontPath := internal.GetDefaultFontPath()
 	err := ggCtx.LoadFontFace(fontPath, 20)
 	if err != nil {
 		panic(err)
@@ -85,13 +86,13 @@ func pickColorsMouseCallback(window *glfw.Window, button glfw.MouseButton, actio
 		return
 	}
 
-	inputsStore["lyrics_color"] = allColors[widgetCode-1]
+	internal.InputsStore["lyrics_color"] = allColors[widgetCode-1]
 
 	// go back
 	window.SetMouseButtonCallback(mouseBtnCallback)
-	window.SetCursorPosCallback(cursorPosCB)
+	window.SetCursorPosCallback(internal.CursorPosCB)
 
-	currentFrame := refreshInputsOnWindow(window, emptyFrameNoInputs)
+	currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 	// send the frame to glfw window
 	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)

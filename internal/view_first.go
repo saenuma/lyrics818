@@ -1,10 +1,13 @@
 package internal
 
 import (
+	"image"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	g143 "github.com/bankole7782/graphics143"
+	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
@@ -190,4 +193,128 @@ func AllDraws(window *glfw.Window) {
 
 	// save the frame
 	EmptyFrameNoInputs = ggCtx.Image()
+}
+
+func RefreshInputsOnWindow(window *glfw.Window, frame image.Image) image.Image {
+	wWidth, _ := window.GetSize()
+
+	ggCtx := gg.NewContextForImage(frame)
+
+	// load font
+	fontPath := GetDefaultFontPath()
+	err := ggCtx.LoadFontFace(fontPath, 20)
+	if err != nil {
+		panic(err)
+	}
+
+	// lyrics file
+	if _, ok := InputsStore["lyrics_file"]; ok {
+		sLBRS := ObjCoords[SelectLyricsBtn]
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(sLBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(InputsStore["lyrics_file"]), 400, float64(sLBRS.OriginY)+FontSize)
+	}
+
+	// font file
+	if _, ok := InputsStore["font_file"]; ok {
+		sFFBRS := ObjCoords[FontFileBtn]
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(sFFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(InputsStore["font_file"]), 400, float64(sFFBRS.OriginY)+FontSize)
+	}
+
+	// bg file
+	if _, ok := InputsStore["background_file"]; ok {
+
+		bGFBRS := ObjCoords[BgFileBtn]
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(bGFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(InputsStore["background_file"]), 400, float64(bGFBRS.OriginY)+FontSize)
+	}
+
+	// music file
+	if _, ok := InputsStore["music_file"]; ok {
+		mFBRS := ObjCoords[MusicFileBtn]
+
+		ggCtx.SetHexColor("#fff")
+		ggCtx.DrawRectangle(400, float64(mFBRS.OriginY), float64(wWidth)-400, 40)
+		ggCtx.Fill()
+
+		ggCtx.SetHexColor("#444")
+		ggCtx.DrawString(filepath.Base(InputsStore["music_file"]), 400, float64(mFBRS.OriginY)+FontSize)
+
+	}
+
+	// color
+	if _, ok := InputsStore["lyrics_color"]; ok {
+		cBRS := ObjCoords[LyricsColorBtn]
+		ggCtx.SetHexColor(InputsStore["lyrics_color"])
+		ggCtx.DrawRectangle(400, float64(cBRS.OriginY), 100, 40)
+		ggCtx.Fill()
+	}
+
+	return ggCtx.Image()
+}
+
+func CursorPosCB(window *glfw.Window, xpos, ypos float64) {
+	if runtime.GOOS == "linux" {
+		// linux fires too many events
+		CursorEventsCount += 1
+		if CursorEventsCount != 10 {
+			return
+		} else {
+			CursorEventsCount = 0
+		}
+	}
+
+	wWidth, wHeight := window.GetSize()
+
+	var widgetRS g143.RectSpecs
+	var widgetCode int
+
+	xPosInt := int(xpos)
+	yPosInt := int(ypos)
+	for code, RS := range ObjCoords {
+		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+			widgetRS = RS
+			widgetCode = code
+			break
+		}
+	}
+
+	if widgetCode == 0 {
+
+		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		// send the frame to glfw window
+		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+		window.SwapBuffers()
+		return
+	}
+
+	rectA := image.Rect(widgetRS.OriginX, widgetRS.OriginY,
+		widgetRS.OriginX+widgetRS.Width,
+		widgetRS.OriginY+widgetRS.Height)
+
+	pieceOfCurrentFrame := imaging.Crop(EmptyFrameNoInputs, rectA)
+	invertedPiece := imaging.Invert(pieceOfCurrentFrame)
+
+	ggCtx := gg.NewContextForImage(EmptyFrameNoInputs)
+	ggCtx.DrawImage(invertedPiece, widgetRS.OriginX, widgetRS.OriginY)
+
+	currentFrame := RefreshInputsOnWindow(window, ggCtx.Image())
+	// send the frame to glfw window
+	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+	window.SwapBuffers()
 }
