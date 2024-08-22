@@ -25,10 +25,17 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+    stage-packages:
+      - madplay
+      - libao4
+      - libasound2
+      - libmad0
+      - libaudio2
+      - libsndio7.0
     override-build: |
       set -xe
       go mod download
-      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 ./linux
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 .
 
   pickers:
     # See 'snapcraft plugins'
@@ -48,7 +55,7 @@ parts:
     source: https://storage.googleapis.com/saenuma_public/ffmpeg.tar.xz
     organize:
       ffmpeg: bin/
-
+      
 apps: 
   lyrics818:
     command: bin/lyrics818
