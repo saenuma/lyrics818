@@ -43,7 +43,7 @@ func drawPickColors(window *glfw.Window) {
 		ggCtx.SetHexColor(aColor)
 		ggCtx.DrawRectangle(float64(currentX), float64(currentY), float64(boxDimension), float64(boxDimension))
 		ggCtx.Fill()
-		aColorRS := g143.RectSpecs{OriginX: currentX, OriginY: currentY, Width: boxDimension, Height: boxDimension}
+		aColorRS := g143.Rect{OriginX: currentX, OriginY: currentY, Width: boxDimension, Height: boxDimension}
 		colorObjCoords[i+1] = aColorRS
 
 		newX := currentX + boxDimension + gutter
@@ -57,7 +57,7 @@ func drawPickColors(window *glfw.Window) {
 	}
 
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
 	window.SwapBuffers()
 }
@@ -76,7 +76,7 @@ func pickColorsMouseCallback(window *glfw.Window, button glfw.MouseButton, actio
 	var widgetCode int
 
 	for code, RS := range colorObjCoords {
-		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+		if g143.InRect(RS, xPosInt, yPosInt) {
 			widgetCode = code
 			break
 		}
@@ -94,7 +94,7 @@ func pickColorsMouseCallback(window *glfw.Window, button glfw.MouseButton, actio
 
 	currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 	window.SwapBuffers()
 }

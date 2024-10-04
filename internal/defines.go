@@ -30,4 +30,4 @@ var ClearAfterRender bool
 
 var CursorEventsCount = 0
 
-var ObjCoords map[int]g143.RectSpecs
+var ObjCoords map[int]g143.Rect

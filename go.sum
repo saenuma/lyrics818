@@ -6,6 +6,8 @@ github.com/bankole7782/graphics143 v0.0.0-20240126151910-41994fba5651 h1:DbLu2rD
 github.com/bankole7782/graphics143 v0.0.0-20240126151910-41994fba5651/go.mod h1:sq+C6f677mNsKUSIrZVgjIsSqHJkLqBKyDuH4ntNB8U=
 github.com/bankole7782/graphics143 v0.0.0-20240428182111-b093c93f2881 h1:WghwI2DMmXc//iednwWPsuNdcZQoJBAFx0aP8K8WJKY=
 github.com/bankole7782/graphics143 v0.0.0-20240428182111-b093c93f2881/go.mod h1:sq+C6f677mNsKUSIrZVgjIsSqHJkLqBKyDuH4ntNB8U=
+github.com/bankole7782/graphics143 v1.0.0 h1:7KBp/V9e8OD1WXXI78SQEo6pIhyo0/hWc8XAcqy9UOU=
+github.com/bankole7782/graphics143 v1.0.0/go.mod h1:sq+C6f677mNsKUSIrZVgjIsSqHJkLqBKyDuH4ntNB8U=
 github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1ei82L+c=
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
@@ -33,4 +35,6 @@ golang.org/x/image v0.13.0 h1:3cge/F/QTkNLauhf2QoE9zp+7sr+ZcL4HnoZmdwg9sg=
 golang.org/x/image v0.13.0/go.mod h1:6mmbMOeV28HuMTgA6OSRkdXKYw/t5W9Uwn2Yv1r3Yxk=
 golang.org/x/image v0.18.0 h1:jGzIakQa/ZXI1I0Fxvaa9W7yP25TqT6cHIHn+6CqvSQ=
 golang.org/x/image v0.18.0/go.mod h1:4yyo5vMFQjVjUcVk4jEQcU9MGy/rulF5WvUILseCM2E=
+golang.org/x/image v0.20.0 h1:7cVCUjQwfL18gyBJOmYvptfSHS8Fb3YUDtfLIZ7Nbpw=
+golang.org/x/image v0.20.0/go.mod h1:0a88To4CYVBAHp5FXJm8o7QbUl37Vd85ply1vyD8auM=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

@@ -44,7 +44,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(float64(beginXOffset), 10, owdStrW+50, owdStrH+25)
 	ggCtx.Fill()
 
-	owdBtnRS := g143.RectSpecs{Width: int(owdStrW) + 50, Height: int(owdStrH) + 25, OriginX: beginXOffset, OriginY: 10}
+	owdBtnRS := g143.Rect{Width: int(owdStrW) + 50, Height: int(owdStrH) + 25, OriginX: beginXOffset, OriginY: 10}
 	ObjCoords[OpenWDBtn] = owdBtnRS
 
 	ggCtx.SetHexColor("#444")
@@ -58,7 +58,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(float64(nexBtnOriginX), 10, vslStrWidth+50, vslStrHeight+25)
 	ggCtx.Fill()
 
-	vslBtnRS := g143.RectSpecs{Width: int(vslStrWidth) + 50, Height: int(vslStrHeight) + 25, OriginX: nexBtnOriginX,
+	vslBtnRS := g143.Rect{Width: int(vslStrWidth) + 50, Height: int(vslStrHeight) + 25, OriginX: nexBtnOriginX,
 		OriginY: 10}
 	ObjCoords[ViewLyricsBtn] = vslBtnRS
 
@@ -83,7 +83,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(40, 160, lfStrW+40, 40)
 	ggCtx.Fill()
 
-	lfrs := g143.NRectSpecs(40, 160, int(lfStrW+40), 40)
+	lfrs := g143.NewRect(40, 160, int(lfStrW+40), 40)
 	ObjCoords[SelectLyricsBtn] = lfrs
 
 	ggCtx.SetHexColor("#fff")
@@ -96,7 +96,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(40, 220, ffStrW+40, 40)
 	ggCtx.Fill()
 
-	ffrs := g143.NRectSpecs(40, 220, int(ffStrW+40), 40)
+	ffrs := g143.NewRect(40, 220, int(ffStrW+40), 40)
 	ObjCoords[FontFileBtn] = ffrs
 
 	ggCtx.SetHexColor("#fff")
@@ -109,7 +109,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(40, 280, bfStrW+40, 40)
 	ggCtx.Fill()
 
-	bfrs := g143.NRectSpecs(40, 280, int(bfStrW+40), 40)
+	bfrs := g143.NewRect(40, 280, int(bfStrW+40), 40)
 	ObjCoords[BgFileBtn] = bfrs
 
 	ggCtx.SetHexColor("#fff")
@@ -122,7 +122,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(40, 340, mfStrW+40, 40)
 	ggCtx.Fill()
 
-	mfrs := g143.NRectSpecs(40, 340, int(mfStrW+40), 40)
+	mfrs := g143.NewRect(40, 340, int(mfStrW+40), 40)
 	ObjCoords[MusicFileBtn] = mfrs
 
 	ggCtx.SetHexColor("#fff")
@@ -135,7 +135,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRectangle(40, 400, lcStrW+40, 40)
 	ggCtx.Fill()
 
-	lcrs := g143.NRectSpecs(40, 400, int(lcStrW+40), 40)
+	lcrs := g143.NewRect(40, 400, int(lcStrW+40), 40)
 	ObjCoords[LyricsColorBtn] = lcrs
 
 	ggCtx.SetHexColor("#fff")
@@ -152,7 +152,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawRoundedRectangle(float64(beginXOffset2)+rStrW+40, 500+10, 20, 20, 10)
 	ggCtx.Fill()
 
-	rBtnRS := g143.RectSpecs{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 500}
+	rBtnRS := g143.Rect{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 500}
 	ObjCoords[RenderBtn] = rBtnRS
 
 	ggCtx.SetHexColor("#fff")
@@ -164,12 +164,12 @@ func AllDraws(window *glfw.Window) {
 	fromAddrWidth, fromAddrHeight := ggCtx.MeasureString(fromAddr)
 	fromAddrOriginX := (wWidth - int(fromAddrWidth)) / 2
 	ggCtx.DrawString(fromAddr, float64(fromAddrOriginX), float64(wHeight-int(fromAddrHeight)))
-	fars := g143.RectSpecs{OriginX: fromAddrOriginX, OriginY: wHeight - 40,
+	fars := g143.Rect{OriginX: fromAddrOriginX, OriginY: wHeight - 40,
 		Width: int(fromAddrWidth), Height: 40}
 	ObjCoords[OurSite] = fars
 
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
 	window.SwapBuffers()
 
@@ -261,13 +261,13 @@ func CursorPosCB(window *glfw.Window, xpos, ypos float64) {
 
 	wWidth, wHeight := window.GetSize()
 
-	var widgetRS g143.RectSpecs
+	var widgetRS g143.Rect
 	var widgetCode int
 
 	xPosInt := int(xpos)
 	yPosInt := int(ypos)
 	for code, RS := range ObjCoords {
-		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+		if g143.InRect(RS, xPosInt, yPosInt) {
 			widgetRS = RS
 			widgetCode = code
 			break
@@ -278,7 +278,7 @@ func CursorPosCB(window *glfw.Window, xpos, ypos float64) {
 
 		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
 		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 		return
@@ -296,7 +296,7 @@ func CursorPosCB(window *glfw.Window, xpos, ypos float64) {
 
 	currentFrame := RefreshInputsOnWindow(window, ggCtx.Image())
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 	window.SwapBuffers()
 }

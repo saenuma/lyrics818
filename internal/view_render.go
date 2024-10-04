@@ -42,7 +42,7 @@ func DrawRenderView(window *glfw.Window, currentFrame image.Image) {
 	ggCtx.DrawString("Rendering! Please Wait", float64(dialogOriginX)+20, float64(dialogOriginY)+20+20)
 
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
 	window.SwapBuffers()
 }
@@ -80,7 +80,7 @@ func DrawEndRenderView(window *glfw.Window, currentFrame image.Image) {
 	ggCtx.DrawString("Done Rendering! Open the Working Directory", float64(dialogOriginX)+20, float64(dialogOriginY)+20+20)
 
 	// send the frame to glfw window
-	windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 	g143.DrawImage(wWidth, wHeight, ggCtx.Image(), windowRS)
 	window.SwapBuffers()
 }

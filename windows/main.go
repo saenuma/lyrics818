@@ -13,7 +13,7 @@ import (
 	"github.com/sqweek/dialog"
 )
 
-var colorObjCoords map[int]g143.RectSpecs
+var colorObjCoords map[int]g143.Rect
 
 func main() {
 	rootPath, err := internal.GetRootPath()
@@ -26,8 +26,8 @@ func main() {
 
 	runtime.LockOSThread()
 
-	internal.ObjCoords = make(map[int]g143.RectSpecs)
-	colorObjCoords = make(map[int]g143.RectSpecs)
+	internal.ObjCoords = make(map[int]g143.Rect)
+	colorObjCoords = make(map[int]g143.Rect)
 	internal.InputsStore = make(map[string]string)
 	internal.InChannel = make(chan bool)
 
@@ -89,11 +89,11 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 	wWidth, wHeight := window.GetSize()
 
-	// var widgetRS g143.RectSpecs
+	// var widgetRS g143.Rect
 	var widgetCode int
 
 	for code, RS := range internal.ObjCoords {
-		if g143.InRectSpecs(RS, xPosInt, yPosInt) {
+		if g143.InRect(RS, xPosInt, yPosInt) {
 			// widgetRS = RS
 			widgetCode = code
 			break
@@ -124,7 +124,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
@@ -136,7 +136,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		internal.InputsStore["font_file"] = filename
 		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
@@ -150,7 +150,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
@@ -163,7 +163,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 
 		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
-		windowRS := g143.RectSpecs{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
