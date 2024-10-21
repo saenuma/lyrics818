@@ -25,6 +25,10 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+    override-build: |
+      set -xe
+      go mod download
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/lyrics818 ./linux
 
   pickers:
     # See 'snapcraft plugins'
