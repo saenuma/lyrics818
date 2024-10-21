@@ -1,7 +1,6 @@
-package main
+package internal
 
 import (
-	"fmt"
 	"io"
 	"math"
 	"os"
@@ -15,12 +14,15 @@ import (
 	"github.com/tcolgate/mp3"
 )
 
+
 const (
 	DPI     = 72.0
 	SIZE    = 80.0
 	MSIZE   = 80.0
 	SPACING = 1.1
 )
+
+
 
 func GetRootPath() (string, error) {
 	hd, err := os.UserHomeDir()
@@ -150,54 +152,3 @@ func ExternalLaunch(p string) {
 	}
 }
 
-func GetFFMPEGCommand() string {
-	var cmdPath string
-	begin := os.Getenv("SNAP")
-	cmdPath = "ffmpeg"
-	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
-	}
-
-	return cmdPath
-}
-
-func pickFileUbuntu(exts string) string {
-	homeDir, _ := os.UserHomeDir()
-	var cmdPath string
-	begin := os.Getenv("SNAP")
-	cmdPath = filepath.Join(homeDir, "bin", "fpicker")
-	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "fpicker")
-	}
-
-	rootPath, _ := GetRootPath()
-	cmd := exec.Command(cmdPath, rootPath, exts)
-
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	return strings.TrimSpace(string(out))
-}
-
-func pickColor() string {
-	homeDir, _ := os.UserHomeDir()
-	var cmdPath string
-	begin := os.Getenv("SNAP")
-	cmdPath = filepath.Join(homeDir, "bin", "cpicker")
-	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "cpicker")
-	}
-
-	cmd := exec.Command(cmdPath)
-
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	return strings.TrimSpace(string(out))
-}

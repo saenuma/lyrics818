@@ -9,66 +9,67 @@ import (
 
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/saenuma/lyrics818/internal"
 )
 
 func main() {
-	rootPath, err := GetRootPath()
+	rootPath, err := internal.GetRootPath()
 	if err != nil {
 		panic(err)
 	}
 
 	sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
-	os.WriteFile(sampleLyricsPath, SampleLyricsFile, 0777)
+	os.WriteFile(sampleLyricsPath, internal.SampleLyricsFile, 0777)
 
 	runtime.LockOSThread()
 
-	ObjCoords = make(map[int]g143.Rect)
-	InputsStore = make(map[string]string)
-	InChannel = make(chan bool)
+	internal.ObjCoords = make(map[int]g143.Rect)
+	internal.InputsStore = make(map[string]string)
+	internal.InChannel = make(chan bool)
 
 	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
-	AllDraws(window)
+	internal.AllDraws(window)
 
 	go func() {
 		for {
-			<-InChannel
+			<-internal.InChannel
 
 			ffPath := GetFFMPEGCommand()
-			_, err := MakeVideo(InputsStore, ffPath)
+			_, err := internal.MakeVideo(internal.InputsStore, ffPath)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			ClearAfterRender = true
+			internal.ClearAfterRender = true
 		}
 	}()
 
 	// respond to the mouse
 	window.SetMouseButtonCallback(mouseBtnCallback)
 	// respond to mouse movement
-	window.SetCursorPosCallback(CursorPosCB)
+	window.SetCursorPosCallback(internal.CursorPosCB)
 
 	for !window.ShouldClose() {
 		t := time.Now()
 		glfw.PollEvents()
 
-		if ClearAfterRender {
+		if internal.ClearAfterRender {
 			// clear the UI and redraw
-			InputsStore = make(map[string]string)
-			AllDraws(window)
-			DrawEndRenderView(window, EmptyFrameNoInputs)
+			internal.InputsStore = make(map[string]string)
+			internal.AllDraws(window)
+			internal.DrawEndRenderView(window, internal.EmptyFrameNoInputs)
 			time.Sleep(5 * time.Second)
-			AllDraws(window)
+			internal.AllDraws(window)
 
 			// respond to the mouse
 			window.SetMouseButtonCallback(mouseBtnCallback)
 			// respond to mouse movement
-			window.SetCursorPosCallback(CursorPosCB)
+			window.SetCursorPosCallback(internal.CursorPosCB)
 
-			ClearAfterRender = false
+			internal.ClearAfterRender = false
 		}
 
-		time.Sleep(time.Second/time.Duration(FPS) - time.Since(t))
+		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
 	}
 
 }
@@ -87,7 +88,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	// var widgetRS g143.Rect
 	var widgetCode int
 
-	for code, RS := range ObjCoords {
+	for code, RS := range internal.ObjCoords {
 		if g143.InRect(RS, xPosInt, yPosInt) {
 			// widgetRS = RS
 			widgetCode = code
@@ -99,94 +100,94 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		return
 	}
 
-	rootPath, _ := GetRootPath()
+	rootPath, _ := internal.GetRootPath()
 
 	switch widgetCode {
-	case OpenWDBtn:
-		ExternalLaunch(rootPath)
+	case internal.OpenWDBtn:
+		internal.ExternalLaunch(rootPath)
 
-	case ViewLyricsBtn:
+	case internal.ViewLyricsBtn:
 		sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
-		ExternalLaunch(sampleLyricsPath)
+		internal.ExternalLaunch(sampleLyricsPath)
 
-	case SelectLyricsBtn:
+	case internal.SelectLyricsBtn:
 		filename := pickFileUbuntu("txt")
 		if filename == "" {
 			return
 		}
-		InputsStore["lyrics_file"] = filename
+		internal.InputsStore["lyrics_file"] = filename
 
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case FontFileBtn:
+	case internal.FontFileBtn:
 		filename := pickFileUbuntu("ttf")
 		if filename == "" {
 			return
 		}
-		InputsStore["font_file"] = filename
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		internal.InputsStore["font_file"] = filename
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case BgFileBtn:
+	case internal.BgFileBtn:
 		filename := pickFileUbuntu("png")
 		if filename == "" {
 			return
 		}
-		InputsStore["background_file"] = filename
+		internal.InputsStore["background_file"] = filename
 
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case MusicFileBtn:
+	case internal.MusicFileBtn:
 		filename := pickFileUbuntu("mp3")
 		if filename == "" {
 			return
 		}
-		InputsStore["music_file"] = filename
+		internal.InputsStore["music_file"] = filename
 
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case LyricsColorBtn:
+	case internal.LyricsColorBtn:
 		tmpColor := pickColor()
 		if tmpColor == "" {
 			return
 		}
-		InputsStore["lyrics_color"] = tmpColor
+		internal.InputsStore["lyrics_color"] = tmpColor
 
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case OurSite:
-		ExternalLaunch("https://sae.ng")
+	case internal.OurSite:
+		internal.ExternalLaunch("https://sae.ng")
 
-	case RenderBtn:
-		if len(InputsStore) != 5 {
+	case internal.RenderBtn:
+		if len(internal.InputsStore) != 5 {
 			return
 		}
 
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		window.SetMouseButtonCallback(nil)
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
-		DrawRenderView(window, currentFrame)
-		InChannel <- true
+		internal.DrawRenderView(window, currentFrame)
+		internal.InChannel <- true
 
 	}
 }
