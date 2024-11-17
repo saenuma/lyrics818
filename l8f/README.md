@@ -23,6 +23,9 @@ This format uses a framerate of 1
 The `{header}` section made up of some subsections. It looks like this
 
 ```
+meta:
+year: 2022
+::
 laptop_unique_frames:
 {number}: {size}
 {number}: {size}
