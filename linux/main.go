@@ -25,30 +25,21 @@ func main() {
 
 	internal.ObjCoords = make(map[int]g143.Rect)
 	internal.InputsStore = make(map[string]string)
-	internal.InChannel = make(chan string)
+	internal.InChannel = make(chan bool)
 
 	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
 	internal.AllDraws(window)
 
 	go func() {
 		for {
-			method := <-internal.InChannel
-			if method == "mp4" {
-				ffPath := GetFFMPEGCommand()
-				_, err := internal.MakeVideo(internal.InputsStore, ffPath)
-				if err != nil {
-					log.Println(err)
-					return
-				}
+			<-internal.InChannel
 
-			} else if method == "l8f" {
-				_, err := internal.MakeVideoL8F(internal.InputsStore)
-				if err != nil {
-					log.Println(err)
-					return
-				}
+			ffPath := GetFFMPEGCommand()
+			_, err := internal.MakeVideo(internal.InputsStore, ffPath)
+			if err != nil {
+				log.Println(err)
+				return
 			}
-			
 			internal.ClearAfterRender = true
 		}
 	}()
@@ -196,18 +187,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
 		internal.DrawRenderView(window, currentFrame)
-		internal.InChannel <- "mp4"
+		internal.InChannel <- true
 
-	case internal.RenderL8fBtn:
-		if len(internal.InputsStore) != 5 {
-			return
-		}
-
-		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
-		window.SetMouseButtonCallback(nil)
-		window.SetKeyCallback(nil)
-		window.SetCursorPosCallback(nil)
-		internal.DrawRenderView(window, currentFrame)
-		internal.InChannel <- "l8f"
 	}
 }

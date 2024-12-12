@@ -25,7 +25,7 @@ var EmptyFrameNoInputs image.Image
 
 var InputsStore map[string]string
 
-var InChannel chan string
+var InChannel chan bool
 var ClearAfterRender bool
 
 var CursorEventsCount = 0
