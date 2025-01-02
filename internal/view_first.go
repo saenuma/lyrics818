@@ -142,7 +142,7 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawString(lcStr, 60, 405+FontSize)
 
 	// render button
-	beginXOffset2 := 350
+	beginXOffset2 := 200
 	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
@@ -157,6 +157,24 @@ func AllDraws(window *glfw.Window) {
 
 	ggCtx.SetHexColor("#fff")
 	ggCtx.DrawString(rStr, float64(beginXOffset2)+25, 505+FontSize)
+
+	// render l8f button
+	rl8X := beginXOffset2 + rBtnRS.Width + 50
+	ggCtx.SetHexColor("#674C6A")
+	rl8L := "Make Lyrics Video (.l8f)"
+	rl8LW, rl8LH := ggCtx.MeasureString(rl8L)
+	ggCtx.DrawRectangle(float64(rl8X), 500, rl8LW+70, rl8LH+25)
+	ggCtx.Fill()
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawRoundedRectangle(float64(rl8X)+rl8LW+40, 500+10, 20, 20, 10)
+	ggCtx.Fill()
+
+	rl8BtnRS := g143.NewRect(rl8X, 500, int(rl8LW)+70, int(rl8LH)+25)
+	ObjCoords[RenderL8fBtn] = rl8BtnRS
+
+	ggCtx.SetHexColor("#fff")
+	ggCtx.DrawString(rl8L, float64(rl8X)+25, 505+FontSize)
 
 	// draw our site below
 	ggCtx.SetHexColor("#9C5858")
