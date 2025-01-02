@@ -17,6 +17,7 @@ func main() {
 	}
 
 	songPath := os.Args[1]
+	SongPath = songPath
 
 	runtime.LockOSThread()
 
@@ -27,7 +28,7 @@ func main() {
 	DrawNowPlayingUI(window, songPath, 0)
 
 	// respond to the mouse
-	// window.SetMouseButtonCallback(mouseBtnCallback)
+	window.SetMouseButtonCallback(mouseBtnCallback)
 	// window.SetCursorPosCallback(internal.CurPosCB)
 
 	StartTime = time.Now()
@@ -47,5 +48,46 @@ func main() {
 		}
 
 		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
+	}
+}
+
+func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	if action != glfw.Release {
+		return
+	}
+
+	xPos, yPos := window.GetCursorPos()
+	xPosInt := int(xPos)
+	yPosInt := int(yPos)
+
+	// wWidth, wHeight := window.GetSize()
+
+	// var widgetRS g143.Rect
+	var widgetCode int
+
+	for code, RS := range ObjCoords {
+		if g143.InRect(RS, xPosInt, yPosInt) {
+			// widgetRS = RS
+			widgetCode = code
+			break
+		}
+	}
+
+	if widgetCode == 0 {
+		return
+	}
+
+	switch widgetCode {
+	case SwitchViewBtn:
+		if DeviceView == "laptop" {
+			DeviceView = "mobile"
+		} else if DeviceView == "mobile" {
+			DeviceView = "laptop"
+		}
+
+		seconds := time.Since(StartTime).Seconds()
+		secondsInt := int(math.Floor(seconds))
+		DrawNowPlayingUI(window, SongPath, secondsInt)
+
 	}
 }

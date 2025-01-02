@@ -8,9 +8,13 @@ import (
 )
 
 const (
-	FPS      = 24
-	FontSize = 20
-	Scale    = 0.8
+	FPS         = 24
+	FontSize    = 20
+	Scale       = 0.8
+	MobileScale = 0.7
+	fontColor   = "#444"
+
+	SwitchViewBtn = 102
 )
 
 var (
@@ -20,4 +24,7 @@ var (
 	StartTime          time.Time
 	PausedSeconds      int
 	CurrentPlaySeconds int
+
+	DeviceView = "laptop"
+	SongPath   string
 )
