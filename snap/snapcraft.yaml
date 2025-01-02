@@ -1,6 +1,6 @@
 name: lyrics818 # you probably want to 'snapcraft register <name>'
 base: core24 # the base snap is the execution environment for this snap
-version: '1.20.1' # just for humans, typically '1.2+git' or '1.3.2'
+version: '1.22' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Generates a lyric video # 79 char long summary
 description: |
   lyrics818 generates a lyric video. It expects the lyric file, fonts, background.
@@ -52,6 +52,13 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+    stage-packages:
+      - madplay
+      - libao4
+      - libasound2
+      - libmad0
+      - libaudio2
+      - libsndio7.0
     override-build: |
       set -xe
       go mod download
@@ -83,9 +90,6 @@ layout:
   /usr/share/alsa:
     bind: $SNAP/usr/share/alsa
   
-lint:
-  ignore: [library]
-
 apps: 
   lyrics818:
     command: bin/lyrics818

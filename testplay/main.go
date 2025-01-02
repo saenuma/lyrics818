@@ -31,6 +31,12 @@ func main() {
 	window.SetMouseButtonCallback(mouseBtnCallback)
 	// window.SetCursorPosCallback(internal.CurPosCB)
 
+	window.SetCloseCallback(func(w *glfw.Window) {
+		if runtime.GOOS == "linux" && playerCancelFn != nil {
+			playerCancelFn()
+		}
+	})
+
 	StartTime = time.Now()
 	go playAudio(songPath)
 
@@ -39,12 +45,10 @@ func main() {
 		glfw.PollEvents()
 
 		// update UI if song is playing
-		if currentPlayer != nil && currentPlayer.IsPlaying() {
-			seconds := time.Since(StartTime).Seconds()
-			secondsInt := int(math.Floor(seconds))
-			if secondsInt != CurrentPlaySeconds {
-				DrawNowPlayingUI(window, songPath, secondsInt)
-			}
+		seconds := time.Since(StartTime).Seconds()
+		secondsInt := int(math.Floor(seconds))
+		if secondsInt != CurrentPlaySeconds {
+			DrawNowPlayingUI(window, songPath, secondsInt)
 		}
 
 		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
