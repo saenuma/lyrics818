@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -14,15 +15,12 @@ import (
 	"github.com/tcolgate/mp3"
 )
 
-
 const (
 	DPI     = 72.0
 	SIZE    = 80.0
 	MSIZE   = 80.0
 	SPACING = 1.1
 )
-
-
 
 func GetRootPath() (string, error) {
 	hd, err := os.UserHomeDir()
@@ -152,3 +150,13 @@ func ExternalLaunch(p string) {
 	}
 }
 
+func SecondsToMinutes(inSeconds int) string {
+	minutes := inSeconds / 60
+	seconds := inSeconds % 60
+	secondsStr := fmt.Sprintf("%d", seconds)
+	if seconds < 10 {
+		secondsStr = "0" + secondsStr
+	}
+	str := fmt.Sprintf("%d:%s", minutes, secondsStr)
+	return str
+}
