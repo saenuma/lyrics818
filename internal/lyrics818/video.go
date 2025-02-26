@@ -1,4 +1,4 @@
-package internal
+package lyrics818
 
 import (
 	"os"
@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/saenuma/lyrics818/internal"
 	"github.com/saenuma/lyrics818/l8f"
 )
 
 func MakeVideo(inputs map[string]string, ffmpegCommandPath string) (string, error) {
 
-	rootPath, err := GetRootPath()
+	rootPath, err := internal.GetRootPath()
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +59,7 @@ func MakeVideo(inputs map[string]string, ffmpegCommandPath string) (string, erro
 }
 
 func MakeVideoL8F(inputs map[string]string) (string, error) {
-	rootPath, err := GetRootPath()
+	rootPath, err := internal.GetRootPath()
 	if err != nil {
 		return "", err
 	}

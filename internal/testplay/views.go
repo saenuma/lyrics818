@@ -1,4 +1,4 @@
-package main
+package testplay
 
 import (
 	"path/filepath"
@@ -6,7 +6,6 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/kovidgoyal/imaging"
-	"github.com/saenuma/lyrics818/internal"
 	"github.com/saenuma/lyrics818/l8f"
 )
 
@@ -43,12 +42,12 @@ func DrawNowPlayingUILaptop(window *glfw.Window, songPath string, seconds int) {
 	window.SetTitle(songPath + "  | L8f TestPlay")
 
 	// write time elapsed
-	elapsedTimeStr := internal.SecondsToMinutes(seconds)
+	elapsedTimeStr := SecondsToMinutes(seconds)
 	theCtx.ggCtx.DrawString(elapsedTimeStr, 50, aStrY)
 
 	// write stop time
 	totalSeconds, _ := l8f.GetVideoLength(songPath)
-	stopTimeStr := internal.SecondsToMinutes(totalSeconds)
+	stopTimeStr := SecondsToMinutes(totalSeconds)
 	stopTimeStrW, _ := theCtx.ggCtx.MeasureString(stopTimeStr)
 	theCtx.ggCtx.DrawString(stopTimeStr, float64(wWidth)-50-stopTimeStrW, aStrY)
 
@@ -91,12 +90,12 @@ func DrawNowPlayingUIMobile(window *glfw.Window, songPath string, seconds int) {
 	window.SetTitle(songPath + "  | L8f TestPlay")
 
 	// write time elapsed
-	elapsedTimeStr := internal.SecondsToMinutes(seconds)
+	elapsedTimeStr := SecondsToMinutes(seconds)
 	theCtx.ggCtx.DrawString(elapsedTimeStr, float64(textX), 100+40)
 
 	// write stop time
 	totalSeconds, _ := l8f.GetVideoLength(songPath)
-	stopTimeStr := internal.SecondsToMinutes(totalSeconds)
+	stopTimeStr := SecondsToMinutes(totalSeconds)
 	// stopTimeStrW, _ := theCtx.ggCtx.MeasureString(stopTimeStr)
 	theCtx.ggCtx.DrawString(stopTimeStr, float64(textX), 100+80)
 

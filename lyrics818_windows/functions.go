@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/saenuma/lyrics818/internal"
+	internal "github.com/saenuma/lyrics818/internal/lyrics818"
 )
 
 func GetFFMPEGCommand() string {

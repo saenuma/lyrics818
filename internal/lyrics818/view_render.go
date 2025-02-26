@@ -1,4 +1,4 @@
-package internal
+package lyrics818
 
 import (
 	"image"

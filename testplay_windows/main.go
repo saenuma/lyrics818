@@ -9,6 +9,7 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/saenuma/lyrics818/internal"
+	tpinternal "github.com/saenuma/lyrics818/internal/testplay"
 )
 
 func main() {
@@ -17,21 +18,21 @@ func main() {
 	}
 
 	songPath := os.Args[1]
-	SongPath = songPath
+	tpinternal.SongPath = songPath
 
 	runtime.LockOSThread()
 
 	internal.GetRootPath()
-	ObjCoords = make(map[int]g143.Rect)
+	tpinternal.ObjCoords = make(map[int]g143.Rect)
 
 	window := g143.NewWindow(1200, 800, "l8f format testplay", false)
-	DrawNowPlayingUI(window, songPath, 0)
+	tpinternal.DrawNowPlayingUI(window, songPath, 0)
 
 	// respond to the mouse
 	window.SetMouseButtonCallback(mouseBtnCallback)
-	// window.SetCursorPosCallback(internal.CurPosCB)
+	// window.SetCursorPosCallback(tpinternal.CurPosCB)
 
-	StartTime = time.Now()
+	tpinternal.StartTime = time.Now()
 	go playAudio(songPath)
 
 	for !window.ShouldClose() {
@@ -40,14 +41,14 @@ func main() {
 
 		// update UI if song is playing
 		if currentPlayer != nil && currentPlayer.IsPlaying() {
-			seconds := time.Since(StartTime).Seconds()
+			seconds := time.Since(tpinternal.StartTime).Seconds()
 			secondsInt := int(math.Floor(seconds))
-			if secondsInt != CurrentPlaySeconds {
-				DrawNowPlayingUI(window, songPath, secondsInt)
+			if secondsInt != tpinternal.CurrentPlaySeconds {
+				tpinternal.DrawNowPlayingUI(window, songPath, secondsInt)
 			}
 		}
 
-		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
+		time.Sleep(time.Second/time.Duration(tpinternal.FPS) - time.Since(t))
 	}
 }
 
@@ -65,7 +66,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	// var widgetRS g143.Rect
 	var widgetCode int
 
-	for code, RS := range ObjCoords {
+	for code, RS := range tpinternal.ObjCoords {
 		if g143.InRect(RS, xPosInt, yPosInt) {
 			// widgetRS = RS
 			widgetCode = code
@@ -78,16 +79,16 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	}
 
 	switch widgetCode {
-	case SwitchViewBtn:
-		if DeviceView == "laptop" {
-			DeviceView = "mobile"
-		} else if DeviceView == "mobile" {
-			DeviceView = "laptop"
+	case tpinternal.SwitchViewBtn:
+		if tpinternal.DeviceView == "laptop" {
+			tpinternal.DeviceView = "mobile"
+		} else if tpinternal.DeviceView == "mobile" {
+			tpinternal.DeviceView = "laptop"
 		}
 
-		seconds := time.Since(StartTime).Seconds()
+		seconds := time.Since(tpinternal.StartTime).Seconds()
 		secondsInt := int(math.Floor(seconds))
-		DrawNowPlayingUI(window, SongPath, secondsInt)
+		tpinternal.DrawNowPlayingUI(window, tpinternal.SongPath, secondsInt)
 
 	}
 }

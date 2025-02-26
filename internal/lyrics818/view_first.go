@@ -1,4 +1,4 @@
-package internal
+package lyrics818
 
 import (
 	"image"
@@ -10,11 +10,12 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/saenuma/lyrics818/internal"
 )
 
 func GetDefaultFontPath() string {
 	fontPath := filepath.Join(os.TempDir(), "l818_font.ttf")
-	os.WriteFile(fontPath, DefaultFont, 0777)
+	os.WriteFile(fontPath, internal.DefaultFont, 0777)
 	return fontPath
 }
 

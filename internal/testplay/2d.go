@@ -1,7 +1,9 @@
-package main
+package testplay
 
 import (
 	"image"
+	"os"
+	"path/filepath"
 
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
@@ -15,6 +17,12 @@ type Ctx struct {
 	ObjCoords    *map[int]g143.Rect
 }
 
+func GetDefaultFontPath() string {
+	fontPath := filepath.Join(os.TempDir(), "l818_font.ttf")
+	os.WriteFile(fontPath, internal.DefaultFont, 0777)
+	return fontPath
+}
+
 func New2dCtx(wWidth, wHeight int) Ctx {
 	// frame buffer
 	ggCtx := gg.NewContext(wWidth, wHeight)
@@ -25,7 +33,7 @@ func New2dCtx(wWidth, wHeight int) Ctx {
 	ggCtx.Fill()
 
 	// load font
-	fontPath := internal.GetDefaultFontPath()
+	fontPath := GetDefaultFontPath()
 	err := ggCtx.LoadFontFace(fontPath, 20)
 	if err != nil {
 		panic(err)
@@ -39,7 +47,7 @@ func Continue2dCtx(img image.Image, objCoords *map[int]g143.Rect) Ctx {
 	ggCtx := gg.NewContextForImage(img)
 
 	// load font
-	fontPath := internal.GetDefaultFontPath()
+	fontPath := GetDefaultFontPath()
 	err := ggCtx.LoadFontFace(fontPath, 20)
 	if err != nil {
 		panic(err)
