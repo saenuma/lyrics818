@@ -46,9 +46,9 @@ func pickColor() string {
 	homeDir, _ := os.UserHomeDir()
 	var cmdPath string
 	begin := os.Getenv("SNAP")
-	cmdPath = filepath.Join(homeDir, "bin", "cpicker")
+	cmdPath = filepath.Join(homeDir, "bin", "acpicker")
 	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
-		cmdPath = filepath.Join(begin, "bin", "cpicker")
+		cmdPath = filepath.Join(begin, "bin", "acpicker")
 	}
 
 	cmd := exec.Command(cmdPath)
