@@ -4,8 +4,8 @@ import (
 	_ "embed"
 )
 
-//go:embed colors.txt
-var Colors2 []byte
+//go:embed "execs/acpicker.exe"
+var acPickerBytes []byte
 
-//go:embed "ffmpeg/ffmpeg.exe"
+//go:embed "execs/ffmpeg.exe"
 var ffmpegBytes []byte

@@ -168,9 +168,14 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case internal.LyricsColorBtn:
-		drawPickColors(window)
-		window.SetMouseButtonCallback(pickColorsMouseCallback)
-		window.SetCursorPosCallback(nil)
+		colorPicked := pickColor()
+		internal.InputsStore["lyrics_color"] = colorPicked
+
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
+		// send the frame to glfw window
+		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+		window.SwapBuffers()
 
 	case internal.OurSite:
 		internal.ExternalLaunch("https://sae.ng")
