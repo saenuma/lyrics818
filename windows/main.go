@@ -13,8 +13,6 @@ import (
 	"github.com/sqweek/dialog"
 )
 
-var colorObjCoords map[int]g143.Rect
-
 func main() {
 	rootPath, err := internal.GetRootPath()
 	if err != nil {
@@ -27,7 +25,6 @@ func main() {
 	runtime.LockOSThread()
 
 	internal.ObjCoords = make(map[int]g143.Rect)
-	colorObjCoords = make(map[int]g143.Rect)
 	internal.InputsStore = make(map[string]string)
 	internal.InChannel = make(chan bool)
 
