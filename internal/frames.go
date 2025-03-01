@@ -1,8 +1,8 @@
-package lyrics818
+package internal
 
 import (
 	"image"
-	"image/color"
+	"image/draw"
 	"math"
 	"os"
 	"path/filepath"
@@ -19,26 +19,15 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
+const VersionFormat = "20060102T150405MST"
+
 const (
-	MOBILE_WIDTH  = 800
-	MOBILE_HEIGHT = 1000
+	LAPTOP_WIDTH  = 1366
+	LAPTOP_HEIGHT = 768
 )
 
-func makeMobileBackground(laptopBackground image.Image) *image.NRGBA {
-	mobileBackgroundImg := imaging.New(MOBILE_WIDTH, MOBILE_HEIGHT, color.White)
-
-	tmp := imaging.Fit(laptopBackground, MOBILE_WIDTH, MOBILE_HEIGHT, imaging.Lanczos)
-	mobileBackgroundImg = imaging.Paste(mobileBackgroundImg, tmp, image.Pt(0, 0))
-	mobileBackgroundImg = imaging.Paste(mobileBackgroundImg, tmp, image.Pt(0, tmp.Bounds().Dy()))
-	mobileBackgroundImg = imaging.Paste(mobileBackgroundImg, tmp, image.Pt(0, tmp.Bounds().Dy()*2))
-
-	return mobileBackgroundImg
-}
-
-func MakeMobileFrames(outName string, totalSeconds int, renderPath string, inputs map[string]string) {
+func MakeLaptopFrames(outName string, totalSeconds int, renderPath string, inputs map[string]string) {
 	numberOfCPUS := runtime.NumCPU()
-	// rootPath, _ := GetRootPath()
-	// lyricsObject := ParseLyricsFile(filepath.Join(rootPath, conf.Get("lyrics_file")), totalSeconds)
 	lyricsObject := ParseLyricsFile(inputs["lyrics_file"], totalSeconds)
 
 	jobsPerThread := int(math.Floor(float64(totalSeconds) / float64(numberOfCPUS)))
@@ -61,14 +50,13 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 					if err != nil {
 						panic(err)
 					}
-					mobileImg := makeMobileBackground(img)
-
-					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
-					imaging.Save(mobileImg, outPath)
-				} else {
-					img := writeLyricsToImageMobile(inputs, lyricsObject[seconds])
 					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 					imaging.Save(img, outPath)
+				} else {
+					img := WriteLyricsToImage(inputs, lyricsObject[seconds])
+					outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
+					imaging.Save(img, outPath)
+
 				}
 
 			}
@@ -84,13 +72,10 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 			if err != nil {
 				panic(err)
 			}
-			mobileImg := makeMobileBackground(img)
-
 			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
-			imaging.Save(mobileImg, outPath)
-
+			imaging.Save(img, outPath)
 		} else {
-			img := writeLyricsToImageMobile(inputs, lyricsObject[seconds])
+			img := WriteLyricsToImage(inputs, lyricsObject[seconds])
 			outPath := filepath.Join(renderPath, strconv.Itoa(seconds)+".png")
 			imaging.Save(img, outPath)
 		}
@@ -98,8 +83,9 @@ func MakeMobileFrames(outName string, totalSeconds int, renderPath string, input
 
 }
 
-func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []string {
-	rgba := image.NewRGBA(image.Rect(0, 0, MOBILE_WIDTH, MOBILE_HEIGHT))
+func wordWrapLaptop(inputs map[string]string, text string, writeWidth int) []string {
+
+	rgba := image.NewRGBA(image.Rect(0, 0, LAPTOP_WIDTH, LAPTOP_HEIGHT))
 
 	fontBytes, err := os.ReadFile(inputs["font_file"])
 	if err != nil {
@@ -114,7 +100,7 @@ func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []str
 		Dst: rgba,
 		Src: image.Black,
 		Face: truetype.NewFace(fontParsed, &truetype.Options{
-			Size:    MSIZE,
+			Size:    SIZE,
 			DPI:     DPI,
 			Hinting: font.HintingNone,
 		}),
@@ -145,12 +131,18 @@ func wordWrapMobile(inputs map[string]string, text string, writeWidth int) []str
 	return outStrs
 }
 
-func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image {
-	laptopImg, err := imaging.Open(inputs["background_file"])
+func WriteLyricsToImage(inputs map[string]string, text string) image.Image {
+	fileHandle, err := os.Open(inputs["background_file"])
 	if err != nil {
 		panic(err)
 	}
-	img := makeMobileBackground(laptopImg)
+	pngData, _, err := image.Decode(fileHandle)
+	if err != nil {
+		panic(err)
+	}
+	b := pngData.Bounds()
+	img := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	draw.Draw(img, img.Bounds(), pngData, b.Min, draw.Src)
 
 	lyricsColor, _ := colorful.Hex(inputs["lyrics_color"])
 	fg := image.NewUniform(lyricsColor)
@@ -167,7 +159,7 @@ func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image
 	c := freetype.NewContext()
 	c.SetDPI(DPI)
 	c.SetFont(fontParsed)
-	c.SetFontSize(MSIZE)
+	c.SetFontSize(SIZE)
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
 	c.SetSrc(fg)
@@ -177,18 +169,18 @@ func writeLyricsToImageMobile(inputs map[string]string, text string) image.Image
 
 	finalTexts := make([]string, 0)
 	for _, txt := range texts {
-		wrappedTxts := wordWrapMobile(inputs, txt, MOBILE_WIDTH-50)
+		wrappedTxts := wordWrapLaptop(inputs, txt, LAPTOP_WIDTH-130)
 		finalTexts = append(finalTexts, wrappedTxts...)
 	}
 
 	// Draw the text.
-	pt := freetype.Pt(40, 50+int(c.PointToFixed(MSIZE)>>6))
+	pt := freetype.Pt(80, 50+int(c.PointToFixed(SIZE)>>6))
 	for _, s := range finalTexts {
 		_, err = c.DrawString(s, pt)
 		if err != nil {
 			panic(err)
 		}
-		pt.Y += c.PointToFixed(MSIZE * SPACING)
+		pt.Y += c.PointToFixed(SIZE * SPACING)
 	}
 
 	return img

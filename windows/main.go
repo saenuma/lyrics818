@@ -10,7 +10,6 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/saenuma/lyrics818/internal"
-	l8internal "github.com/saenuma/lyrics818/internal/lyrics818"
 	"github.com/sqweek/dialog"
 )
 
@@ -27,63 +26,54 @@ func main() {
 
 	runtime.LockOSThread()
 
-	l8internal.ObjCoords = make(map[int]g143.Rect)
+	internal.ObjCoords = make(map[int]g143.Rect)
 	colorObjCoords = make(map[int]g143.Rect)
-	l8internal.InputsStore = make(map[string]string)
-	l8internal.InChannel = make(chan string)
+	internal.InputsStore = make(map[string]string)
+	internal.InChannel = make(chan bool)
 
 	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
-	l8internal.AllDraws(window)
+	internal.AllDraws(window)
 
 	go func() {
 		for {
-			method := <-l8internal.InChannel
-			if method == "mp4" {
-				ffPath := GetFFMPEGCommand()
-				_, err := l8internal.MakeVideo(l8internal.InputsStore, ffPath)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-			} else if method == "l8f" {
-				_, err := l8internal.MakeVideoL8F(l8internal.InputsStore)
-				if err != nil {
-					log.Println(err)
-					return
-				}
+			<-internal.InChannel
+			ffPath := GetFFMPEGCommand()
+			_, err := internal.MakeVideo(internal.InputsStore, ffPath)
+			if err != nil {
+				log.Println(err)
+				return
 			}
 
-			l8internal.ClearAfterRender = true
+			internal.ClearAfterRender = true
 		}
 	}()
 
 	// respond to the mouse
 	window.SetMouseButtonCallback(mouseBtnCallback)
 	// respond to mouse movement
-	window.SetCursorPosCallback(l8internal.CursorPosCB)
+	window.SetCursorPosCallback(internal.CursorPosCB)
 
 	for !window.ShouldClose() {
 		t := time.Now()
 		glfw.PollEvents()
 
-		if l8internal.ClearAfterRender {
+		if internal.ClearAfterRender {
 			// clear the UI and redraw
-			l8internal.InputsStore = make(map[string]string)
-			l8internal.AllDraws(window)
-			l8internal.DrawEndRenderView(window, l8internal.EmptyFrameNoInputs)
+			internal.InputsStore = make(map[string]string)
+			internal.AllDraws(window)
+			internal.DrawEndRenderView(window, internal.EmptyFrameNoInputs)
 			time.Sleep(5 * time.Second)
-			l8internal.AllDraws(window)
+			internal.AllDraws(window)
 
 			// respond to the mouse
 			window.SetMouseButtonCallback(mouseBtnCallback)
 			// respond to mouse movement
-			window.SetCursorPosCallback(l8internal.CursorPosCB)
+			window.SetCursorPosCallback(internal.CursorPosCB)
 
-			l8internal.ClearAfterRender = false
+			internal.ClearAfterRender = false
 		}
 
-		time.Sleep(time.Second/time.Duration(l8internal.FPS) - time.Since(t))
+		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
 	}
 
 }
@@ -102,7 +92,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	// var widgetRS g143.Rect
 	var widgetCode int
 
-	for code, RS := range l8internal.ObjCoords {
+	for code, RS := range internal.ObjCoords {
 		if g143.InRect(RS, xPosInt, yPosInt) {
 			// widgetRS = RS
 			widgetCode = code
@@ -117,97 +107,85 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 	rootPath, _ := internal.GetRootPath()
 
 	switch widgetCode {
-	case l8internal.OpenWDBtn:
-		l8internal.ExternalLaunch(rootPath)
+	case internal.OpenWDBtn:
+		internal.ExternalLaunch(rootPath)
 
-	case l8internal.ViewLyricsBtn:
+	case internal.ViewLyricsBtn:
 		sampleLyricsPath := filepath.Join(rootPath, "bmtf.txt")
-		l8internal.ExternalLaunch(sampleLyricsPath)
+		internal.ExternalLaunch(sampleLyricsPath)
 
-	case l8internal.SelectLyricsBtn:
+	case internal.SelectLyricsBtn:
 		filename, err := dialog.File().Filter("Lyrics File", "txt").Load()
 		if filename == "" || err != nil {
 			return
 		}
 
-		l8internal.InputsStore["lyrics_file"] = filename
+		internal.InputsStore["lyrics_file"] = filename
 
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case l8internal.FontFileBtn:
+	case internal.FontFileBtn:
 		filename, err := dialog.File().Filter("Font file", "ttf").Load()
 		if filename == "" || err != nil {
 			return
 		}
-		l8internal.InputsStore["font_file"] = filename
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
+		internal.InputsStore["font_file"] = filename
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case l8internal.BgFileBtn:
+	case internal.BgFileBtn:
 		filename, err := dialog.File().Filter("PNG Image", "png").Load()
 		if filename == "" || err != nil {
 			return
 		}
 
-		l8internal.InputsStore["background_file"] = filename
+		internal.InputsStore["background_file"] = filename
 
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case l8internal.MusicFileBtn:
+	case internal.MusicFileBtn:
 		filename, err := dialog.File().Filter("MP3 Audio", "mp3").Load()
 		if filename == "" || err != nil {
 			return
 		}
-		l8internal.InputsStore["music_file"] = filename
+		internal.InputsStore["music_file"] = filename
 
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		// send the frame to glfw window
 		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
 		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
 		window.SwapBuffers()
 
-	case l8internal.LyricsColorBtn:
+	case internal.LyricsColorBtn:
 		drawPickColors(window)
 		window.SetMouseButtonCallback(pickColorsMouseCallback)
 		window.SetCursorPosCallback(nil)
 
-	case l8internal.OurSite:
-		l8internal.ExternalLaunch("https://sae.ng")
+	case internal.OurSite:
+		internal.ExternalLaunch("https://sae.ng")
 
-	case l8internal.RenderBtn:
-		if len(l8internal.InputsStore) != 5 {
+	case internal.RenderBtn:
+		if len(internal.InputsStore) != 5 {
 			return
 		}
 
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
+		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
 		window.SetMouseButtonCallback(nil)
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
-		l8internal.DrawRenderView(window, currentFrame)
-		l8internal.InChannel <- "mp4"
-
-	case l8internal.RenderL8fBtn:
-		if len(l8internal.InputsStore) != 5 {
-			return
-		}
-
-		currentFrame := l8internal.RefreshInputsOnWindow(window, l8internal.EmptyFrameNoInputs)
-		window.SetMouseButtonCallback(nil)
-		window.SetKeyCallback(nil)
-		window.SetCursorPosCallback(nil)
-		l8internal.DrawRenderView(window, currentFrame)
-		l8internal.InChannel <- "l8f"
+		internal.DrawRenderView(window, currentFrame)
+		internal.InChannel <- true
 	}
 
 }

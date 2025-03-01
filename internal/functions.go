@@ -1,4 +1,4 @@
-package lyrics818
+package internal
 
 import (
 	"io"
@@ -10,8 +10,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/tcolgate/mp3"
 )
+
 
 const (
 	DPI     = 72.0
@@ -19,6 +21,24 @@ const (
 	MSIZE   = 80.0
 	SPACING = 1.1
 )
+
+
+
+func GetRootPath() (string, error) {
+	hd, err := os.UserHomeDir()
+	if err != nil {
+		return "", errors.Wrap(err, "os error")
+	}
+
+	dd := os.Getenv("SNAP_USER_COMMON")
+
+	if strings.HasPrefix(dd, filepath.Join(hd, "snap", "go")) || dd == "" {
+		dd = filepath.Join(hd, "Lyrics818")
+		os.MkdirAll(dd, 0777)
+	}
+
+	return dd, nil
+}
 
 func TimeFormatToSeconds(s string) int {
 	// calculate total duration of the song
@@ -131,3 +151,4 @@ func ExternalLaunch(p string) {
 		exec.Command("xdg-open", p).Run()
 	}
 }
+

@@ -6,7 +6,7 @@ import (
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	internal "github.com/saenuma/lyrics818/internal/lyrics818"
+	"github.com/saenuma/lyrics818/internal"
 )
 
 var allColors []string
