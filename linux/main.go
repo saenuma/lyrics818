@@ -26,8 +26,10 @@ func main() {
 	internal.ObjCoords = make(map[int]g143.Rect)
 	internal.InputsStore = make(map[string]string)
 	internal.InChannel = make(chan bool)
+	internal.InColorChannel = make(chan bool)
 
-	window := g143.NewWindow(1000, 800, "lyrics818: a more comfortable lyrics video generator", false)
+	wWidth, wHeight := 1000, 800
+	window := g143.NewWindow(wWidth, wHeight, "lyrics818: a more comfortable lyrics video generator", false)
 	internal.AllDraws(window)
 
 	go func() {
@@ -44,6 +46,14 @@ func main() {
 		}
 	}()
 
+	go func() {
+		for {
+			<-internal.InColorChannel
+			internal.PickedColor = pickColor()
+			internal.ClearAfterColorPicker = true
+		}
+	}()
+
 	// respond to the mouse
 	window.SetMouseButtonCallback(mouseBtnCallback)
 	// respond to mouse movement
@@ -55,9 +65,11 @@ func main() {
 
 		if internal.ClearAfterRender {
 			// clear the UI and redraw
-			internal.InputsStore = make(map[string]string)
 			internal.AllDraws(window)
-			internal.DrawEndRenderView(window, internal.EmptyFrameNoInputs)
+			msg := "Done! Open working directory"
+			currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
+			internal.DrawDialogWithMessage(window, currentFrame, msg)
+
 			time.Sleep(5 * time.Second)
 			internal.AllDraws(window)
 
@@ -67,6 +79,23 @@ func main() {
 			window.SetCursorPosCallback(internal.CursorPosCB)
 
 			internal.ClearAfterRender = false
+		}
+
+		if internal.ClearAfterColorPicker {
+			internal.InputsStore["lyrics_color"] = internal.PickedColor
+
+			currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
+			// send the frame to glfw window
+			windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+			g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+			window.SwapBuffers()
+
+			// respond to the mouse
+			window.SetMouseButtonCallback(mouseBtnCallback)
+			// respond to mouse movement
+			window.SetCursorPosCallback(internal.CursorPosCB)
+
+			internal.ClearAfterColorPicker = false
 		}
 
 		time.Sleep(time.Second/time.Duration(internal.FPS) - time.Since(t))
@@ -162,17 +191,12 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case internal.LyricsColorBtn:
-		tmpColor := pickColor()
-		if tmpColor == "" {
-			return
-		}
-		internal.InputsStore["lyrics_color"] = tmpColor
-
 		currentFrame := internal.RefreshInputsOnWindow(window, internal.EmptyFrameNoInputs)
-		// send the frame to glfw window
-		windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
-		g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
-		window.SwapBuffers()
+		window.SetMouseButtonCallback(nil)
+		window.SetKeyCallback(nil)
+		window.SetCursorPosCallback(nil)
+		internal.DrawDialogWithMessage(window, currentFrame, "Awaiting your color choice!")
+		internal.InColorChannel <- true
 
 	case internal.OurSite:
 		internal.ExternalLaunch("https://sae.ng")
@@ -186,7 +210,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetMouseButtonCallback(nil)
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
-		internal.DrawRenderView(window, currentFrame)
+		internal.DrawDialogWithMessage(window, currentFrame, "Rendering! Please Wait")
 		internal.InChannel <- true
 
 	}

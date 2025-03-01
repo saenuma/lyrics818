@@ -21,13 +21,16 @@ const (
 	OurSite         = 111
 )
 
-var EmptyFrameNoInputs image.Image
+var (
+	ObjCoords          map[int]g143.Rect
+	InputsStore        map[string]string
+	EmptyFrameNoInputs image.Image
 
-var InputsStore map[string]string
+	InChannel             chan bool
+	InColorChannel        chan bool
+	ClearAfterRender      bool
+	ClearAfterColorPicker bool
+	PickedColor           string
 
-var InChannel chan bool
-var ClearAfterRender bool
-
-var CursorEventsCount = 0
-
-var ObjCoords map[int]g143.Rect
+	CursorEventsCount = 0
+)
