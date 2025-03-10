@@ -42,7 +42,7 @@ func main() {
 				log.Println(err)
 				return
 			}
-			internal.ClearAfterRender = true
+			internal.DoneWithRender = true
 		}
 	}()
 
@@ -63,7 +63,7 @@ func main() {
 		t := time.Now()
 		glfw.PollEvents()
 
-		if internal.ClearAfterRender {
+		if internal.DoneWithRender {
 			// clear the UI and redraw
 			internal.AllDraws(window)
 			msg := "Done! Open working directory"
@@ -71,14 +71,18 @@ func main() {
 			internal.DrawDialogWithMessage(window, currentFrame, msg)
 
 			time.Sleep(5 * time.Second)
-			internal.AllDraws(window)
+
+			// send the frame to glfw window
+			windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
+			g143.DrawImage(wWidth, wHeight, currentFrame, windowRS)
+			window.SwapBuffers()
 
 			// respond to the mouse
 			window.SetMouseButtonCallback(mouseBtnCallback)
 			// respond to mouse movement
 			window.SetCursorPosCallback(internal.CursorPosCB)
 
-			internal.ClearAfterRender = false
+			internal.DoneWithRender = false
 		}
 
 		if internal.ClearAfterColorPicker {

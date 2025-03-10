@@ -28,7 +28,7 @@ var (
 
 	InChannel             chan bool
 	InColorChannel        chan bool
-	ClearAfterRender      bool
+	DoneWithRender        bool
 	ClearAfterColorPicker bool
 	PickedColor           string
 
