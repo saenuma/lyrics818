@@ -43,6 +43,11 @@ parts:
       - libgl1-mesa-dev
       - xorg-dev
       - libc6-dev
+    override-build: |
+      set -xe
+      go mod download
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/fpicker ./fpicker
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/acpicker ./acpicker
 
   ff-part:
     plugin: dump
