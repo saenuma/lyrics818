@@ -28,7 +28,7 @@ func main() {
 	internal.InChannel = make(chan bool)
 	internal.InColorChannel = make(chan bool)
 
-	wWidth, wHeight := 1000, 800
+	wWidth, wHeight := 700, 650
 	window := g143.NewWindow(wWidth, wHeight, "lyrics818: a more comfortable lyrics video generator", false)
 	internal.AllDraws(window)
 

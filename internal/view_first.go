@@ -37,7 +37,7 @@ func AllDraws(window *glfw.Window) {
 	}
 
 	// open working directory button
-	beginXOffset := 200
+	beginXOffset := 80
 	ggCtx.SetHexColor("#D09090")
 	owdStr := "Open Working Directory"
 	owdStrW, owdStrH := ggCtx.MeasureString(owdStr)
@@ -66,10 +66,6 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawString(vslStr, float64(vslBtnRS.OriginX)+25, 35)
 
 	// Help messages
-	ggCtx.LoadFontFace(fontPath, 30)
-	ggCtx.DrawString("Help", 40, 50+30)
-	ggCtx.LoadFontFace(fontPath, 20)
-
 	msg1 := "1. All files must be placed in the working directory of this program."
 	msg2 := "2. The background_file must be of dimensions (1366px x 768px)"
 
@@ -142,17 +138,17 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.DrawString(lcStr, 60, 405+FontSize)
 
 	// render button
-	beginXOffset2 := 350
+	beginXOffset2 := 220
 	ggCtx.SetHexColor("#A965B5")
 	rStr := "Make Lyrics Video (.mp4)"
 	rStrW, rStrH := ggCtx.MeasureString(rStr)
-	ggCtx.DrawRectangle(float64(beginXOffset2), 500, rStrW+70, rStrH+25)
+	ggCtx.DrawRectangle(float64(beginXOffset2), 500, rStrW+90, rStrH+25)
 	ggCtx.Fill()
 	ggCtx.SetHexColor("#5D435E")
 	ggCtx.DrawRoundedRectangle(float64(beginXOffset2)+rStrW+40, 500+10, 20, 20, 10)
 	ggCtx.Fill()
 
-	rBtnRS := g143.Rect{Width: int(rStrW) + 70, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 500}
+	rBtnRS := g143.Rect{Width: int(rStrW) + 90, Height: int(rStrH) + 25, OriginX: beginXOffset2, OriginY: 500}
 	ObjCoords[RenderBtn] = rBtnRS
 
 	ggCtx.SetHexColor("#fff")
@@ -162,10 +158,10 @@ func AllDraws(window *glfw.Window) {
 	ggCtx.SetHexColor("#9C5858")
 	fromAddr := "sae.ng"
 	fromAddrWidth, fromAddrHeight := ggCtx.MeasureString(fromAddr)
-	fromAddrOriginX := (wWidth - int(fromAddrWidth)) / 2
-	ggCtx.DrawString(fromAddr, float64(fromAddrOriginX), float64(wHeight-int(fromAddrHeight)))
+	fromAddrOriginX := (wWidth - int(fromAddrWidth+20)) / 2
+	ggCtx.DrawString(fromAddr, float64(fromAddrOriginX)+10, float64(wHeight-int(fromAddrHeight)))
 	fars := g143.Rect{OriginX: fromAddrOriginX, OriginY: wHeight - 40,
-		Width: int(fromAddrWidth), Height: 40}
+		Width: int(fromAddrWidth + 20), Height: 40}
 	ObjCoords[OurSite] = fars
 
 	// send the frame to glfw window
