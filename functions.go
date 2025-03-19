@@ -1,6 +1,7 @@
-package internal
+package main
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -14,15 +15,12 @@ import (
 	"github.com/tcolgate/mp3"
 )
 
-
 const (
 	DPI     = 72.0
 	SIZE    = 80.0
 	MSIZE   = 80.0
 	SPACING = 1.1
 )
-
-
 
 func GetRootPath() (string, error) {
 	hd, err := os.UserHomeDir()
@@ -152,3 +150,23 @@ func ExternalLaunch(p string) {
 	}
 }
 
+func GetFFMPEGCommand() string {
+	execPath, _ := os.Executable()
+	cmdPath := filepath.Join(filepath.Dir(execPath), "ffmpeg.exe")
+
+	return cmdPath
+}
+
+func pickColor() string {
+	execPath, _ := os.Executable()
+	cmdPath := filepath.Join(filepath.Dir(execPath), "acpicker.exe")
+	cmd := exec.Command(cmdPath)
+
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
+}
