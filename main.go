@@ -9,7 +9,6 @@ import (
 
 	g143 "github.com/bankole7782/graphics143"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/sqweek/dialog"
 )
 
 func main() {
@@ -144,8 +143,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		ExternalLaunch(sampleLyricsPath)
 
 	case SelectLyricsBtn:
-		filename, err := dialog.File().Filter("Lyrics File", "txt").Load()
-		if filename == "" || err != nil {
+		filename := PickTxtFile()
+		if filename == "" {
 			return
 		}
 
@@ -158,8 +157,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case FontFileBtn:
-		filename, err := dialog.File().Filter("Font file", "ttf").Load()
-		if filename == "" || err != nil {
+		filename := PickFontFile()
+		if filename == "" {
 			return
 		}
 		InputsStore["font_file"] = filename
@@ -170,8 +169,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case BgFileBtn:
-		filename, err := dialog.File().Filter("PNG Image", "png").Load()
-		if filename == "" || err != nil {
+		filename := PickImageFile()
+		if filename == "" {
 			return
 		}
 
@@ -184,8 +183,8 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SwapBuffers()
 
 	case MusicFileBtn:
-		filename, err := dialog.File().Filter("MP3 Audio", "mp3").Load()
-		if filename == "" || err != nil {
+		filename := PickMp3File()
+		if filename == "" {
 			return
 		}
 		InputsStore["music_file"] = filename
