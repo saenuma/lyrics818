@@ -76,7 +76,7 @@ parts:
           exit 1
         fi
       fi
-      rm ffprobe
+      rm $SNAPCRAFT_PART_INSTALL/bin/ffprobe
 
 
 apps: 
