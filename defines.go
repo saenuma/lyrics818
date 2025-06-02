@@ -26,7 +26,7 @@ var (
 	InputsStore        map[string]string
 	EmptyFrameNoInputs image.Image
 
-	InChannel             chan bool
+	InChannel             chan string
 	InColorChannel        chan bool
 	DoneWithRender        bool
 	ClearAfterColorPicker bool

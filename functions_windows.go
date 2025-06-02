@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/sqweek/dialog"
 )
@@ -40,4 +45,25 @@ func PickMp3File() string {
 		return ""
 	}
 	return filename
+}
+
+func GetFFMPEGCommand() string {
+	execPath, _ := os.Executable()
+	cmdPath := filepath.Join(filepath.Dir(execPath), "ffmpeg.exe")
+
+	return cmdPath
+}
+
+func pickColor() string {
+	execPath, _ := os.Executable()
+	cmdPath := filepath.Join(filepath.Dir(execPath), "acpicker.exe")
+	cmd := exec.Command(cmdPath)
+
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
 }

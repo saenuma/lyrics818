@@ -50,3 +50,34 @@ func PickFontFile() string {
 func PickMp3File() string {
 	return pickFile("mp3")
 }
+
+func pickColor() string {
+	homeDir, _ := os.UserHomeDir()
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = filepath.Join(homeDir, "bin", "acpicker")
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "acpicker")
+	}
+
+	cmd := exec.Command(cmdPath)
+
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(out))
+}
+
+func GetFFMPEGCommand() string {
+	var cmdPath string
+	begin := os.Getenv("SNAP")
+	cmdPath = "ffmpeg"
+	if begin != "" && !strings.HasPrefix(begin, "/snap/go/") {
+		cmdPath = filepath.Join(begin, "bin", "ffmpeg")
+	}
+
+	return cmdPath
+}
