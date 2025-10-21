@@ -17,7 +17,6 @@ const (
 	MusicFileBtn    = 106
 	LyricsColorBtn  = 107
 	RenderBtn       = 109
-	RenderL8fBtn    = 110
 	OurSite         = 111
 )
 
@@ -26,7 +25,7 @@ var (
 	InputsStore        map[string]string
 	EmptyFrameNoInputs image.Image
 
-	InChannel             chan string
+	InChannel             chan bool
 	InColorChannel        chan bool
 	DoneWithRender        bool
 	ClearAfterColorPicker bool

@@ -24,7 +24,7 @@ func main() {
 
 	ObjCoords = make(map[int]g143.Rect)
 	InputsStore = make(map[string]string)
-	InChannel = make(chan string)
+	InChannel = make(chan bool)
 	InColorChannel = make(chan bool)
 
 	wWidth, wHeight := 700, 650
@@ -33,21 +33,12 @@ func main() {
 
 	go func() {
 		for {
-			method := <-InChannel
-			if method == "mp4" {
-				ffPath := GetFFMPEGCommand()
-				_, err := MakeVideo(InputsStore, ffPath)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-
-			} else if method == "l8f" {
-				_, err := MakeVideoL8F(InputsStore)
-				if err != nil {
-					log.Println(err)
-					return
-				}
+			<-InChannel
+			ffPath := GetFFMPEGCommand()
+			_, err := MakeVideo(InputsStore, ffPath)
+			if err != nil {
+				log.Println(err)
+				return
 			}
 
 			DoneWithRender = true
@@ -225,19 +216,7 @@ func mouseBtnCallback(window *glfw.Window, button glfw.MouseButton, action glfw.
 		window.SetKeyCallback(nil)
 		window.SetCursorPosCallback(nil)
 		DrawDialogWithMessage(window, currentFrame, "Rendering! Please Wait")
-		InChannel <- "mp4"
-
-	case RenderL8fBtn:
-		if len(InputsStore) != 5 {
-			return
-		}
-
-		currentFrame := RefreshInputsOnWindow(window, EmptyFrameNoInputs)
-		window.SetMouseButtonCallback(nil)
-		window.SetKeyCallback(nil)
-		window.SetCursorPosCallback(nil)
-		DrawDialogWithMessage(window, currentFrame, "Rendering! Please Wait")
-		InChannel <- "l8f"
+		InChannel <- true
 
 	}
 
