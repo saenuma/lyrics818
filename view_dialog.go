@@ -4,7 +4,7 @@ import (
 	"image"
 
 	g143 "github.com/bankole7782/graphics143"
-	"github.com/disintegration/imaging"
+	"github.com/kovidgoyal/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )

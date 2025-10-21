@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/disintegration/imaging"
+	"github.com/kovidgoyal/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/lucasb-eyer/go-colorful"
