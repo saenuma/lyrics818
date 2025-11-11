@@ -7,9 +7,9 @@ import (
 	"runtime"
 
 	g143 "github.com/bankole7782/graphics143"
-	"github.com/kovidgoyal/imaging"
 	"github.com/fogleman/gg"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/kovidgoyal/imaging"
 )
 
 func GetDefaultFontPath() string {
@@ -23,9 +23,9 @@ func AllDraws(window *glfw.Window) {
 
 	theCtx := New2dCtx(wWidth, wHeight)
 
-	oWDRect := theCtx.drawButtonA(OpenWDBtn, 80, 10, "Open Working Directory", "#444", "#D09090")
-	vSX := nextHorizontalX(oWDRect, 30)
-	theCtx.drawButtonA(ViewLyricsBtn, vSX, 10, "View Sample Lyrics", "#444", "#90D092")
+	oWDRect := theCtx.drawButtonA(OpenWDBtn, 80, 10, "Open Working Directory", "#444", "#EAE6C7")
+	vSX := nextX(oWDRect, 30)
+	theCtx.drawButtonA(ViewLyricsBtn, vSX, 10, "View Sample Lyrics", "#444", "#EAE6C7")
 
 	// Help messages
 	msg1 := "1. All files must be placed in the working directory of this program."
@@ -34,19 +34,19 @@ func AllDraws(window *glfw.Window) {
 	theCtx.ggCtx.DrawString(msg1, 60, 90+FontSize)
 	theCtx.ggCtx.DrawString(msg2, 60, 90+30+FontSize)
 
-	sLBRect := theCtx.drawButtonA(SelectLyricsBtn, 40, 160, "Select Lyrics File (.txt)", "#fff", "#5F699F")
-	sFBY := nextHorizontalY(sLBRect, 20)
-	sFBRect := theCtx.drawButtonA(FontFileBtn, 40, sFBY, "Select Font File (.ttf)", "#fff", "#5F699F")
-	sBBY := nextHorizontalY(sFBRect, 20)
-	sBBRect := theCtx.drawButtonA(BgFileBtn, 40, sBBY, "Select Background File (.png)", "#fff", "#5F699F")
-	mBBY := nextHorizontalY(sBBRect, 20)
-	mBBRect := theCtx.drawButtonA(MusicFileBtn, 40, mBBY, "Select Music File (.mp3)", "#fff", "#5F699F")
-	lBBY := nextHorizontalY(mBBRect, 20)
-	lBBRect := theCtx.drawButtonA(LyricsColorBtn, 40, lBBY, "Pick Lyrics Color", "#fff", "#5F699F")
+	sLBRect := theCtx.drawButtonA(SelectLyricsBtn, 40, 160, "Select Lyrics File (.txt)", "#fff", "#958E6B")
+	sFBY := nextY(sLBRect, 20)
+	sFBRect := theCtx.drawButtonA(FontFileBtn, 40, sFBY, "Select Font File (.ttf)", "#fff", "#958E6B")
+	sBBY := nextY(sFBRect, 20)
+	sBBRect := theCtx.drawButtonA(BgFileBtn, 40, sBBY, "Select Background File (.png)", "#fff", "#958E6B")
+	mBBY := nextY(sBBRect, 20)
+	mBBRect := theCtx.drawButtonA(MusicFileBtn, 40, mBBY, "Select Music File (.mp3)", "#fff", "#958E6B")
+	lBBY := nextY(mBBRect, 20)
+	lBBRect := theCtx.drawButtonA(LyricsColorBtn, 40, lBBY, "Pick Lyrics Color", "#fff", "#958E6B")
 
 	rBX := 220
-	rBY := nextHorizontalY(lBBRect, 40)
-	theCtx.drawButtonB(RenderBtn, rBX, rBY, "Make Lyrics Video (.mp4)", "#fff", "#A965B5", "#5D435E")
+	rBY := nextY(lBBRect, 40)
+	theCtx.drawButtonA(RenderBtn, rBX, rBY, "Make Lyrics Video (.mp4)", "#444", "#EAE6C7")
 
 	// send the frame to glfw window
 	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}
@@ -169,7 +169,7 @@ func CursorPosCB(window *glfw.Window, xpos, ypos float64) {
 		widgetRS.OriginY+widgetRS.Height)
 
 	pieceOfCurrentFrame := imaging.Crop(EmptyFrameNoInputs, rectA)
-	invertedPiece := imaging.Invert(pieceOfCurrentFrame)
+	invertedPiece := imaging.AdjustBrightness(pieceOfCurrentFrame, -20)
 
 	ggCtx := gg.NewContextForImage(EmptyFrameNoInputs)
 	ggCtx.DrawImage(invertedPiece, widgetRS.OriginX, widgetRS.OriginY)

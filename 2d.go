@@ -66,33 +66,10 @@ func (ctx *Ctx) drawButtonA(btnId, originX, originY int, text, textColor, bgColo
 	return btnARect
 }
 
-func (ctx *Ctx) drawButtonB(btnId, originX, originY int, text, textColor, bgColor, circleColor string) g143.Rect {
-	// draw bounding rect
-	textW, textH := ctx.ggCtx.MeasureString(text)
-	width, height := textW+80, textH+30
-	ctx.ggCtx.SetHexColor(bgColor)
-	ctx.ggCtx.DrawRectangle(float64(originX), float64(originY), float64(width), float64(height))
-	ctx.ggCtx.Fill()
-
-	// draw text
-	ctx.ggCtx.SetHexColor(textColor)
-	ctx.ggCtx.DrawString(text, float64(originX)+20, float64(originY)+FontSize+10)
-
-	// draw circle
-	ctx.ggCtx.SetHexColor(circleColor)
-	ctx.ggCtx.DrawCircle(float64(originX)+width-30, float64(originY)+(height/2), 10)
-	ctx.ggCtx.Fill()
-
-	// save dimensions
-	btnARect := g143.NewRect(originX, originY, int(width), int(height))
-	ObjCoords[btnId] = btnARect
-	return btnARect
-}
-
-func nextHorizontalX(aRect g143.Rect, margin int) int {
+func nextX(aRect g143.Rect, margin int) int {
 	return aRect.OriginX + aRect.Width + margin
 }
 
-func nextHorizontalY(aRect g143.Rect, margin int) int {
+func nextY(aRect g143.Rect, margin int) int {
 	return aRect.OriginY + aRect.Height + margin
 }
