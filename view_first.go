@@ -46,7 +46,9 @@ func AllDraws(window *glfw.Window) {
 
 	rBX := 220
 	rBY := nextY(lBBRect, 40)
-	theCtx.drawButtonA(RenderBtn, rBX, rBY, "Make Lyrics Video (.mp4)", "#444", "#EAE6C7")
+	rBBrect := theCtx.drawButtonA(RenderBtn, rBX, rBY, "Make Lyrics Video (.mp4)", "#444", "#EAE6C7")
+	rLBY := nextY(rBBrect, 20)
+	theCtx.drawButtonA(RenderL8fBtn, rBX, rLBY, "Make Lyrics Video (.l8f)", "#444", "#EAE6C7")
 
 	// send the frame to glfw window
 	windowRS := g143.Rect{Width: wWidth, Height: wHeight, OriginX: 0, OriginY: 0}

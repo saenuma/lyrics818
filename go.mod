@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/bankole7782/graphics143 v1.2.2
+	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
